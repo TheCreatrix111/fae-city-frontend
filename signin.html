@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FÆ CITY — Enter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Space+Grotesk:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%; width: 100%;
+      font-family: 'Space Grotesk', sans-serif;
+      overflow: hidden;
+    }
+
+    /* ══════════════════════════════════════════════════
+       DESKTOP — two-column
+    ══════════════════════════════════════════════════ */
+    .page {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      background: #f5f2ed;
+    }
+
+    /* ── Left panel ─────────────────────────────────── */
+    .left {
+      width: 420px;
+      flex-shrink: 0;
+      background: #faf8f4;
+      display: flex;
+      flex-direction: column;
+      padding: 28px 48px 36px;
+      position: relative;
+      z-index: 10;
+      overflow-y: auto;
+    }
+
+    /* Nav */
+    .nav {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 40px;
+      flex-shrink: 0;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; font-weight: 600;
+      color: #1a1a1a;
+    }
+    .nav-divider { width: 1px; height: 24px; background: #d0ccc6; }
+    .nav-tagline {
+      font-size: 0.52rem; font-weight: 400;
+      color: #999; letter-spacing: 0.07em;
+      text-transform: uppercase; line-height: 1.5;
+    }
+    .nav-links { display: flex; gap: 20px; }
+    .nav-link {
+      font-size: 0.58rem; font-weight: 500;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: #666; text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: #8b6914; }
+
+    /* Branding block */
+    .brand {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .star-wrap { margin-bottom: 12px; }
+    .star-svg { width: 38px; height: 38px; display: block; }
+
+    .city-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 4rem; font-weight: 700;
+      color: #7a5c14;
+      line-height: 0.9;
+      letter-spacing: -0.01em;
+      margin-bottom: 10px;
+    }
+    .city-sub {
+      font-size: 0.65rem; font-weight: 500;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: #5a4510; margin-bottom: 6px;
+    }
+    .city-pills {
+      font-size: 0.58rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #9a8060;
+      margin-bottom: 22px;
+    }
+    .city-tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic; font-size: 1.1rem;
+      color: #3a3028; line-height: 1.5;
+      margin-bottom: 28px;
+    }
+
+    /* Form */
+    .form { display: flex; flex-direction: column; gap: 10px; }
+
+    .input-wrap { position: relative; display: flex; align-items: center; }
+    .input-icon {
+      position: absolute; left: 16px;
+      color: #bbb; font-size: 0.82rem; pointer-events: none;
+    }
+    .form-input {
+      width: 100%;
+      padding: 13px 16px 13px 40px;
+      background: #eeeae4;
+      border: 1.5px solid transparent;
+      border-radius: 50px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.82rem; color: #1a1a1a;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .form-input::placeholder { color: #bbb; }
+    .form-input:focus { background: #e6e0d8; border-color: #c8a84b66; }
+
+    .eye-btn {
+      position: absolute; right: 16px;
+      background: none; border: none;
+      cursor: pointer; color: #bbb; font-size: 0.85rem;
+      padding: 0; transition: color 0.2s;
+    }
+    .eye-btn:hover { color: #7a5c14; }
+
+    .submit-btn {
+      margin-top: 4px;
+      padding: 15px 24px;
+      background: #1a1714; color: #e8d4a0;
+      border: none; border-radius: 50px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.22s, transform 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .submit-btn:hover { background: #2e2618; }
+    .submit-btn:active { transform: scale(0.98); }
+    .submit-btn.loading { opacity: 0.65; pointer-events: none; }
+
+    .form-footer {
+      display: flex; align-items: center;
+      justify-content: space-between; margin-top: 6px;
+    }
+    .remember {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.63rem; color: #999; cursor: pointer;
+    }
+    .remember input { accent-color: #8b6914; }
+    .forgot {
+      font-size: 0.63rem; color: #999;
+      text-decoration: underline; text-underline-offset: 2px;
+      cursor: pointer; background: none; border: none;
+    }
+    .forgot:hover { color: #7a5c14; }
+
+    .error-msg {
+      font-size: 0.6rem; color: #c0392b;
+      letter-spacing: 0.04em; padding: 0 4px; min-height: 14px;
+    }
+
+    /* Desktop footer */
+    .left-footer {
+      margin-top: 28px; text-align: center; flex-shrink: 0;
+    }
+    .left-footer-text {
+      font-size: 0.53rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #ccc; line-height: 1.6;
+    }
+    .infinity-mark {
+      display: block; font-size: 1.2rem;
+      color: #c8a84b77; margin-top: 4px;
+    }
+
+    /* Right panel */
+    .right {
+      flex: 1; position: relative; overflow: hidden;
+    }
+    .right-img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center top;
+      display: block;
+    }
+    .right-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to right, rgba(250,248,244,0.22) 0%, transparent 16%);
+      pointer-events: none;
+    }
+    .belong-desktop {
+      position: absolute; bottom: 30px; right: 38px;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic; font-size: 1.35rem;
+      color: rgba(255,255,255,0.9);
+      text-shadow: 0 1px 12px rgba(0,0,0,0.3);
+      pointer-events: none;
+    }
+    .fae-stamp {
+      position: absolute; bottom: 34px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.58rem; letter-spacing: 0.28em; text-transform: uppercase;
+      color: rgba(255,255,255,0.5); background: rgba(0,0,0,0.22);
+      padding: 3px 12px; border-radius: 2px; pointer-events: none;
+    }
+
+    /* Mobile-only elements — hidden on desktop */
+    .mob-only { display: none; }
+
+    /* ══════════════════════════════════════════════════
+       MOBILE — full-screen image + overlay form
+    ══════════════════════════════════════════════════ */
+    @media (max-width: 700px) {
+      html, body { overflow: hidden; }
+
+      .page {
+        flex-direction: column;
+        position: relative;
+        background: none;
+      }
+
+      /* Image fills whole screen */
+      .right {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .right-img { object-position: center center; }
+      .right-overlay {
+        background: linear-gradient(
+          to bottom,
+          rgba(255,250,240,0.08) 0%,
+          rgba(255,250,240,0.0) 55%,
+          rgba(255,248,238,0.82) 72%,
+          rgba(255,248,235,0.97) 100%
+        );
+      }
+      .belong-desktop { display: none; }
+      .fae-stamp { display: none; }
+
+      /* Left panel becomes a full-screen overlay */
+      .left {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        width: 100%;
+        background: transparent;
+        padding: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Mobile nav */
+      .nav {
+        padding: 18px 20px 0;
+        margin-bottom: 0;
+        align-items: flex-start;
+      }
+      .nav-logo { font-size: 1.1rem; color: #3d2800; }
+      .nav-tagline { color: #6b4c10; }
+      .nav-divider { background: #b8934488; }
+      .nav-links { display: none; }
+
+      /* Top-right: tagline + ∞ */
+      .mob-topright {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+      }
+      .mob-tagline-text {
+        font-size: 0.5rem; letter-spacing: 0.1em;
+        text-transform: uppercase; color: #7a5c14;
+        text-align: right; line-height: 1.5;
+      }
+      .mob-infinity {
+        font-size: 1rem; color: #c8a84b; margin-top: 2px;
+      }
+
+      /* Mobile branding — top of screen, centered */
+      .mob-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 10px 24px 0;
+        position: relative;
+      }
+      .mob-brand .star-svg { width: 34px; height: 34px; margin-bottom: 4px; }
+      .mob-brand .city-title { font-size: 3.6rem; margin-bottom: 6px; }
+      .mob-brand .city-sub { margin-bottom: 4px; }
+      .mob-brand .city-pills { margin-bottom: 0; }
+
+      /* Hide desktop brand */
+      .brand { display: none; }
+      .left-footer { display: none; }
+
+      /* "You belong here" overlaid on image, left side */
+      .mob-belong {
+        position: absolute;
+        top: 38%;
+        left: 18px;
+        font-family: 'Cormorant Garamond', serif;
+        font-style: italic;
+        font-size: 1.8rem;
+        color: #2a1a04;
+        line-height: 1.15;
+        text-shadow: 0 1px 8px rgba(255,240,200,0.5);
+        pointer-events: none;
+      }
+      .mob-belong-heart { font-style: normal; font-size: 1.1rem; display: block; margin-top: 2px; }
+
+      /* Spacer to push form down */
+      .mob-spacer { flex: 1; }
+
+      /* Form sheet — floats at bottom */
+      .mob-form-sheet {
+        display: flex;
+        flex-direction: column;
+        background: rgba(253,249,243,0.97);
+        border-radius: 28px 28px 0 0;
+        padding: 24px 24px 0;
+        box-shadow: 0 -8px 40px rgba(90,60,10,0.12);
+      }
+      .mob-form-sheet .form { gap: 10px; }
+      .mob-form-sheet .form-input { background: #f0ece6; }
+      .mob-form-sheet .form-input:focus { background: #e8e2d8; }
+      .mob-form-sheet .submit-btn { margin-top: 4px; }
+      .mob-form-sheet .form-footer { margin-top: 8px; }
+
+      /* Mobile bottom nav */
+      .mob-bottom-nav {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 14px 10px 20px;
+        background: rgba(253,249,243,0.97);
+        border-top: 1px solid #e8e0d0;
+        margin-top: 12px;
+      }
+      .mob-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        cursor: pointer;
+      }
+      .mob-nav-icon {
+        font-size: 1.1rem;
+        color: #c8a84b;
+        line-height: 1;
+      }
+      .mob-nav-label {
+        font-size: 0.52rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #9a8060;
+        font-weight: 500;
+      }
+
+      .mob-only { display: flex; }
+
+      /* Hide desktop-only right-panel decorations */
+      .belong-desktop { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ── Right: background image (always rendered) ─────────────── -->
+  <div class="right">
+    <img class="right-img" src="/static/house.jpg" alt="FÆ CITY" draggable="false">
+    <div class="right-overlay"></div>
+    <div class="fae-stamp">FÆ CITY</div>
+    <div class="belong-desktop">You belong here. ♡</div>
+  </div>
+
+  <!-- ── Left: sign-in content ────────────────────────────────── -->
+  <div class="left">
+
+    <!-- Nav -->
+    <nav class="nav">
+      <div class="nav-brand">
+        <span class="nav-logo">MoodJi<sup style="font-size:0.5em">™</sup></span>
+        <div class="nav-divider"></div>
+        <span class="nav-tagline">A Brighter<br>Tomorrow Together</span>
+      </div>
+      <!-- Desktop nav links -->
+      <div class="nav-links">
+        <a href="#" class="nav-link">Reflect</a>
+        <a href="#" class="nav-link">Heal</a>
+        <a href="#" class="nav-link">Grow</a>
+        <a href="#" class="nav-link">Belong</a>
+      </div>
+      <!-- Mobile top-right -->
+      <div class="mob-topright mob-only" style="flex-direction:column;align-items:flex-end">
+        <span class="mob-tagline-text">A Brighter<br>Tomorrow Together</span>
+        <span class="mob-infinity">∞</span>
+      </div>
+    </nav>
+
+    <!-- Mobile branding (top of screen, centered) -->
+    <div class="mob-brand mob-only" style="flex-direction:column;align-items:center;text-align:center">
+      <svg class="star-svg" viewBox="0 0 44 44" fill="none">
+        <path d="M22 2 L23.8 20.2 L42 22 L23.8 23.8 L22 42 L20.2 23.8 L2 22 L20.2 20.2 Z" fill="#c8a84b" opacity="0.95"/>
+        <path d="M22 9 L23 20.9 L35 22 L23 23.1 L22 35 L21 23.1 L9 22 L21 20.9 Z" fill="#e8d080" opacity="0.5"/>
+      </svg>
+      <h1 class="city-title">FÆ CITY</h1>
+      <div class="city-sub">A Place for Your Dragons</div>
+      <div class="city-pills">Rest &nbsp;·&nbsp; Heal &nbsp;·&nbsp; Play &nbsp;·&nbsp; Become</div>
+    </div>
+
+    <!-- "You belong here" — mobile only, overlaid on image -->
+    <div class="mob-belong mob-only" style="display:block">
+      You<br>belong<br>here.
+      <span class="mob-belong-heart">♡</span>
+    </div>
+
+    <!-- Spacer (mobile only, pushes form down) -->
+    <div class="mob-spacer mob-only"></div>
+
+    <!-- Desktop branding + form -->
+    <div class="brand">
+      <div class="star-wrap">
+        <svg class="star-svg" viewBox="0 0 44 44" fill="none">
+          <path d="M22 2 L23.8 20.2 L42 22 L23.8 23.8 L22 42 L20.2 23.8 L2 22 L20.2 20.2 Z" fill="#c8a84b" opacity="0.9"/>
+          <path d="M22 9 L23 20.9 L35 22 L23 23.1 L22 35 L21 23.1 L9 22 L21 20.9 Z" fill="#e8d080" opacity="0.5"/>
+        </svg>
+      </div>
+      <h1 class="city-title">FÆ CITY</h1>
+      <div class="city-sub">A Place for Your Dragons</div>
+      <div class="city-pills">Rest &nbsp;·&nbsp; Heal &nbsp;·&nbsp; Play &nbsp;·&nbsp; Become</div>
+      <p class="city-tagline">A living sanctuary for<br><em>every version</em> of you.</p>
+
+      <form class="form" id="signinFormDesktop" onsubmit="return false;">
+        <div class="input-wrap">
+          <span class="input-icon">&#9737;</span>
+          <input class="form-input" id="emailDesktop" type="email" placeholder="Email" autocomplete="email" required>
+        </div>
+        <div class="input-wrap">
+          <span class="input-icon">&#128274;</span>
+          <input class="form-input" id="passDesktop" type="password" placeholder="Password" autocomplete="current-password" required>
+          <button class="eye-btn" type="button" onclick="toggleEye('passDesktop')">&#128065;</button>
+        </div>
+        <div class="error-msg" id="errDesktop"></div>
+        <button class="submit-btn" id="btnDesktop" type="submit">Enter FÆ City &nbsp;→</button>
+        <div class="form-footer">
+          <label class="remember"><input type="checkbox" id="remDesktop"> Remember me</label>
+          <button class="forgot" type="button">Forgot password?</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="left-footer">
+      <div class="left-footer-text">Small Creatures.<br>Bigger Tomorrows.</div>
+      <span class="infinity-mark">∞</span>
+    </div>
+
+    <!-- Mobile form sheet (bottom) -->
+    <div class="mob-form-sheet mob-only" style="flex-direction:column">
+      <form class="form" id="signinFormMob" onsubmit="return false;">
+        <div class="input-wrap">
+          <span class="input-icon">&#9737;</span>
+          <input class="form-input" id="emailMob" type="email" placeholder="Email" autocomplete="email" required>
+        </div>
+        <div class="input-wrap">
+          <span class="input-icon">&#128274;</span>
+          <input class="form-input" id="passMob" type="password" placeholder="Password" autocomplete="current-password" required>
+          <button class="eye-btn" type="button" onclick="toggleEye('passMob')">&#128065;</button>
+        </div>
+        <div class="error-msg" id="errMob"></div>
+        <button class="submit-btn" id="btnMob" type="submit">Enter FÆ City &nbsp;→</button>
+        <div class="form-footer">
+          <label class="remember"><input type="checkbox" id="remMob"> Remember me</label>
+          <button class="forgot" type="button">Forgot password?</button>
+        </div>
+      </form>
+
+      <!-- Mobile bottom nav -->
+      <div class="mob-bottom-nav">
+        <div class="mob-nav-item">
+          <span class="mob-nav-icon">🍃</span>
+          <span class="mob-nav-label">Reflect</span>
+        </div>
+        <div class="mob-nav-item">
+          <span class="mob-nav-icon">☀️</span>
+          <span class="mob-nav-label">Heal</span>
+        </div>
+        <div class="mob-nav-item">
+          <span class="mob-nav-icon">∞</span>
+          <span class="mob-nav-label">Grow</span>
+        </div>
+        <div class="mob-nav-item">
+          <span class="mob-nav-icon">✦</span>
+          <span class="mob-nav-label">Belong</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end .left -->
+
+</div><!-- end .page -->
+
+<script>
+// ── Auth gate ──────────────────────────────────────────────────────
+const SESSION_KEY = 'ventralis_operator_token';
+const GATE_URL    = window.location.protocol === 'file:'
+  ? 'https://ventralis-production.up.railway.app'
+  : '';
+
+if (localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY)) {
+  window.location.replace('ventralis_house.html');
+}
+
+// ── Eye toggle ─────────────────────────────────────────────────────
+function toggleEye(fieldId) {
+  const f = document.getElementById(fieldId);
+  f.type = f.type === 'password' ? 'text' : 'password';
+}
+
+// ── Submit handler (shared by both forms) ──────────────────────────
+async function doSignIn(emailId, passId, remId, errId, btnId) {
+  const email    = document.getElementById(emailId).value.trim();
+  const pass     = document.getElementById(passId).value;
+  const remember = document.getElementById(remId).checked;
+  const errEl    = document.getElementById(errId);
+  const btn      = document.getElementById(btnId);
+
+  errEl.textContent = '';
+  btn.classList.add('loading');
+  btn.textContent = 'Entering…';
+
+  try {
+    const res = await fetch(`${GATE_URL}/auth/operator`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass }),
+    });
+
+    if (res.ok) {
+      const { token } = await res.json();
+      localStorage.setItem(SESSION_KEY, token);
+      if (!remember) sessionStorage.setItem(SESSION_KEY + '_session', '1');
+      window.location.replace('/house');
+    } else {
+      const body = await res.json().catch(() => ({}));
+      errEl.textContent = body.detail || 'Incorrect email or password.';
+      btn.classList.remove('loading');
+      btn.innerHTML = 'Enter FÆ City &nbsp;→';
+    }
+  } catch {
+    // Local file:// dev — skip auth
+    if (window.location.protocol === 'file:') {
+      localStorage.setItem(SESSION_KEY, 'dev-local');
+      window.location.replace('/house');
+    } else {
+      errEl.textContent = 'Cannot reach the gate. Try again.';
+      btn.classList.remove('loading');
+      btn.innerHTML = 'Enter FÆ City &nbsp;→';
+    }
+  }
+}
+
+document.getElementById('signinFormDesktop').addEventListener('submit', () =>
+  doSignIn('emailDesktop','passDesktop','remDesktop','errDesktop','btnDesktop'));
+
+document.getElementById('signinFormMob').addEventListener('submit', () =>
+  doSignIn('emailMob','passMob','remMob','errMob','btnMob'));
+</script>
+
+</body>
+</html>

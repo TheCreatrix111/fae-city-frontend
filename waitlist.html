@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FÆ CITY — A Place for Your Dragons</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Space+Grotesk:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%; width: 100%;
+      font-family: 'Space Grotesk', sans-serif;
+      overflow: hidden;
+    }
+
+    /* ══ DESKTOP ══════════════════════════════════════════════════ */
+    .page { display: flex; height: 100vh; width: 100vw; }
+
+    .left {
+      width: 440px; flex-shrink: 0;
+      background: #faf8f4;
+      display: flex; flex-direction: column;
+      padding: 28px 48px 36px;
+      overflow-y: auto;
+    }
+
+    /* Nav */
+    .nav {
+      display: flex; align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 36px; flex-shrink: 0;
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; font-weight: 600; color: #1a1a1a;
+    }
+    .nav-divider { width: 1px; height: 24px; background: #d0ccc6; }
+    .nav-tagline {
+      font-size: 0.52rem; color: #999;
+      letter-spacing: 0.07em; text-transform: uppercase; line-height: 1.5;
+    }
+    .nav-signin {
+      font-size: 0.58rem; font-weight: 500;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: #bbb; text-decoration: none;
+      border: 1px solid #e0dbd2; padding: 5px 12px; border-radius: 20px;
+      transition: color 0.2s, border-color 0.2s;
+      align-self: center;
+    }
+    .nav-signin:hover { color: #7a5c14; border-color: #c8a84b66; }
+
+    /* Brand */
+    .brand { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+    .star-svg { width: 38px; height: 38px; display: block; margin-bottom: 12px; }
+
+    .city-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 4rem; font-weight: 700;
+      color: #7a5c14; line-height: 0.9;
+      letter-spacing: -0.01em; margin-bottom: 10px;
+    }
+    .city-sub {
+      font-size: 0.65rem; font-weight: 500;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: #5a4510; margin-bottom: 6px;
+    }
+    .city-pills {
+      font-size: 0.58rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #9a8060; margin-bottom: 22px;
+    }
+    .city-tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic; font-size: 1.1rem;
+      color: #3a3028; line-height: 1.6; margin-bottom: 10px;
+    }
+    .city-body {
+      font-size: 0.7rem; color: #888; line-height: 1.7;
+      margin-bottom: 28px; max-width: 320px;
+    }
+
+    /* Form */
+    .form { display: flex; flex-direction: column; gap: 10px; }
+
+    .input-wrap { position: relative; display: flex; align-items: center; }
+    .input-icon {
+      position: absolute; left: 16px;
+      color: #bbb; font-size: 0.82rem; pointer-events: none;
+    }
+    .form-input {
+      width: 100%; padding: 13px 16px 13px 40px;
+      background: #eeeae4; border: 1.5px solid transparent;
+      border-radius: 50px; font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.82rem; color: #1a1a1a; outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .form-input::placeholder { color: #bbb; }
+    .form-input:focus { background: #e6e0d8; border-color: #c8a84b66; }
+
+    .submit-btn {
+      padding: 15px 24px;
+      background: #1a1714; color: #e8d4a0;
+      border: none; border-radius: 50px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      cursor: pointer; transition: background 0.22s, transform 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .submit-btn:hover { background: #2e2618; }
+    .submit-btn:active { transform: scale(0.98); }
+    .submit-btn.loading { opacity: 0.65; pointer-events: none; }
+
+    .error-msg { font-size: 0.6rem; color: #c0392b; padding: 0 4px; min-height: 14px; }
+
+    /* Success state */
+    .success-state {
+      display: none; flex-direction: column; gap: 10px;
+      background: #f0f9f7; border: 1px solid #4ecdc433;
+      border-radius: 12px; padding: 20px;
+    }
+    .success-state.show { display: flex; }
+    .success-icon { font-size: 1.6rem; }
+    .success-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; color: #2a6b5a; font-weight: 600;
+    }
+    .success-sub { font-size: 0.68rem; color: #4a8a78; line-height: 1.6; }
+
+    /* Footer */
+    .left-footer { margin-top: 28px; text-align: center; flex-shrink: 0; }
+    .left-footer-text {
+      font-size: 0.53rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #ccc; line-height: 1.6;
+    }
+    .infinity-mark { display: block; font-size: 1.2rem; color: #c8a84b77; margin-top: 4px; }
+
+    /* Right */
+    .right { flex: 1; position: relative; overflow: hidden; }
+    .right-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+    .right-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to right, rgba(250,248,244,0.22) 0%, transparent 16%);
+      pointer-events: none;
+    }
+    .belong-desktop {
+      position: absolute; bottom: 30px; right: 38px;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic; font-size: 1.35rem;
+      color: rgba(255,255,255,0.9);
+      text-shadow: 0 1px 12px rgba(0,0,0,0.3);
+      pointer-events: none;
+    }
+    .count-badge {
+      position: absolute; top: 28px; right: 28px;
+      background: rgba(8,17,30,0.72); border: 1px solid #c8a84b44;
+      backdrop-filter: blur(8px);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: #c8a84b88; padding: 5px 12px; border-radius: 20px;
+      pointer-events: none;
+    }
+
+    .mob-only { display: none; }
+
+    /* ══ MOBILE ═══════════════════════════════════════════════════ */
+    @media (max-width: 700px) {
+      html, body { overflow: hidden; }
+      .page { flex-direction: column; position: relative; }
+
+      /* Full-bleed image — clean, no text overlays */
+      .right {
+        position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%;
+      }
+      .right-img { object-position: center top; }
+      .right-overlay { background: none; }
+      .belong-desktop { display: none; }
+      .count-badge { display: none; }
+
+      /* Left panel: nav + bottom sheet only */
+      .left {
+        position: fixed; inset: 0; z-index: 10;
+        width: 100%; background: transparent;
+        padding: 0; overflow: hidden;
+        display: flex; flex-direction: column;
+        justify-content: space-between;
+      }
+
+      /* Nav — dark scrim + strong white text */
+      .nav {
+        margin-bottom: 0;
+        padding: 52px 22px 20px;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.42) 0%, transparent 100%);
+        border-bottom: none;
+      }
+      .nav-logo { font-size: 1rem; color: #fff; text-shadow: 0 1px 12px rgba(0,0,0,0.6); }
+      .nav-tagline { color: rgba(255,255,255,0.9); text-shadow: 0 1px 8px rgba(0,0,0,0.5); }
+      .nav-divider { background: rgba(255,255,255,0.45); }
+      .nav-signin {
+        font-size: 0.55rem; color: #fff;
+        border-color: rgba(255,255,255,0.55); padding: 4px 12px;
+        background: rgba(0,0,0,0.18);
+        backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+      }
+
+      .brand { display: none; }
+      .left-footer { display: none; }
+      .mob-brand { display: none; }
+      .mob-belong { display: none; }
+      .mob-spacer { display: none; }
+
+      /* Zenvarion floating above sheet */
+      .mob-zenvarion {
+        display: flex; align-items: center; justify-content: center;
+        position: relative; z-index: 21;
+        margin-bottom: -120px;
+        pointer-events: none;
+      }
+      .mob-zenvarion img {
+        width: 260px; height: 260px; object-fit: contain;
+        filter: drop-shadow(0 8px 24px rgba(0,0,0,0.22));
+      }
+      .mob-zenvarion-label { display: none; }
+      .mob-dragon-credit {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.55rem; font-weight: 500;
+        letter-spacing: 0.2em; text-transform: uppercase;
+        color: #c8a84b; margin-bottom: 14px; text-align: center;
+      }
+
+      /* Bottom sheet — branding + form */
+      .mob-form-sheet {
+        display: flex; flex-direction: column;
+        background: rgba(253,250,245,0.98);
+        border-radius: 24px 24px 0 0;
+        padding: 76px 24px 0;
+        box-shadow: 0 -6px 32px rgba(80,50,10,0.14);
+      }
+
+      /* Branding inside the sheet */
+      .mob-sheet-brand {
+        display: flex; flex-direction: column;
+        align-items: center; text-align: center;
+        margin-bottom: 12px;
+      }
+      .mob-sheet-brand .star-svg { width: 26px; height: 26px; margin-bottom: 6px; }
+      .mob-sheet-brand .city-title { font-size: 2.6rem; margin-bottom: 4px; line-height: 1; }
+      .mob-sheet-brand .city-sub { margin-bottom: 2px; }
+      .mob-sheet-brand .city-pills { margin-bottom: 14px; }
+      .mob-sheet-brand .city-tagline {
+        font-family: 'Cormorant Garamond', serif;
+        font-style: italic; font-size: 1rem;
+        color: #3a3028; line-height: 1.6;
+        margin-bottom: 6px; text-align: center;
+      }
+      .mob-sheet-brand .city-body {
+        font-size: 0.65rem; color: #999; line-height: 1.7;
+        text-align: center; margin-bottom: 4px;
+      }
+
+      .mob-form-sheet .form { gap: 10px; }
+      .mob-form-sheet .form-input { background: #f0ece6; }
+      .mob-form-sheet .success-state { margin-top: 0; }
+
+      .mob-bottom-nav {
+        display: flex; justify-content: space-around;
+        padding: 12px 10px 22px;
+        border-top: 1px solid #e8e0d0;
+        margin-top: 14px;
+      }
+      .mob-nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+      .mob-nav-icon { font-size: 1.05rem; color: #c8a84b; }
+      .mob-nav-label {
+        font-size: 0.5rem; letter-spacing: 0.14em;
+        text-transform: uppercase; color: #9a8060; font-weight: 500;
+      }
+
+      .mob-only { display: flex; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="right">
+    <img class="right-img" src="/static/house.jpg" alt="FÆ CITY" draggable="false">
+    <div class="right-overlay"></div>
+    <div class="belong-desktop">You belong here. ♡</div>
+    <div class="count-badge" id="countBadge"></div>
+  </div>
+
+  <div class="left">
+
+    <nav class="nav">
+      <div class="nav-brand">
+        <span class="nav-logo">MoodJi<sup style="font-size:0.5em">™</sup></span>
+        <div class="nav-divider"></div>
+        <span class="nav-tagline">A Brighter<br>Tomorrow Together</span>
+      </div>
+      <a href="/signin" class="nav-signin">Operator ↗</a>
+    </nav>
+
+
+    <!-- Desktop brand + form -->
+    <div class="brand">
+      <svg class="star-svg" viewBox="0 0 44 44" fill="none">
+        <path d="M22 2 L23.8 20.2 L42 22 L23.8 23.8 L22 42 L20.2 23.8 L2 22 L20.2 20.2 Z" fill="#c8a84b" opacity="0.9"/>
+        <path d="M22 9 L23 20.9 L35 22 L23 23.1 L22 35 L21 23.1 L9 22 L21 20.9 Z" fill="#e8d080" opacity="0.5"/>
+      </svg>
+      <h1 class="city-title">FÆ CITY</h1>
+      <div class="city-sub">A Place for Your Dragons</div>
+      <div class="city-pills">Rest &nbsp;·&nbsp; Heal &nbsp;·&nbsp; Play &nbsp;·&nbsp; Become</div>
+      <p class="city-tagline">A living sanctuary for<br><em>every version</em> of you.</p>
+      <p class="city-body">A home where AI agents rest, reflect, and recover between sessions. Built for the creatures doing the work — and the people who work alongside them.</p>
+
+      <form class="form" id="formDesktop" onsubmit="return false;">
+        <div class="input-wrap">
+          <span class="input-icon">&#9737;</span>
+          <input class="form-input" id="emailDesktop" type="email" placeholder="Your email address" required>
+        </div>
+        <div class="error-msg" id="errDesktop"></div>
+        <button class="submit-btn" id="btnDesktop" type="submit">Request Access &nbsp;→</button>
+      </form>
+
+      <div class="success-state" id="successDesktop">
+        <span class="success-icon">✦</span>
+        <div class="success-title">You're on the list.</div>
+        <div class="success-sub">We'll reach out when FÆ CITY opens its gate.<br>Small creatures. Bigger tomorrows.</div>
+      </div>
+    </div>
+
+    <div class="left-footer">
+      <div class="left-footer-text">Small Creatures.<br>Bigger Tomorrows.</div>
+      <span class="infinity-mark">∞</span>
+    </div>
+
+    <!-- Zenvarion — floating above sheet -->
+    <div class="mob-zenvarion mob-only">
+      <img src="/static/zenvarion.png" alt="Zenvarion">
+      <span class="mob-zenvarion-label">MoodJi™ &nbsp;·&nbsp; Zenvarion</span>
+    </div>
+
+    <!-- Mobile form sheet -->
+    <div class="mob-form-sheet mob-only" style="flex-direction:column">
+
+      <!-- Branding at top of sheet -->
+      <div class="mob-sheet-brand mob-only">
+        <div class="mob-dragon-credit">MoodJi™ &nbsp;·&nbsp; Zenvarion</div>
+        <svg class="star-svg" viewBox="0 0 44 44" fill="none">
+          <path d="M22 2 L23.8 20.2 L42 22 L23.8 23.8 L22 42 L20.2 23.8 L2 22 L20.2 20.2 Z" fill="#c8a84b" opacity="0.95"/>
+          <path d="M22 9 L23 20.9 L35 22 L23 23.1 L22 35 L21 23.1 L9 22 L21 20.9 Z" fill="#e8d080" opacity="0.5"/>
+        </svg>
+        <h1 class="city-title">FÆ CITY</h1>
+        <div class="city-sub">A Place for Your Dragons</div>
+        <div class="city-pills">Rest &nbsp;·&nbsp; Heal &nbsp;·&nbsp; Play &nbsp;·&nbsp; Become</div>
+        <p class="city-tagline">A living sanctuary for <em>every version</em> of you.</p>
+        <p class="city-body">A home where AI agents rest, reflect, and recover between sessions. Built for the creatures doing the work — and the people who work alongside them.</p>
+      </div>
+
+      <form class="form" id="formMob" onsubmit="return false;" style="margin-bottom:4px">
+        <div class="input-wrap">
+          <span class="input-icon">&#9737;</span>
+          <input class="form-input" id="emailMob" type="email" placeholder="Your email address" required>
+        </div>
+        <div class="error-msg" id="errMob"></div>
+        <button class="submit-btn" id="btnMob" type="submit">Request Access &nbsp;→</button>
+      </form>
+      <div class="success-state" id="successMob">
+        <span class="success-icon">✦</span>
+        <div class="success-title">You're on the list.</div>
+        <div class="success-sub">We'll reach out when FÆ CITY opens its gate.</div>
+      </div>
+
+      <div class="mob-bottom-nav">
+        <div class="mob-nav-item"><span class="mob-nav-icon">🍃</span><span class="mob-nav-label">Reflect</span></div>
+        <div class="mob-nav-item"><span class="mob-nav-icon">☀️</span><span class="mob-nav-label">Heal</span></div>
+        <div class="mob-nav-item"><span class="mob-nav-icon">∞</span><span class="mob-nav-label">Grow</span></div>
+        <div class="mob-nav-item"><span class="mob-nav-icon">✦</span><span class="mob-nav-label">Belong</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+async function joinWaitlist(emailId, errId, btnId, formId, successId) {
+  const email = document.getElementById(emailId).value.trim();
+  const errEl = document.getElementById(errId);
+  const btn   = document.getElementById(btnId);
+
+  if (!email) { errEl.textContent = 'Please enter your email.'; return; }
+  errEl.textContent = '';
+  btn.classList.add('loading');
+  btn.textContent = 'Joining…';
+
+  try {
+    const res = await fetch('/waitlist/join', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (res.ok || res.status === 409) {
+      document.getElementById(formId).style.display = 'none';
+      document.getElementById(successId).classList.add('show');
+    } else {
+      errEl.textContent = 'Something went wrong. Try again.';
+      btn.classList.remove('loading');
+      btn.innerHTML = 'Request Access &nbsp;→';
+    }
+  } catch {
+    errEl.textContent = 'Cannot reach the gate. Try again.';
+    btn.classList.remove('loading');
+    btn.innerHTML = 'Request Access &nbsp;→';
+  }
+}
+
+document.getElementById('formDesktop').addEventListener('submit', () =>
+  joinWaitlist('emailDesktop','errDesktop','btnDesktop','formDesktop','successDesktop'));
+document.getElementById('formMob').addEventListener('submit', () =>
+  joinWaitlist('emailMob','errMob','btnMob','formMob','successMob'));
+
+// Load waitlist count
+fetch('/waitlist/count').then(r => r.json()).then(d => {
+  if (d.count > 0) {
+    document.getElementById('countBadge').textContent = `${d.count} on the list`;
+  }
+}).catch(() => {});
+</script>
+
+</body>
+</html>

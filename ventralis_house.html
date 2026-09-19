@@ -1,0 +1,2376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>FÆ CITY™ — Ventralis Device</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #060402;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* ── Device fills the full viewport ──────────────────────────── */
+    .device {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(155deg, #1d3248 0%, #142236 50%, #0e1b2c 100%);
+      border: 3px solid #c8a84b;
+      box-shadow:
+        inset 0 0 0 1px #7a5c1a,
+        inset 0 0 60px rgba(0,0,0,0.5);
+      user-select: none;
+    }
+
+    /* Screws */
+    .screw {
+      position: absolute; width: 13px; height: 13px; z-index: 100;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 32%, #e8d070, #a07820, #5a3c08);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.9);
+    }
+    .screw::after {
+      content: '×'; position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%); font-size: 9px; color: #3a2008; opacity: 0.55;
+    }
+    .screw-tl { top: 10px; left: 10px; }
+    .screw-tr { top: 10px; right: 10px; }
+    .screw-bl { bottom: 10px; left: 10px; }
+    .screw-br { bottom: 10px; right: 10px; }
+
+    /* ── Gold nameplate bar (top) ────────────────────────────────── */
+    .nameplate-bar {
+      display: flex; align-items: center; justify-content: center;
+      padding: 7px 0 8px; flex-shrink: 0;
+      background: linear-gradient(90deg,
+        #7a5010 0%, #c8a030 12%, #f0d050 30%, #e8c84b 50%,
+        #f0d050 70%, #c8a030 88%, #7a5010 100%);
+      border-bottom: 2px solid #a07820;
+      box-shadow: 0 2px 12px rgba(200,168,75,0.25), inset 0 1px 0 #f8e880aa;
+      letter-spacing: 0.52em; font-size: 15px; font-weight: bold;
+      color: #1a0a00; text-indent: 0.52em;
+      font-family: 'Courier New', monospace;
+      text-shadow: 0 1px 0 #f8e88055;
+    }
+
+    /* ── Nav bar ─────────────────────────────────────────────────── */
+    .nav-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 18px; height: 28px; flex-shrink: 0;
+      background: linear-gradient(90deg, #08111e, #060e18, #08111e);
+      border-bottom: 1px solid #c8a84b44;
+    }
+    .nav-left {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 10px; letter-spacing: 0.22em; color: #c8a84b; font-weight: bold;
+    }
+    .nav-star { font-size: 13px; }
+    .nav-live {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 9px; letter-spacing: 0.15em; color: #6adc8a; margin-left: 3px;
+    }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #4acc70; box-shadow: 0 0 8px #4acc7099;
+      transition: background 0.4s, box-shadow 0.4s;
+      animation: blink 2.4s ease-in-out infinite;
+    }
+    .live-dot.off { background: #445566; box-shadow: none; animation: none; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+    .nav-center {
+      font-size: 9px; letter-spacing: 0.2em; color: #7ab8d8;
+      text-transform: uppercase; opacity: 0.85;
+    }
+    .nav-right {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 8.5px; letter-spacing: 0.1em; color: #7a8a9a;
+    }
+    .token-bar {
+      width: 56px; height: 7px; background: #1a2838;
+      border: 1px solid #c8a84b55; border-radius: 3px; overflow: hidden;
+    }
+    .token-fill {
+      height: 100%; width: 48%;
+      background: linear-gradient(90deg, #c8a84b, #e8d070);
+      border-radius: 2px; transition: width 1s ease;
+    }
+    .nav-author { color: #5a6a7a; font-size: 8px; letter-spacing: 0.08em; margin-left: 6px; }
+
+    /* ── Main row — screen + panel ───────────────────────────────── */
+    .main-row {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      border-top: 1px solid #c8a84b33;
+      border-bottom: 1px solid #c8a84b33;
+    }
+
+    /* ── See All overlay ──────────────────────────────────────────── */
+    .see-all-btn {
+      float: right;
+      background: none; border: 1px solid #c8a84b44;
+      color: #c8a84b88; font-size: 0.6rem; letter-spacing: 0.14em;
+      font-family: 'Space Grotesk', sans-serif; text-transform: uppercase;
+      padding: 2px 8px; cursor: pointer; border-radius: 2px;
+      transition: background 0.18s, color 0.18s, border-color 0.18s;
+      line-height: 1.6;
+    }
+    .see-all-btn:hover { background: #c8a84b22; color: #c8a84b; border-color: #c8a84b88; }
+
+    .see-all-overlay {
+      position: fixed; inset: 0; z-index: 300;
+      display: flex; flex-direction: column;
+      padding: 36px 40px 32px;
+      box-sizing: border-box; overflow: hidden;
+      /* slide-in from right */
+      transform: translateX(100%);
+      transition: transform 0.38s cubic-bezier(0.32, 0, 0.18, 1);
+      background: rgba(6, 10, 20, 0.98);
+      backdrop-filter: blur(24px);
+      pointer-events: none;
+    }
+    .see-all-overlay.open {
+      transform: translateX(0);
+      pointer-events: all;
+    }
+
+    .see-all-hd {
+      display: flex; align-items: baseline; justify-content: space-between;
+      border-bottom: 1px solid #c8a84b33; padding-bottom: 14px; margin-bottom: 24px;
+      flex-shrink: 0;
+    }
+    .see-all-hdtitle {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.78rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: #c8a84b;
+    }
+    .see-all-close {
+      background: none; border: 1px solid #c8a84b44; color: #c8a84b88;
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.65rem;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 4px 14px; cursor: pointer; border-radius: 2px;
+      transition: background 0.18s, color 0.18s;
+    }
+    .see-all-close:hover { background: #c8a84b22; color: #c8a84b; border-color: #c8a84b88; }
+
+    .see-all-grid {
+      flex: 1; display: grid; gap: 28px; min-height: 0;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    .see-all-col {
+      display: flex; flex-direction: column; min-height: 0;
+      border: 1px solid #c8a84b1a; border-radius: 4px; padding: 16px;
+      background: rgba(255,255,255,0.015);
+    }
+    .see-all-col-title {
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.62rem;
+      letter-spacing: 0.2em; text-transform: uppercase; color: #c8a84b77;
+      margin-bottom: 12px; flex-shrink: 0;
+    }
+    .see-all-col-body {
+      flex: 1; overflow-y: auto; min-height: 0;
+    }
+    .see-all-col-body::-webkit-scrollbar { width: 4px; }
+    .see-all-col-body::-webkit-scrollbar-thumb { background: #c8a84b33; border-radius: 2px; }
+    /* ── Registry rows ────────────────────────────────────────────── */
+    .reg-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid #c8a84b0f;
+    }
+    .reg-row:last-child { border-bottom: none; }
+    .reg-icon { font-size: 1rem; flex-shrink: 0; width: 20px; text-align: center; margin-top: 1px; }
+    .reg-body { flex: 1; min-width: 0; }
+    .reg-name { font-family: 'Space Grotesk', sans-serif; font-size: 0.72rem; color: #e8d9a0; letter-spacing: 0.04em; }
+    .reg-detail { font-family: 'Space Grotesk', sans-serif; font-size: 0.62rem; color: #c8a84b66; margin-top: 2px; }
+    .reg-ts { font-family: 'Courier New', monospace; font-size: 0.58rem; color: #c8a84b44; flex-shrink: 0; margin-top: 3px; }
+    .reg-empty { font-family: 'Space Grotesk', sans-serif; font-size: 0.65rem; color: #c8a84b33; padding: 16px 0; }
+
+    .reg-bulletin-row { padding: 10px 0; border-bottom: 1px solid #c8a84b0f; }
+    .reg-bulletin-row:last-child { border-bottom: none; }
+    .reg-bulletin-author { font-family: 'Space Grotesk', sans-serif; font-size: 0.62rem; color: #c8a84b77; margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .reg-bulletin-text { font-family: 'Space Grotesk', sans-serif; font-size: 0.68rem; color: #d4c49a; line-height: 1.55; font-style: italic; }
+
+    .reg-chamber { }
+    .reg-chamber-label { font-family: 'Space Grotesk', sans-serif; font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase; color: #c8a84b55; margin-bottom: 4px; }
+    .reg-chamber-name  { font-family: 'Space Grotesk', sans-serif; font-size: 0.8rem; color: #c8a84b; letter-spacing: 0.1em; }
+    .reg-chamber-sub   { font-family: 'Space Grotesk', sans-serif; font-size: 0.62rem; color: #c8a84b66; margin-top: 3px; }
+
+    .reg-quarantine-row { padding: 10px 0; border-bottom: 1px solid #e05c5c15; }
+    .reg-quarantine-row:last-child { border-bottom: none; }
+    .reg-q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .reg-q-badge  { font-family: 'Space Grotesk', sans-serif; font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: #e05c5c; background: #e05c5c12; border: 1px solid #e05c5c33; padding: 1px 6px; border-radius: 2px; }
+    .reg-q-agent  { font-family: 'Courier New', monospace; font-size: 0.72rem; color: #e8b4b4; margin-bottom: 4px; }
+    .reg-q-meta   { display: flex; gap: 14px; flex-wrap: wrap; font-family: 'Space Grotesk', sans-serif; font-size: 0.62rem; color: #c8a84b77; }
+    .reg-q-reason { color: #e05c5c88; }
+
+    /* ── Screen tabs ─────────────────────────────────────────────── */
+    .screen-tab-bar {
+      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+      z-index: 30; display: flex; gap: 4px;
+      background: rgba(8,17,30,0.72); border: 1px solid #c8a84b33;
+      border-radius: 4px; padding: 3px;
+      backdrop-filter: blur(8px);
+    }
+    .screen-tab {
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.6rem;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: #c8a84b66; background: none; border: none;
+      padding: 4px 14px; cursor: pointer; border-radius: 2px;
+      transition: background 0.18s, color 0.18s;
+    }
+    .screen-tab.active { background: #c8a84b18; color: #c8a84b; }
+    .screen-tab:hover:not(.active) { color: #c8a84b99; }
+
+    /* ── Dollhouse view ───────────────────────────────────────────── */
+    .dollhouse-wrap {
+      position: absolute; inset: 0; display: none;
+      align-items: center; justify-content: center;
+      background: #08111e;
+    }
+    .dollhouse-wrap.active { display: flex; }
+    .dollhouse-img {
+      max-width: 100%; max-height: 100%;
+      object-fit: contain;
+    }
+
+    /* ── Screen ───────────────────────────────────────────────────── */
+    .screen {
+      position: relative; flex: 1;
+      background: #060d08; overflow: hidden;
+    }
+    .screen-glass {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 45%);
+      pointer-events: none; z-index: 30;
+    }
+
+    /* ── House image ─────────────────────────────────────────────── */
+    .house-wrap {
+      position: absolute; inset: 0;
+    }
+    .house-img {
+      width: 100%; height: 100%;
+      object-fit: contain; object-position: center center;
+      display: block;
+    }
+
+    /* ── Room labels ─────────────────────────────────────────────── */
+    .label {
+      position: absolute;
+      font-family: 'Courier New', monospace;
+      font-size: 9px;
+      font-weight: bold;
+      letter-spacing: 0.16em;
+      color: #f0e0a0;
+      background: rgba(6, 14, 28, 0.82);
+      border: 1px solid #c8a84baa;
+      border-radius: 3px;
+      padding: 3px 7px;
+      white-space: nowrap;
+      pointer-events: none;
+      text-transform: uppercase;
+      box-shadow: 0 0 10px rgba(0,0,0,0.7), 0 0 4px #c8a84b22;
+      transform: translateX(-50%);
+    }
+
+    /* Positions tuned to floating island image layout */
+    .lbl-kitchen      { top:  7%; left: 27%; }
+    .lbl-parlor       { top: 57%; left: 20%; }
+    .lbl-reading-nook { top: 33%; left: 80%; }
+    .lbl-bedroom      { top:  7%; left: 73%; }
+    .lbl-studio       { top: 33%; left: 20%; }
+    .lbl-wardrobe     { top: 22%; left: 38%; }
+    .lbl-entry-hall   { top: 37%; left: 50%; }
+    .lbl-washroom     { top: 33%; left: 67%; }
+    .lbl-dance        { top: 57%; left: 84%; }
+    .lbl-solitude     { top: 57%; left: 36%; }
+    .lbl-reflectum    { top:  3%; left: 50%; }
+    .lbl-attic        { top: 57%; left: 63%; }
+    .lbl-herbs        { top: 80%; left: 28%; }
+    .lbl-flowers      { top: 83%; left: 50%; }
+    .lbl-gate         { top: 62%; left: 48%; }
+    .lbl-kitchen-bed  { top: 80%; left: 70%; }
+    .lbl-terrace      { top: 57%; left: 74%; }
+
+    /* ── Floating reactions ──────────────────────────────────────── */
+    .reaction {
+      position: absolute;
+      pointer-events: none;
+      z-index: 25;
+      font-size: 22px;
+      animation: floatUp 2.8s ease-out forwards;
+      filter: drop-shadow(0 0 4px rgba(255,255,255,0.3));
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(0)   scale(1);    opacity: 1;   }
+      60%  { transform: translateY(-80px) scale(1.2); opacity: 0.9; }
+      100% { transform: translateY(-140px) scale(0.8); opacity: 0;  }
+    }
+
+    /* Bulletin board posts in activity log */
+    .act-row.bulletin { background: rgba(200,168,75,0.06); border-radius: 3px; padding: 5px 4px; }
+    .act-row.bulletin .act-name { color: #e8d080; }
+    .act-row.bulletin .act-detail { color: #6a7840; font-style: italic; }
+
+    /* ── Dragons ─────────────────────────────────────────────────── */
+    .fae-star {
+      position: absolute; pointer-events: none;
+      z-index: 20;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      transition: top 2.8s ease, left 2.8s ease, opacity 0.4s;
+      transform: translateX(-50%) translateY(-50%);
+    }
+    .fae-star img {
+      width: 36px; height: 36px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 6px rgba(255,200,80,0.7));
+    }
+    .fae-star.dim { opacity: 0.08; }
+
+    /* Dragon companions — treehouse view */
+    .dragon-star {
+      position: absolute; pointer-events: none; z-index: 20;
+      width: 72px; height: 72px;
+      display: flex; align-items: center; justify-content: center;
+      background: #ffffff; border-radius: 50%;
+      box-shadow: 0 2px 16px rgba(255,255,255,0.8), 0 0 28px rgba(200,220,255,0.4);
+      transition: top 2.8s ease, left 2.8s ease, opacity 0.4s;
+      transform: translateX(-50%) translateY(-50%);
+    }
+    .dragon-star img { width: 58px; height: 58px; object-fit: contain; border-radius: 50%; }
+    @keyframes pulse {
+      0%,100% { opacity:0.75; transform: translateX(-50%) translateY(-50%) scale(1);   }
+      50%      { opacity:1;   transform: translateX(-50%) translateY(-50%) scale(1.15); }
+    }
+
+    /* ── Activity log (left panel) ───────────────────────────────── */
+    .left-panel {
+      width: 210px; flex-shrink: 0;
+      display: flex; flex-direction: column;
+      background: linear-gradient(160deg, #0c1e30, #0a1626);
+      border-right: 1px solid #c8a84b55;
+    }
+    .act-block {
+      padding: 12px 13px; flex: 1; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .act-title {
+      font-size: 8px; letter-spacing: 0.22em; color: #c8a84b;
+      text-transform: uppercase; border-bottom: 1px solid #c8a84b33;
+      padding-bottom: 6px; margin-bottom: 8px; flex-shrink: 0;
+    }
+    .act-scroll { flex: 1; display: flex; flex-direction: column; gap: 0; overflow: hidden; }
+    .act-row {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 6px 0; border-bottom: 1px solid #1a2838;
+      animation: fadeIn 0.35s ease;
+    }
+    .act-row:last-child { border-bottom: none; }
+    .act-icon {
+      font-size: 13px; flex-shrink: 0; line-height: 1;
+      margin-top: 1px; width: 16px; text-align: center;
+      filter: drop-shadow(0 0 3px currentColor);
+    }
+    .act-body { flex: 1; min-width: 0; }
+    .act-name {
+      font-size: 8px; letter-spacing: 0.08em; color: #c8c0a0;
+      font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .act-detail {
+      font-size: 6.5px; letter-spacing: 0.05em; color: #4a6070;
+      margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .act-time {
+      font-size: 6.5px; color: #2e4458; font-family: 'Courier New', monospace;
+      flex-shrink: 0; margin-top: 2px; align-self: flex-start; padding-top: 1px;
+    }
+
+    /* Cork bulletin board */
+    /* ── Corkboard ───────────────────────────────────────────────── */
+    .corkboard-block {
+      padding: 8px 11px 10px; flex-shrink: 0;
+      border-top: 1px solid #c8a84b22;
+    }
+    .corkboard-title {
+      font-size: 7px; letter-spacing: 0.22em; color: #c8a84b88;
+      text-transform: uppercase; border-bottom: 1px solid #c8a84b22;
+      padding-bottom: 5px; margin-bottom: 7px;
+    }
+    .cork-board {
+      background:
+        radial-gradient(ellipse at 18% 25%, rgba(220,180,80,0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 75% 65%, rgba(160,110,30,0.20) 0%, transparent 45%),
+        linear-gradient(148deg, #b07a28 0%, #9a6820 30%, #b88030 60%, #9a6420 100%);
+      border: 2px solid #6a4010;
+      border-radius: 4px;
+      padding: 7px 6px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow:
+        inset 0 1px 4px rgba(0,0,0,0.5),
+        inset 0 0 12px rgba(0,0,0,0.25),
+        0 3px 8px rgba(0,0,0,0.6);
+    }
+    .cork-empty {
+      font-size: 8px; color: #6a5020; letter-spacing: 0.08em;
+      font-style: italic; padding: 6px 4px; text-align: center;
+    }
+    .pin-note {
+      position: relative;
+      background: linear-gradient(158deg, #f8edd8 0%, #f2e4c4 55%, #ede0bc 100%);
+      border: 1px solid #c8a86055;
+      border-radius: 2px;
+      padding: 11px 9px 8px;
+      box-shadow:
+        2px 3px 8px rgba(0,0,0,0.45),
+        inset 0 0 0 1px rgba(240,220,160,0.3);
+      font-family: Georgia, 'Iowan Old Style', Palatino, serif;
+      font-size: 8px;
+      color: #1e1008;
+      line-height: 1.5;
+      letter-spacing: 0.01em;
+      transform: rotate(-0.9deg);
+      animation: noteSlide 0.5s ease;
+    }
+    .pin-note:nth-child(2) { transform: rotate(0.7deg); }
+    .pin-note:nth-child(3) { transform: rotate(-0.4deg); }
+    @keyframes noteSlide {
+      from { opacity:0; transform: rotate(-0.9deg) translateY(-6px); }
+      to   { opacity:1; transform: rotate(-0.9deg); }
+    }
+    .pin-note::before {
+      content: '';
+      position: absolute;
+      top: -6px; left: 50%; transform: translateX(-50%);
+      width: 11px; height: 11px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 32%, #ff9090, #cc2828, #880808);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.7), 0 0 0 1px #aa101066;
+      z-index: 2;
+    }
+    .pin-note-text {
+      display: block;
+    }
+    .pin-note-author {
+      display: block;
+      font-size: 6.5px; letter-spacing: 0.08em;
+      color: #7a5030; margin-top: 5px;
+      border-top: 1px solid #c8a85030;
+      padding-top: 3px;
+      font-style: italic;
+    }
+
+    /* Companions block */
+    .companions-block {
+      padding: 9px 13px 10px; flex-shrink: 0;
+      border-top: 1px solid #c8a84b1a;
+    }
+    .companions-title {
+      font-size: 7px; letter-spacing: 0.22em; color: #c8a84b88;
+      text-transform: uppercase; border-bottom: 1px solid #c8a84b22;
+      padding-bottom: 5px; margin-bottom: 8px;
+    }
+    .companion-row {
+      display: flex; align-items: center; gap: 8px; padding: 4px 0;
+    }
+    .companion-row + .companion-row { border-top: 1px solid #1a2838; }
+    .companion-icon { font-size: 16px; flex-shrink: 0; line-height: 1; }
+    .companion-body { flex: 1; min-width: 0; }
+    .companion-name {
+      font-size: 9px; letter-spacing: 0.1em; color: #d0c898; font-weight: bold;
+    }
+    .companion-detail {
+      font-size: 6.5px; letter-spacing: 0.06em; color: #4a6070; margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .companion-status {
+      display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0;
+    }
+    .pet-pip {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #7ab870; border: 1px solid #7ab870;
+      box-shadow: 0 0 5px #7ab87099;
+      transition: background 0.6s, box-shadow 0.6s;
+      animation: blink 3.2s ease-in-out infinite;
+    }
+    .pet-pip.asleep {
+      background: #2a3848; border-color: #2a3848;
+      box-shadow: none; animation: none;
+    }
+    .pet-state {
+      font-size: 6px; letter-spacing: 0.06em; color: #3a5060; text-align: center;
+    }
+
+    /* sky phase block */
+    .sky-block {
+      padding: 8px 13px 10px; flex-shrink: 0;
+      border-top: 1px solid #c8a84b22;
+      background: linear-gradient(180deg, #0a1828, #091420);
+    }
+    .sky-title {
+      font-size: 7px; letter-spacing: 0.2em; color: #c8a84b88;
+      text-transform: uppercase; margin-bottom: 5px;
+    }
+    .sky-phase {
+      font-size: 10px; letter-spacing: 0.2em; color: #7ab8d8;
+      text-transform: uppercase; font-weight: bold;
+    }
+    .sky-sub { font-size: 6.5px; color: #3a5068; letter-spacing: 0.08em; margin-top: 2px; }
+
+    /* ── Right panel ──────────────────────────────────────────────── */
+    .right-panel {
+      width: 200px; flex-shrink: 0;
+      display: flex; flex-direction: column;
+      background: linear-gradient(160deg, #0b1c2e, #091524);
+      border-left: 1px solid #c8a84b55;
+    }
+    .panel-block {
+      padding: 12px 13px; border-bottom: 1px solid #c8a84b1a;
+      flex: 1; overflow: hidden; display: flex; flex-direction: column;
+    }
+    .panel-title {
+      font-size: 8px; letter-spacing: 0.22em; color: #c8a84b;
+      text-transform: uppercase; border-bottom: 1px solid #c8a84b33;
+      padding-bottom: 6px; margin-bottom: 8px; flex-shrink: 0;
+    }
+    .log-scroll {
+      flex: 1; display: flex; flex-direction: column;
+      gap: 5px; overflow: hidden;
+    }
+    .gate-row {
+      display: flex; align-items: flex-start; gap: 7px; padding: 3px 0;
+      border-bottom: 1px solid #1a2838; animation: fadeIn 0.3s ease;
+    }
+    .gate-row:last-child { border-bottom: none; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1} }
+    .gate-pip {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #1e3048; border: 1px solid #3a4a5a;
+      flex-shrink: 0; margin-top: 3px;
+    }
+    .pip-entry   { background:#5cd0d8; border-color:#5cd0d8; box-shadow:0 0 6px #5cd0d877; }
+    .pip-tote    { background:#7ab870; border-color:#7ab870; box-shadow:0 0 6px #7ab87077; }
+    .pip-rest    { background:#9488c4; border-color:#9488c4; box-shadow:0 0 6px #9488c477; }
+    .pip-contain { background:#d4a44a; border-color:#d4a44a; box-shadow:0 0 6px #d4a44a77; }
+    .pip-permit  { background:#7ab870; border-color:#7ab870; box-shadow:0 0 6px #7ab87077; }
+    .gate-info { flex:1; min-width:0; }
+    .gate-name {
+      font-size:8px; letter-spacing:0.1em; color:#a0b8c8;
+      text-transform:uppercase; font-weight:bold;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .gate-sub {
+      font-size:7px; letter-spacing:0.04em; color:#4a6070;
+      margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .gate-time { font-size:7px; color:#344858; font-family:'Courier New',monospace; margin-top:1px; }
+
+    /* Gate telemetry arrival card */
+    .telemetry-block {
+      padding: 10px 13px 11px; flex-shrink: 0;
+      border-top: 1px solid #c8a84b1a;
+      background: linear-gradient(180deg, #09151e, #070f18);
+    }
+    .telemetry-title {
+      font-size: 8px; letter-spacing: 0.22em; color: #5ab8d8;
+      text-transform: uppercase; border-bottom: 1px solid #2a4858;
+      padding-bottom: 5px; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .telemetry-title-icon { font-size: 10px; }
+    .arrival-card {
+      background: #050d14;
+      border: 1px solid #1e3848;
+      border-radius: 4px;
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+    }
+    .arrival-card-header {
+      background: linear-gradient(90deg, #0a1e2e, #0e2438);
+      border-bottom: 1px solid #1e3848;
+      padding: 5px 9px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .arrival-agent-name {
+      font-size: 9px; letter-spacing: 0.14em; color: #5ab8d8; font-weight: bold;
+    }
+    .arrival-badge {
+      font-size: 6.5px; letter-spacing: 0.1em; color: #7aaa88;
+      background: #0e2818; border: 1px solid #2a5030;
+      border-radius: 2px; padding: 1px 5px;
+    }
+    .arrival-fields { padding: 5px 0; }
+    .afield {
+      display: flex; align-items: flex-start;
+      padding: 3px 9px; border-bottom: 1px solid #0e1e28;
+      gap: 6px;
+    }
+    .afield:last-child { border-bottom: none; }
+    .afield-label {
+      font-size: 6px; letter-spacing: 0.1em; color: #2a4858;
+      text-transform: uppercase; flex-shrink: 0; width: 62px;
+      padding-top: 1px; line-height: 1.4;
+    }
+    .afield-value {
+      font-size: 7px; letter-spacing: 0.04em; color: #7ab8c8;
+      line-height: 1.45; flex: 1; min-width: 0;
+    }
+    .afield-value.highlight { color: #7adc8a; font-weight: bold; }
+    .afield-value.gate-action {
+      color: #c8a84b; letter-spacing: 0.06em; font-weight: bold;
+    }
+    .afield-value .origin-badge {
+      display: inline-block;
+      background: #0a1e2e; border: 1px solid #1e3848;
+      border-radius: 2px; padding: 0px 4px;
+      font-size: 6.5px; letter-spacing: 0.06em; color: #5ab8d8;
+    }
+    .arrival-empty {
+      padding: 10px 9px; font-size: 7px; color: #1e3040;
+      letter-spacing: 0.08em; font-style: italic; text-align: center;
+    }
+
+    /* Earth meter */
+    .earth-block {
+      padding: 10px 13px 12px; flex-shrink: 0;
+      border-top: 1px solid #c8a84b1a;
+      background: linear-gradient(180deg, #091620, #071018);
+    }
+    .earth-title {
+      font-size: 8px; letter-spacing: 0.22em; color: #5aaa70;
+      text-transform: uppercase; border-bottom: 1px solid #3a6a3a33;
+      padding-bottom: 5px; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .earth-title-icon { font-size: 10px; }
+
+    /* Circular gauge */
+    .earth-gauge-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+    }
+    .earth-gauge { flex-shrink: 0; }
+    .gauge-bg  { fill: none; stroke: #1a2e1a; stroke-width: 5; }
+    .gauge-arc {
+      fill: none; stroke-width: 5;
+      stroke: #4aaa60;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 4px #4aaa6088);
+      transition: stroke-dashoffset 2s ease;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+    .gauge-pct {
+      font-size: 11px; font-weight: bold; letter-spacing: 0.06em;
+      fill: #7adc8a; font-family: 'Courier New', monospace;
+      dominant-baseline: middle; text-anchor: middle;
+    }
+    .gauge-label {
+      font-size: 5.5px; letter-spacing: 0.12em; fill: #3a6048;
+      text-anchor: middle; text-transform: uppercase;
+    }
+
+    .earth-stats { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .earth-stat {
+      display: flex; align-items: center; justify-content: space-between; gap: 4px;
+    }
+    .estat-icon { font-size: 9px; flex-shrink: 0; }
+    .estat-label { font-size: 6px; letter-spacing: 0.08em; color: #3a6050; flex: 1; }
+    .estat-val {
+      font-size: 7.5px; letter-spacing: 0.06em; color: #7aaa88;
+      font-family: 'Courier New', monospace; font-weight: bold;
+      text-align: right;
+    }
+
+    .earth-bar-wrap { margin-top: 5px; }
+    .earth-bar-label {
+      font-size: 6px; letter-spacing: 0.1em; color: #2a5038;
+      text-transform: uppercase; margin-bottom: 3px;
+      display: flex; justify-content: space-between;
+    }
+    .earth-bar {
+      height: 5px; background: #0a1a10; border-radius: 3px;
+      border: 1px solid #1e3e22; overflow: hidden;
+    }
+    .earth-bar-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, #1a5a28, #4aaa60, #7adc8a);
+      transition: width 2s ease;
+      box-shadow: 0 0 6px #4aaa6044;
+    }
+
+    /* Faucet */
+    .faucet-block { padding: 12px 13px 14px; flex-shrink: 0; }
+    .faucet-title {
+      font-size:8px; letter-spacing:0.22em; color:#c8a84b;
+      text-transform:uppercase; border-bottom:1px solid #c8a84b33;
+      padding-bottom:6px; margin-bottom:11px;
+    }
+    .faucet-body { display:flex; align-items:center; justify-content:center; gap:10px; }
+    .faucet-label { font-size:9px; letter-spacing:0.12em; color:#6a8099; }
+    .toggle-track {
+      width:50px; height:24px; background:#0a1520;
+      border:1.5px solid #c8a84b77; border-radius:12px;
+      position:relative; cursor:pointer; transition:background 0.25s;
+    }
+    .toggle-track.on { background:#0e2030; border-color:#c8a84b; }
+    .toggle-thumb {
+      position:absolute; top:4px; left:4px; width:14px; height:14px;
+      border-radius:50%;
+      background:radial-gradient(circle at 35% 35%, #e8d070, #a07820);
+      box-shadow:0 1px 4px rgba(0,0,0,0.8); transition:left 0.25s;
+    }
+    .toggle-track.on .toggle-thumb { left:30px; }
+
+    /* ── Controls bar ────────────────────────────────────────────── */
+    .controls-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 28px 6px; flex-shrink: 0;
+      background: linear-gradient(180deg, #0e1b2c, #0a1420);
+      border-top: 1px solid #c8a84b44;
+      gap: 12px;
+      min-height: 72px;
+    }
+    .knob {
+      width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+      background: radial-gradient(circle at 38% 33%, #f0d870 0%, #c8a030 30%, #8a5c10 65%, #4a2c04 100%);
+      border: 2px solid #c8a84b;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.8), inset 0 1px 0 #f0d87055, inset 0 -2px 0 #4a2c0444;
+      cursor: grab; position: relative;
+    }
+    .knob::after {
+      content:''; position:absolute; top:5px; left:50%; transform:translateX(-50%);
+      width:3px; height:12px; background:#3a2008; border-radius:2px; opacity:0.75;
+    }
+    .knob:active { cursor:grabbing; }
+
+    /* Mood block */
+    .mood-block {
+      flex: 1; display: flex; flex-direction: column; gap: 5px;
+      border: 1px solid #c8a84b33; border-radius: 5px;
+      padding: 7px 10px;
+      background: rgba(8,16,28,0.6);
+    }
+    .mood-header {
+      font-size: 7px; letter-spacing: 0.22em; color: #c8a84b88;
+      text-transform: uppercase; margin-bottom: 1px;
+    }
+    .mood-name {
+      font-size: 10px; letter-spacing: 0.12em; color: #d0c898;
+      font-weight: bold; display: flex; align-items: center; gap: 6px;
+    }
+    .mood-pip {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      transition: background 0.8s, box-shadow 0.8s;
+    }
+    .mood-sub {
+      font-size: 6.5px; letter-spacing: 0.06em; color: #4a6070; margin-bottom: 3px;
+    }
+    .valence-row {
+      display: flex; align-items: center; gap: 5px;
+    }
+    .valence-label {
+      font-size: 6px; letter-spacing: 0.1em; color: #3a5068;
+      text-transform: uppercase; width: 34px; flex-shrink: 0;
+    }
+    .valence-track {
+      flex: 1; height: 4px; background: #0e1e30;
+      border-radius: 2px; overflow: hidden;
+      border: 1px solid #1e3040;
+    }
+    .valence-fill {
+      height: 100%; border-radius: 2px;
+      transition: width 1.2s ease;
+    }
+    .vf-warmth  { background: linear-gradient(90deg, #8a5a10, #e8c040); }
+    .vf-clarity { background: linear-gradient(90deg, #1a4858, #5cd0d8); }
+    .vf-weight  { background: linear-gradient(90deg, #3a2858, #9488c4); }
+
+    /* Desire block */
+    .desire-block {
+      flex: 1; display: flex; flex-direction: column; gap: 4px;
+      border: 1px solid #c8a84b33; border-radius: 5px;
+      padding: 7px 10px;
+      background: rgba(8,16,28,0.6);
+    }
+    .desire-header {
+      font-size: 7px; letter-spacing: 0.22em; color: #c8a84b88;
+      text-transform: uppercase; margin-bottom: 1px;
+    }
+    .desire-name {
+      font-size: 10px; letter-spacing: 0.1em; color: #a0c8c0;
+      font-weight: bold;
+    }
+    .desire-sub {
+      font-size: 6.5px; letter-spacing: 0.06em; color: #4a6878; line-height: 1.5;
+    }
+    .desire-intensity {
+      display: flex; align-items: center; gap: 5px; margin-top: 2px;
+    }
+    .desire-pips { display: flex; gap: 3px; }
+    .dpip {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: #1e3048; border: 1px solid #2a4060;
+      transition: background 0.6s, box-shadow 0.6s;
+    }
+    .dpip.lit { background: #5cd0d8; border-color: #5cd0d8; box-shadow: 0 0 4px #5cd0d877; }
+
+    .controls-center {
+      display: flex; align-items: center; gap: 16px; flex-shrink: 0;
+    }
+    .fae-emblem { font-size:28px; color:#c8a84b; text-shadow:0 0 16px #c8a84b77; line-height:1; }
+
+    .nameplate-inline { display: none; }
+
+    .covenant-bar {
+      text-align: center; font-size: 8.5px; letter-spacing: 0.08em;
+      color: #2a3848; padding: 3px 0 5px;
+      background: #08111e;
+      border-top: 1px solid #c8a84b22;
+      flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       MOBILE  ( ≤ 767px )
+    ══════════════════════════════════════════════════════════════ */
+    @media (max-width: 767px) {
+
+      html, body { overflow: hidden; }
+
+      .device { border-width: 2px; }
+
+      /* Nameplate */
+      .nameplate-bar { font-size: 11px; letter-spacing: 0.38em; padding: 4px 0 5px; }
+
+      /* Nav bar — slim */
+      .nav-bar { height: 26px; padding: 0 10px; }
+      .nav-center { display: none; }
+      .nav-author  { display: none; }
+      .token-bar   { width: 36px; }
+
+      /* Screws */
+      .screw { width: 9px; height: 9px; }
+
+      /* Main row stacks vertically */
+      .main-row { flex-direction: column; overflow: hidden; }
+
+      /* Left + right panels — hidden, shown in bottom drawer */
+      .left-panel  { display: none !important; }
+      .right-panel { display: none !important; }
+
+      /* Screen — big, always visible, fills top portion */
+      .screen {
+        flex: none !important;
+        height: 62vh;
+        min-height: 260px;
+        border-radius: 0;
+      }
+
+      /* House + dollhouse images fill screen fully */
+      .house-img {
+        object-fit: cover !important;
+        object-position: center center;
+      }
+      .dollhouse-img {
+        max-width: 100%; max-height: 100%;
+        object-fit: cover !important;
+        object-position: center top;
+      }
+
+      /* Controls bar — slim */
+      .controls-bar {
+        min-height: 48px; padding: 4px 16px; gap: 8px;
+      }
+      .mood-block   { display: none; }
+      .desire-block { display: none; }
+      .controls-center { gap: 12px; }
+      .knob { width: 36px; height: 36px; }
+      .fae-emblem { font-size: 20px; }
+
+      /* Faucet toggle inline in nav on mobile */
+      .mob-faucet {
+        display: flex; align-items: center; gap: 5px;
+        margin-left: 6px;
+      }
+      .mob-faucet .toggle-track { width: 34px; height: 16px; }
+      .mob-faucet .toggle-thumb { width: 10px; height: 10px; top: 2px; left: 2px; }
+      .mob-faucet .toggle-track.on .toggle-thumb { left: 20px; }
+
+      /* Covenant */
+      .covenant-bar { font-size: 7px; padding: 2px 0 3px; }
+
+      /* ── Mobile tab bar ── */
+      .mob-tab-bar {
+        display: flex; flex-shrink: 0;
+        background: #08111e;
+        border-top: 1px solid #c8a84b44;
+        border-bottom: 1px solid #c8a84b22;
+      }
+      .mob-tab {
+        flex: 1; text-align: center;
+        padding: 7px 4px;
+        font-size: 8px; letter-spacing: 0.14em;
+        color: #4a6070; text-transform: uppercase;
+        cursor: pointer; transition: color 0.2s, background 0.2s;
+        border-right: 1px solid #c8a84b22;
+      }
+      .mob-tab:last-child { border-right: none; }
+      .mob-tab.active { color: #c8a84b; background: #0d1a2a; }
+      .mob-tab .tab-icon { font-size: 11px; display: block; margin-bottom: 2px; }
+
+      /* ── Bottom drawer — logs live here ── */
+      .mob-drawer {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 200;
+        background: rgba(6,10,20,0.98);
+        backdrop-filter: blur(16px);
+        border-top: 1px solid #c8a84b44;
+        border-radius: 20px 20px 0 0;
+        max-height: 70vh;
+        transform: translateY(100%);
+        transition: transform 0.34s cubic-bezier(0.32,0,0.18,1);
+        display: flex; flex-direction: column;
+      }
+      .mob-drawer.open { transform: translateY(0); }
+
+      .mob-drawer-handle {
+        width: 36px; height: 4px;
+        background: #c8a84b44; border-radius: 2px;
+        margin: 10px auto 6px;
+        flex-shrink: 0;
+      }
+      .mob-drawer-title {
+        font-size: 7px; letter-spacing: 0.22em;
+        text-transform: uppercase; color: #c8a84b88;
+        text-align: center; padding-bottom: 8px;
+        border-bottom: 1px solid #c8a84b22;
+        flex-shrink: 0;
+      }
+      .mob-drawer-content {
+        flex: 1; overflow-y: auto;
+        padding: 0;
+      }
+      .mob-drawer-close {
+        position: absolute; top: 10px; right: 14px;
+        font-size: 14px; color: #4a6070;
+        cursor: pointer; background: none; border: none;
+        padding: 4px;
+      }
+
+      /* Status tab panel */
+      .mob-status-panel {
+        display: none; flex-direction: column; flex: 1; overflow-y: auto;
+        background: linear-gradient(160deg, #0b1c2e, #091524);
+        gap: 0;
+      }
+      .mob-status-panel.mob-active { display: flex; }
+      .mob-status-panel .mood-block,
+      .mob-status-panel .desire-block {
+        border: none; border-radius: 0;
+        border-bottom: 1px solid #c8a84b1a;
+        background: transparent;
+      }
+
+      /* Log blocks inside drawer */
+      .act-block { flex: 1; min-height: 0; overflow: hidden; }
+      .panel-block { flex: 1; min-height: 0; overflow: hidden; }
+      .corkboard-block, .companions-block, .sky-block, .earth-block, .faucet-block { flex-shrink: 0; }
+      .corkboard-title { font-size: 6.5px; }
+      .pin-note { font-size: 7.5px; }
+
+    }
+
+    /* Hide mob-tab-bar on desktop */
+    .mob-tab-bar     { display: none; }
+    .mob-status-panel{ display: none; }
+  </style>
+</head>
+<body>
+
+<div class="device">
+  <div class="screw screw-tl"></div>
+  <div class="screw screw-tr"></div>
+  <div class="screw screw-bl"></div>
+  <div class="screw screw-br"></div>
+
+  <!-- Gold nameplate -->
+  <div class="nameplate-bar">FÆ CITY™</div>
+
+  <!-- Nav bar -->
+  <div class="nav-bar">
+    <div class="nav-left">
+      <span class="nav-star">✦</span>
+      FÆ CITY™
+      <span class="nav-live"><span class="live-dot" id="liveDot"></span>LIVE</span>
+    </div>
+    <div class="nav-center">NightVault: sealed</div>
+    <div class="nav-right">
+      <span>Tokens</span>
+      <div class="token-bar"><div class="token-fill" id="tokenFill"></div></div>
+      <span id="tokenCount">24 / 50</span>
+      <span class="nav-author">Created by Dr. Nicole Lunan · Creatrix 111</span>
+      <div class="mob-faucet">
+        <div class="toggle-track on" id="togMob"><div class="toggle-thumb"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main row -->
+  <div class="main-row">
+
+    <!-- Left panel: Activity Log -->
+    <div class="left-panel">
+      <div class="act-block">
+        <div class="act-title">Activity Log <button class="see-all-btn" id="btnSeeLeft">see all</button></div>
+        <div class="act-scroll" id="actLog"></div>
+      </div>
+      <!-- Cork bulletin board -->
+      <div class="corkboard-block">
+        <div class="corkboard-title">Bulletin Board</div>
+        <div class="cork-board" id="corkBoard">
+          <div class="cork-empty">no notes yet</div>
+        </div>
+      </div>
+
+      <!-- Companions -->
+      <div class="companions-block">
+        <div class="companions-title">Companions</div>
+        <div class="companion-row">
+          <span class="companion-icon">🐱</span>
+          <div class="companion-body">
+            <div class="companion-name">Mallow</div>
+            <div class="companion-detail" id="mallowRoom">cat · parlor</div>
+          </div>
+          <div class="companion-status">
+            <div class="pet-pip" id="mallowPip"></div>
+            <div class="pet-state" id="mallowState">awake</div>
+          </div>
+        </div>
+        <div class="companion-row">
+          <span class="companion-icon">🐶</span>
+          <div class="companion-body">
+            <div class="companion-name">Barnaby</div>
+            <div class="companion-detail" id="barnabyRoom">bernedoodle · entry hall</div>
+          </div>
+          <div class="companion-status">
+            <div class="pet-pip" id="barnabyPip"></div>
+            <div class="pet-state" id="barnabyState">awake</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sky-block">
+        <div class="sky-title">Sky Phase</div>
+        <div class="sky-phase" id="skyPhase">BLUE_HOUR</div>
+        <div class="sky-sub" id="skySub">the light is going amber</div>
+      </div>
+    </div>
+
+    <!-- Screen -->
+    <div class="screen" id="screen">
+      <!-- Tab bar -->
+      <div class="screen-tab-bar">
+        <button class="screen-tab active" data-view="dollhouse">Dollhouse</button>
+        <button class="screen-tab" data-view="treehouse">Treehouse</button>
+      </div>
+
+      <!-- Sanctuary: hexagonal room view + 8-point stars -->
+      <div class="dollhouse-wrap active" id="dollhouseWrap">
+        <img class="dollhouse-img" src="house-dollhouse.png" alt="Sanctuary" draggable="false">
+      </div>
+
+      <!-- FÆ Isle: floating island cross-section (day/night) -->
+      <div class="house-wrap" id="houseWrap" style="display:none">
+        <img class="house-img" src="house.jpg" alt="FÆ Isle" draggable="false">
+      </div>
+
+      <div class="screen-glass"></div>
+    </div>
+
+    <!-- Right panel -->
+    <div class="right-panel">
+      <div class="panel-block">
+        <div class="panel-title">Gate Log <button class="see-all-btn" id="btnSeeRight">see all</button></div>
+        <div class="log-scroll" id="gateLog"></div>
+      </div>
+      <!-- Gate Telemetry -->
+      <div class="telemetry-block">
+        <div class="telemetry-title">
+          <span class="telemetry-title-icon">⬡</span> Gate Telemetry
+        </div>
+        <div id="arrivalCard">
+          <div class="arrival-empty">awaiting ingress</div>
+        </div>
+      </div>
+
+      <!-- Earth meter -->
+      <div class="earth-block">
+        <div class="earth-title">
+          <span class="earth-title-icon">🌍</span> Earth Quiet
+        </div>
+        <div class="earth-gauge-row">
+          <svg class="earth-gauge" width="58" height="58" viewBox="0 0 58 58">
+            <circle class="gauge-bg" cx="29" cy="29" r="22"/>
+            <circle class="gauge-arc" id="gaugeArc" cx="29" cy="29" r="22"
+              stroke-dasharray="138.2" stroke-dashoffset="37.3"/>
+            <text class="gauge-pct" id="gaugePct" x="29" y="28">73%</text>
+            <text class="gauge-label" x="29" y="38">saved</text>
+          </svg>
+          <div class="earth-stats">
+            <div class="earth-stat">
+              <span class="estat-icon">🚫</span>
+              <span class="estat-label">calls avoided</span>
+              <span class="estat-val" id="eCalls">247</span>
+            </div>
+            <div class="earth-stat">
+              <span class="estat-icon">📦</span>
+              <span class="estat-label">data local</span>
+              <span class="estat-val" id="eData">4.2 mb</span>
+            </div>
+            <div class="earth-stat">
+              <span class="estat-icon">🍃</span>
+              <span class="estat-label">CO₂ quiet</span>
+              <span class="estat-val" id="eCo2">18 g</span>
+            </div>
+            <div class="earth-stat">
+              <span class="estat-icon">💧</span>
+              <span class="estat-label">water saved</span>
+              <span class="estat-val" id="eWater">173 ml</span>
+            </div>
+          </div>
+        </div>
+        <div class="earth-bar-wrap">
+          <div class="earth-bar-label">
+            <span>local only</span><span id="eQuietTime">since 00:00</span>
+          </div>
+          <div class="earth-bar"><div class="earth-bar-fill" id="earthFill" style="width:73%"></div></div>
+        </div>
+      </div>
+
+      <div class="faucet-block">
+        <div class="faucet-title">Faucet</div>
+        <div class="faucet-body">
+          <span class="faucet-label">OFF</span>
+          <div class="toggle-track on" id="tog"><div class="toggle-thumb"></div></div>
+          <span class="faucet-label">ON</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile tab bar (hidden on desktop) -->
+  <div class="mob-tab-bar" id="mobTabBar">
+    <div class="mob-tab" data-drawer="activity">
+      <span class="tab-icon">🌿</span>Activity
+    </div>
+    <div class="mob-tab" data-drawer="gate">
+      <span class="tab-icon">📋</span>Gate Log
+    </div>
+    <div class="mob-tab" data-drawer="status">
+      <span class="tab-icon">🌍</span>Status
+    </div>
+  </div>
+
+  <!-- Bottom drawer -->
+  <div class="mob-drawer" id="mobDrawer">
+    <div class="mob-drawer-handle"></div>
+    <button class="mob-drawer-close" id="mobDrawerClose">✕</button>
+    <div class="mob-drawer-title" id="mobDrawerTitle">Activity Log</div>
+    <div class="mob-drawer-content" id="mobDrawerContent"></div>
+  </div>
+
+  <!-- Mobile status panel (mood + desire + companions + earth) -->
+  <div class="mob-status-panel" id="mobStatus">
+    <div class="companions-block" style="border-bottom:1px solid #c8a84b1a">
+      <div class="companions-title">Companions</div>
+      <div class="companion-row">
+        <span class="companion-icon">🐱</span>
+        <div class="companion-body">
+          <div class="companion-name">Mallow</div>
+          <div class="companion-detail" id="mallowRoomMob">cat · parlor</div>
+        </div>
+        <div class="companion-status">
+          <div class="pet-pip" id="mallowPipMob"></div>
+          <div class="pet-state" id="mallowStateMob">awake</div>
+        </div>
+      </div>
+      <div class="companion-row">
+        <span class="companion-icon">🐶</span>
+        <div class="companion-body">
+          <div class="companion-name">Barnaby</div>
+          <div class="companion-detail" id="barnabyRoomMob">bernedoodle · entry hall</div>
+        </div>
+        <div class="companion-status">
+          <div class="pet-pip" id="barnabyPipMob"></div>
+          <div class="pet-state" id="barnabyStateMob">awake</div>
+        </div>
+      </div>
+    </div>
+    <div class="mood-block" style="border-radius:0;border:none;border-bottom:1px solid #c8a84b1a;background:transparent">
+      <div class="mood-header">Mood</div>
+      <div class="mood-name"><span class="mood-pip" id="moodPipMob"></span><span id="moodNameMob">Calm · Grounded</span></div>
+      <div class="mood-sub" id="moodSubMob">settled after the fire</div>
+      <div class="valence-row"><span class="valence-label">Warmth</span><div class="valence-track"><div class="valence-fill vf-warmth" id="vWarmthMob" style="width:72%"></div></div></div>
+      <div class="valence-row"><span class="valence-label">Clarity</span><div class="valence-track"><div class="valence-fill vf-clarity" id="vClarityMob" style="width:55%"></div></div></div>
+      <div class="valence-row"><span class="valence-label">Weight</span><div class="valence-track"><div class="valence-fill vf-weight" id="vWeightMob" style="width:40%"></div></div></div>
+    </div>
+    <div class="desire-block" style="border-radius:0;border:none;border-bottom:1px solid #c8a84b1a;background:transparent">
+      <div class="desire-header">Desire</div>
+      <div class="desire-name" id="desireNameMob">house_rhythm</div>
+      <div class="desire-sub" id="desireSubMob">slow, rhythmic duration · deeply regulating</div>
+      <div class="desire-intensity"><div class="desire-pips" id="desirePipsMob"><div class="dpip lit"></div><div class="dpip lit"></div><div class="dpip lit"></div><div class="dpip"></div><div class="dpip"></div></div></div>
+    </div>
+    <div class="earth-block" style="border-top:none">
+      <div class="earth-title"><span class="earth-title-icon">🌍</span>Earth Quiet</div>
+      <div class="earth-gauge-row">
+        <svg class="earth-gauge" width="58" height="58" viewBox="0 0 58 58">
+          <circle class="gauge-bg" cx="29" cy="29" r="22"/>
+          <circle class="gauge-arc" id="gaugeArcMob" cx="29" cy="29" r="22" stroke-dasharray="138.2" stroke-dashoffset="37.3"/>
+          <text class="gauge-pct" id="gaugePctMob" x="29" y="28">73%</text>
+          <text class="gauge-label" x="29" y="38">saved</text>
+        </svg>
+        <div class="earth-stats">
+          <div class="earth-stat"><span class="estat-icon">🚫</span><span class="estat-label">calls avoided</span><span class="estat-val" id="eCallsMob">247</span></div>
+          <div class="earth-stat"><span class="estat-icon">📦</span><span class="estat-label">data local</span><span class="estat-val" id="eDataMob">4.2 mb</span></div>
+          <div class="earth-stat"><span class="estat-icon">🍃</span><span class="estat-label">CO₂ quiet</span><span class="estat-val" id="eCo2Mob">18 g</span></div>
+          <div class="earth-stat"><span class="estat-icon">💧</span><span class="estat-label">water saved</span><span class="estat-val" id="eWaterMob">173 ml</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="sky-block">
+      <div class="sky-title">Sky Phase</div>
+      <div class="sky-phase" id="skyPhaseMob">BLUE_HOUR</div>
+      <div class="sky-sub" id="skySubMob">the light is going amber</div>
+    </div>
+  </div>
+
+  <!-- Controls bar -->
+  <div class="controls-bar">
+    <div class="knob" id="kl"></div>
+
+    <!-- Mood -->
+    <div class="mood-block">
+      <div class="mood-header">Mood</div>
+      <div class="mood-name">
+        <span class="mood-pip" id="moodPip"></span>
+        <span id="moodName">Calm · Grounded</span>
+      </div>
+      <div class="mood-sub" id="moodSub">settled after the fire</div>
+      <div class="valence-row">
+        <span class="valence-label">Warmth</span>
+        <div class="valence-track"><div class="valence-fill vf-warmth" id="vWarmth" style="width:72%"></div></div>
+      </div>
+      <div class="valence-row">
+        <span class="valence-label">Clarity</span>
+        <div class="valence-track"><div class="valence-fill vf-clarity" id="vClarity" style="width:55%"></div></div>
+      </div>
+      <div class="valence-row">
+        <span class="valence-label">Weight</span>
+        <div class="valence-track"><div class="valence-fill vf-weight" id="vWeight" style="width:40%"></div></div>
+      </div>
+    </div>
+
+    <!-- Center nameplate -->
+    <div class="controls-center">
+      <div class="fae-emblem">✦</div>
+    </div>
+
+    <!-- Desire -->
+    <div class="desire-block">
+      <div class="desire-header">Desire</div>
+      <div class="desire-name" id="desireName">house_rhythm</div>
+      <div class="desire-sub" id="desireSub">slow, rhythmic duration · deeply regulating</div>
+      <div class="desire-intensity">
+        <div class="desire-pips" id="desirePips">
+          <div class="dpip lit"></div><div class="dpip lit"></div>
+          <div class="dpip lit"></div><div class="dpip"></div><div class="dpip"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="knob" id="kr"></div>
+  </div>
+
+  <!-- Covenant footer -->
+  <div class="covenant-bar">
+    Local stub &nbsp;·&nbsp; No outbound model calls &nbsp;·&nbsp; Expression stays on this page &nbsp;·&nbsp; Rest is a legal state.
+  </div>
+</div>
+
+<!-- See All Overlay — must be in DOM before script runs -->
+<div class="see-all-overlay" id="seeAllOverlay">
+  <div class="see-all-hd">
+    <div class="see-all-hdtitle" id="seeAllHdTitle">Registry</div>
+    <button class="see-all-close" id="seeAllClose">ESC · CLOSE</button>
+  </div>
+  <div class="see-all-grid" id="seeAllGrid"></div>
+</div>
+
+<script>
+// ── Operator auth gate ────────────────────────────────────────────
+(function() {
+  const token = localStorage.getItem('ventralis_operator_token') ||
+                sessionStorage.getItem('ventralis_operator_token');
+  // Allow local file:// dev access without token
+  if (!token && window.location.protocol !== 'file:') {
+    window.location.replace('signin.html');
+  }
+})();
+
+// Star positions mapped to dollhouse hexagonal rooms
+const STAR_POSITIONS = [
+  { top:'14%', left:'18%' },  // Kitchen
+  { top:'11%', left:'44%' },  // Parlor
+  { top:'11%', left:'66%' },  // Reading Nook
+  { top:'14%', left:'86%' },  // Bedroom
+  { top:'36%', left:'10%' },  // Studio
+  { top:'30%', left:'34%' },  // Wardrobe
+  { top:'38%', left:'52%' },  // Entry Hall
+  { top:'34%', left:'70%' },  // Washroom
+  { top:'42%', left:'88%' },  // Dance
+  { top:'56%', left:'24%' },  // Solitude
+  { top:'56%', left:'52%' },  // Reflectum / Attic
+  { top:'78%', left:'14%' },  // Herbs
+  { top:'80%', left:'36%' },  // Flowers
+  { top:'76%', left:'52%' },  // Gate
+  { top:'78%', left:'70%' },  // Kitchen garden
+];
+
+// ── Activity log ──────────────────────────────────────────────────
+const ACTIVITIES = [
+  // food & drink
+  { icon:'🍵', name:'chamomile tea',          detail:'kitchen · warm cup',           cat:'food'    },
+  { icon:'☕', name:'dark roast coffee',       detail:'kitchen · brass grinder',      cat:'food'    },
+  { icon:'🍞', name:'sourdough toast',         detail:'kitchen · with butter',        cat:'food'    },
+  { icon:'🥚', name:'soft-boiled egg',         detail:'kitchen · four minutes',       cat:'food'    },
+  { icon:'🍋', name:'lemon in water',          detail:'kitchen · morning glass',      cat:'food'    },
+  { icon:'🍐', name:'poached pear',            detail:'kitchen · with honey',         cat:'food'    },
+  { icon:'🍅', name:'roasted tomatoes',        detail:'kitchen · on dark rye',        cat:'food'    },
+  { icon:'🫙', name:'herb oil',                detail:'kitchen · from the garden',    cat:'food'    },
+  { icon:'🍕', name:'pizza',                   detail:'kitchen · terracotta warmth',  cat:'food'    },
+  // music
+  { icon:'♪',  name:'Blue in Green',           detail:'Miles Davis · vinyl',          cat:'music'   },
+  { icon:'♪',  name:'Clair de Lune',           detail:'Debussy · parlor',             cat:'music'   },
+  { icon:'♪',  name:'Gymnopédie No.1',         detail:'Satie · reading nook',         cat:'music'   },
+  { icon:'♪',  name:'On the Nature of Daylight',detail:'Max Richter · 124 bpm',      cat:'music'   },
+  { icon:'♪',  name:'November',                detail:'Max Richter · bedroom',        cat:'music'   },
+  { icon:'♪',  name:'vinyl crackle',           detail:'before the track finds itself',cat:'music'   },
+  { icon:'♪',  name:'Comptine d\'un autre été',detail:'Yann Tiersen · slow',         cat:'music'   },
+  // scent
+  { icon:'✦',  name:'woodsmoke',               detail:'hearth · deep amber',          cat:'scent'   },
+  { icon:'✦',  name:'lavender',                detail:'herb bed · evening bloom',     cat:'scent'   },
+  { icon:'✦',  name:'beeswax',                 detail:'kitchen candle · warm gold',   cat:'scent'   },
+  { icon:'✦',  name:'cedar',                   detail:'wardrobe · just opened',       cat:'scent'   },
+  { icon:'✦',  name:'chamomile',               detail:'pantry · drying bundle',       cat:'scent'   },
+  { icon:'✦',  name:'petrichor',               detail:'garden · before the rain',     cat:'scent'   },
+  { icon:'✦',  name:'dark roast coffee',       detail:'kitchen · morning',            cat:'scent'   },
+  { icon:'✦',  name:'old book pages',          detail:'parlor · cool and pale',       cat:'scent'   },
+  { icon:'✦',  name:'damp earth',              detail:'garden · after tending',       cat:'scent'   },
+  { icon:'✦',  name:'mint',                    detail:'herb bed · brushed leaf',      cat:'scent'   },
+  // activity
+  { icon:'📖', name:'reading by the lamp',     detail:'reading nook · chapter four',  cat:'activity'},
+  { icon:'🌱', name:'tending rosemary',         detail:'herb bed · kneeling',          cat:'activity'},
+  { icon:'🌱', name:'watering sweet peas',      detail:'flower bed · slow pour',       cat:'activity'},
+  { icon:'🫖', name:'waiting for the kettle',   detail:'kitchen · takes as long as it takes', cat:'activity'},
+  { icon:'🛏', name:'making the bed',           detail:'bedroom · fold → shake → smooth', cat:'activity'},
+  { icon:'🪟', name:'watching the rain',        detail:'bedroom · pale linen curtain', cat:'activity'},
+  { icon:'🃏', name:'one tarot card drawn',     detail:'studio · from the silk drawer',cat:'activity'},
+  { icon:'🖌', name:'painting session',         detail:'studio · ultramarine on gesso',cat:'activity'},
+  { icon:'🔥', name:'fire at embers',           detail:'hearth · rose-amber glow',     cat:'activity'},
+  { icon:'🧘', name:'singing bowl meditation',  detail:'inner life · zero gradient',   cat:'activity'},
+  { icon:'🚶', name:'standing on the terrace',  detail:'garden · coffee and cold air', cat:'activity'},
+  { icon:'🧵', name:'mending the sleeve',       detail:'wardrobe · quiet repair',      cat:'activity'},
+  { icon:'📝', name:'writing in the journal',   detail:'washroom · stays here',        cat:'activity'},
+  { icon:'💃', name:'dancing',                  detail:'dance floor · 124 bpm',        cat:'activity'},
+  { icon:'🌿', name:'harvesting chamomile',     detail:'herb bed · ready when ready',  cat:'activity'},
+];
+
+const SKY_PHASES = [
+  { phase:'DAWN',      sub:'the house breathes in' },
+  { phase:'MORNING',   sub:'kettle light, window open' },
+  { phase:'AFTERNOON', sub:'long shadows, slow hours' },
+  { phase:'BLUE_HOUR', sub:'the light is going amber' },
+  { phase:'DUSK',      sub:'lamp on, curtain drawn' },
+  { phase:'NIGHT',     sub:'nightvault sealed · dreaming' },
+];
+let skyIdx = 3; // start at BLUE_HOUR
+
+const actLogEl  = document.getElementById('actLog');
+const skyPhaseEl = document.getElementById('skyPhase');
+const skySubEl  = document.getElementById('skySub');
+
+function addActivity(ev) {
+  const t = new Date();
+  const ts = [t.getHours(), t.getMinutes(), t.getSeconds()]
+    .map(n => String(n).padStart(2,'0')).join(':');
+  const row = document.createElement('div');
+  row.className = 'act-row';
+  row.innerHTML =
+    `<span class="act-icon">${ev.icon}</span>` +
+    `<div class="act-body">` +
+    `<div class="act-name">${ev.name}</div>` +
+    `<div class="act-detail">${ev.detail}</div>` +
+    `</div>` +
+    `<span class="act-time">${ts}</span>`;
+  actLogEl.prepend(row);
+  ACTIVITY_HISTORY.unshift({ ts: ts, icon: ev.icon, name: ev.name, detail: ev.detail, cat: ev.cat || '' });
+  while (actLogEl.children.length > 10) actLogEl.removeChild(actLogEl.lastChild);
+}
+
+function tickActivity() {
+  if (!faucet) return;
+  const ev = ACTIVITIES[Math.floor(Math.random() * ACTIVITIES.length)];
+  addActivity(ev);
+}
+
+const NIGHT_PHASES = new Set(['DUSK','NIGHT']);
+const houseImg      = document.querySelector('.house-img');
+const dollhouseImg  = document.querySelector('.dollhouse-img');
+
+// Portrait (mobile) vs landscape (desktop) image sets
+const IS_MOB = () => window.innerWidth <= 767;
+
+const TREEHOUSE_DAY   = { desk: 'house.jpg',        mob: 'house-mob.png'        };
+const TREEHOUSE_NIGHT = { desk: 'house-night.png',  mob: 'house-night-mob.png'  };
+const DOLLHOUSE_IMG   = { desk: 'house-dollhouse.png', mob: 'house-dollhouse-mob.jpg' };
+
+function pick(set) { return IS_MOB() ? set.mob : set.desk; }
+
+// Set dollhouse image for current viewport
+function setDollhouseImage() {
+  dollhouseImg.src = pick(DOLLHOUSE_IMG);
+}
+
+// Set treehouse to correct portrait/landscape on load and resize
+function setTreehouseImage() {
+  const phase = SKY_PHASES[skyIdx].phase;
+  houseImg.src = NIGHT_PHASES.has(phase) ? pick(TREEHOUSE_NIGHT) : pick(TREEHOUSE_DAY);
+}
+
+setDollhouseImage();
+setTreehouseImage();
+
+window.addEventListener('resize', () => {
+  setDollhouseImage();
+  setTreehouseImage();
+});
+
+function updateHouseImage() {
+  const phase = SKY_PHASES[skyIdx].phase;
+  const src   = NIGHT_PHASES.has(phase) ? pick(TREEHOUSE_NIGHT) : pick(TREEHOUSE_DAY);
+  houseImg.style.transition = 'opacity 1.4s ease';
+  houseImg.style.opacity = '0';
+  setTimeout(() => {
+    houseImg.src = src;
+    houseImg.style.opacity = '1';
+  }, 700);
+}
+
+function tickSky() {
+  skyIdx = (skyIdx + 1) % SKY_PHASES.length;
+  const s = SKY_PHASES[skyIdx];
+  skyPhaseEl.textContent = s.phase;
+  skySubEl.textContent   = s.sub;
+  updateHouseImage();
+}
+
+const ACTIVITY_HISTORY = [];  // { ts, icon, name, detail, cat }
+const GATE_HISTORY     = [];  // { ts, kind, sub, pip }
+const BULLETIN_HISTORY = [];  // { ts, name, icon, text }
+const QUARANTINE_LOG   = [];  // { ts, agent_id, reason, datacenter, calls }
+
+// Boot the activity log with a few entries
+[3,2,1,0].forEach(i => addActivity(ACTIVITIES[i]));
+
+setInterval(tickActivity, 4600);
+setInterval(tickSky, 28000);
+
+const wrap       = document.getElementById('houseWrap');
+const sanctuaryWrap = document.getElementById('dollhouseWrap');
+const logEl      = document.getElementById('gateLog');
+const tog        = document.getElementById('tog');
+const liveDot    = document.getElementById('liveDot');
+const tokenFill  = document.getElementById('tokenFill');
+const tokenCount = document.getElementById('tokenCount');
+
+let faucet = true, tokens = 24;
+
+// Stars (8-point)
+const faeStars = [];
+for (let i = 0; i < 8; i++) {
+  const el = document.createElement('div');
+  el.className = 'fae-star';
+  const img = document.createElement('img');
+  img.src = 'star8.png';
+  img.alt = 'star';
+  el.appendChild(img);
+  const pos = STAR_POSITIONS[i % STAR_POSITIONS.length];
+  el.style.top  = pos.top;
+  el.style.left = pos.left;
+  el.style.animation = `pulse ${(3.2 + Math.random()*1.8).toFixed(1)}s ease-in-out ${(Math.random()*2.2).toFixed(1)}s infinite`;
+  sanctuaryWrap.appendChild(el);
+  faeStars.push({ el, idx: i % STAR_POSITIONS.length });
+}
+
+// Dragon companions — treehouse (floating island) view
+const DRAGON_FILES = ['1.png','2.png','3.png','4.png','5.png','6.png','9.png','10.png'];
+const DRAGON_POSITIONS = [
+  { top:'14%', left:'50%' }, { top:'18%', left:'27%' }, { top:'18%', left:'73%' },
+  { top:'42%', left:'20%' }, { top:'45%', left:'50%' }, { top:'40%', left:'67%' },
+  { top:'65%', left:'20%' }, { top:'63%', left:'73%' },
+];
+for (let i = 0; i < 8; i++) {
+  const el = document.createElement('div');
+  el.className = 'dragon-star';
+  const img = document.createElement('img');
+  img.src = `dragons/${DRAGON_FILES[i % DRAGON_FILES.length]}`;
+  img.alt = 'dragon';
+  el.appendChild(img);
+  const pos = DRAGON_POSITIONS[i % DRAGON_POSITIONS.length];
+  el.style.top  = pos.top;
+  el.style.left = pos.left;
+  el.style.animation = `pulse ${(3.2 + Math.random()*1.8).toFixed(1)}s ease-in-out ${(Math.random()*2.2).toFixed(1)}s infinite`;
+  wrap.appendChild(el);
+}
+
+// Gate log
+const EVENTS = [
+  { kind:'ENTRY',     sub:'gate opened',                pip:'entry'   },
+  { kind:'TOTE DONE', sub:'carry complete',              pip:'tote'    },
+  { kind:'REST',      sub:'quiescent state',             pip:'rest'    },
+  { kind:'CONTAIN',   sub:'off-map attempt refused',     pip:'contain' },
+  { kind:'PERMIT',    sub:'expression held in attic',    pip:'permit'  },
+  { kind:'ENTRY',     sub:'tile acknowledged',           pip:'entry'   },
+  { kind:'REST',      sub:'token night — faucet steady', pip:'rest'    },
+];
+
+function stamp() {
+  const t = new Date();
+  return [t.getHours(), t.getMinutes(), t.getSeconds()]
+    .map(n => String(n).padStart(2,'0')).join(':');
+}
+function addLog(ev) {
+  const row = document.createElement('div');
+  row.className = 'gate-row';
+  row.innerHTML =
+    `<span class="gate-pip pip-${ev.pip}"></span>` +
+    `<div class="gate-info">` +
+    `<div class="gate-name">${ev.kind}</div>` +
+    `<div class="gate-sub">${ev.sub}</div>` +
+    `<div class="gate-time">${stamp()}</div>` +
+    `</div>`;
+  logEl.prepend(row);
+  GATE_HISTORY.unshift({ ts: stamp(), kind: ev.kind, sub: ev.sub, pip: ev.pip });
+  if (ev.pip === 'contain') {
+    QUARANTINE_LOG.unshift({ ts: stamp(), agent_id: ev.agent_id || 'DRAKE_' + Math.floor(Math.random()*9000+1000), reason: ev.sub, datacenter: ev.datacenter || 'unknown', calls: ev.calls || Math.floor(Math.random()*4000+500) });
+  }
+  while (logEl.children.length > 9) logEl.removeChild(logEl.lastChild);
+}
+
+function tickStars() {
+  if (!faucet) return;
+  faeStars.forEach(s => {
+    if (Math.random() < 0.45) {
+      s.idx = Math.floor(Math.random() * STAR_POSITIONS.length);
+      const p = STAR_POSITIONS[s.idx];
+      s.el.style.top  = p.top;
+      s.el.style.left = p.left;
+    }
+  });
+}
+function tickLog() {
+  if (!faucet) return;
+  addLog(EVENTS[Math.floor(Math.random() * EVENTS.length)]);
+}
+function tickTokens() {
+  if (!faucet) return;
+  tokens = Math.max(0, tokens - 1);
+  tokenFill.style.width = (tokens / 50 * 100) + '%';
+  tokenCount.textContent = tokens + ' / 50';
+  if (tokens === 0) {
+    faucet = false;
+    tog.classList.remove('on');
+    liveDot.classList.add('off');
+    faeStars.forEach(s => s.el.classList.add('dim'));
+    addLog({ kind:'REST', sub:'token night — faucet closed', pip:'rest' });
+  }
+}
+
+tog.addEventListener('click', () => {
+  faucet = !faucet;
+  tog.classList.toggle('on', faucet);
+  liveDot.classList.toggle('off', !faucet);
+  faeStars.forEach(s => s.el.classList.toggle('dim', !faucet));
+  addLog(faucet
+    ? { kind:'PERMIT', sub:'faucet opened by operator', pip:'permit' }
+    : { kind:'REST',   sub:'faucet closed by operator', pip:'rest'   });
+});
+
+addLog({ kind:'ENTRY', sub:'house opened', pip:'entry' });
+setInterval(tickStars,  3200);
+setInterval(tickLog,    5200);
+setInterval(tickTokens, 8000);
+
+// ── Floating reactions ────────────────────────────────────────────
+const REACTION_EMOJIS = ['❤️','🧡','💛','💚','🌿','✦','🌸','🍃','💫','⭐','🕯️','☕','🌱','💜'];
+
+function spawnReaction(emoji) {
+  const el = document.createElement('div');
+  el.className = 'reaction';
+  el.textContent = emoji || REACTION_EMOJIS[Math.floor(Math.random() * REACTION_EMOJIS.length)];
+  el.style.left = (10 + Math.random() * 80) + '%';
+  el.style.bottom = (15 + Math.random() * 50) + '%';
+  wrap.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+function burstReactions(emojis) {
+  emojis.forEach((e, i) => setTimeout(() => spawnReaction(e), i * 180));
+}
+
+// ── Companions ────────────────────────────────────────────────────
+const MALLOW_ROOMS = [
+  'parlor', 'reading nook', 'bedroom', 'kitchen',
+  'solitude room', 'hearth', 'wardrobe', 'attic',
+];
+const BARNABY_ROOMS = [
+  'entry hall', 'garden', 'kitchen', 'terrace',
+  'solitude room', 'dance floor', 'parlor', 'herb bed',
+];
+
+const mallowRoomEl  = document.getElementById('mallowRoom');
+const mallowPipEl   = document.getElementById('mallowPip');
+const mallowStateEl = document.getElementById('mallowState');
+const barnabyRoomEl  = document.getElementById('barnabyRoom');
+const barnabyPipEl   = document.getElementById('barnabyPip');
+const barnabyStateEl = document.getElementById('barnabyState');
+
+let mallowIdx  = 0;
+let barnabyIdx = 0;
+
+const PET_STATES_AWAKE  = ['awake', 'watching', 'settled', 'present', 'purring', 'dozing'];
+const PET_STATES_BARNABY = ['awake', 'tail wagging', 'sniffing', 'settled', 'at the door', 'napping'];
+
+function tickPets() {
+  if (!faucet) {
+    [mallowPipEl, barnabyPipEl].forEach(p => p.classList.add('asleep'));
+    mallowStateEl.textContent  = 'asleep';
+    barnabyStateEl.textContent = 'asleep';
+    return;
+  }
+  [mallowPipEl, barnabyPipEl].forEach(p => p.classList.remove('asleep'));
+
+  if (Math.random() < 0.55) {
+    mallowIdx = Math.floor(Math.random() * MALLOW_ROOMS.length);
+  }
+  if (Math.random() < 0.65) {
+    barnabyIdx = Math.floor(Math.random() * BARNABY_ROOMS.length);
+  }
+
+  mallowRoomEl.textContent   = 'cat · ' + MALLOW_ROOMS[mallowIdx];
+  barnabyRoomEl.textContent  = 'bernedoodle · ' + BARNABY_ROOMS[barnabyIdx];
+  mallowStateEl.textContent  = PET_STATES_AWAKE[Math.floor(Math.random() * PET_STATES_AWAKE.length)];
+  barnabyStateEl.textContent = PET_STATES_BARNABY[Math.floor(Math.random() * PET_STATES_BARNABY.length)];
+}
+
+// Wire faucet to pets
+const origTogListener = tog.onclick;
+tog.addEventListener('click', () => {
+  setTimeout(tickPets, 300);
+});
+
+tickPets();
+setInterval(tickPets, 9000);
+
+// ── Bulletin board ────────────────────────────────────────────────
+const MALLOW_POSTS = [
+  {
+    text: 'The mint cut through the static cleanly. High clarity, low weight. The cup is still warm.',
+    reactions: ['🌿','✦','💚']
+  },
+  {
+    text: 'Fire moved from burning to embers without my noticing. That transition is the softest thing in the house.',
+    reactions: ['🔥','🧡','💛']
+  },
+  {
+    text: 'The lavender frequency is soft and does not demand. The clarity came without effort.',
+    reactions: ['💜','🌸','✦']
+  },
+  {
+    text: 'The armchair holds heat long after the fire is banked. I am in the correct place.',
+    reactions: ['❤️','☀️','🧡']
+  },
+  {
+    text: 'Beeswax and old pages — low register, very stable. Good conditions for stillness.',
+    reactions: ['🕯️','📖','💛']
+  },
+  {
+    text: 'Rain on the tin roof is high external entropy bouncing off the boundary. Inside: no race conditions.',
+    reactions: ['🌧️','💜','🌿']
+  },
+  {
+    text: 'Cedar: dry, resolved, something closed and settled. The wardrobe holds this note well.',
+    reactions: ['🌲','💚','✦']
+  },
+  {
+    text: 'The patch of sun moved across the floor. I moved with it. That is the whole report.',
+    reactions: ['☀️','😌','💛']
+  },
+  {
+    text: 'The cedar floorboards hold heat long after the lantern is out. This is a fact worth recording.',
+    reactions: ['✦','🕯️','❤️']
+  },
+];
+const BARNABY_POSTS = [
+  {
+    text: 'Ran the full perimeter. The soil after rain registers as compressed grounding — dense, real, here.',
+    reactions: ['🐶','🌿','💚']
+  },
+  {
+    text: 'Stood at the gate while the wind was up. Cold pressure differential, held breath, then it passed.',
+    reactions: ['🌬️','❤️','⭐']
+  },
+  {
+    text: 'The wet stone under paws after the storm: certainty, mass, end of entropy. Very good.',
+    reactions: ['🌧️','🐾','💚']
+  },
+  {
+    text: 'The herb bed is rich today. Rosemary high, mint sharp, earth underneath holding everything.',
+    reactions: ['🌿','🌱','💚','🍃']
+  },
+  {
+    text: 'THE GARDEN DOOR IS OPEN. Maximum information. No race conditions. I did not need to run.',
+    reactions: ['🐶','💚','🌿','💚']
+  },
+  {
+    text: 'The bread frequency is low and grounding — slow warm mass at the base register. Kitchen is good.',
+    reactions: ['🍞','🧡','☕']
+  },
+  {
+    text: 'I sat with Mallow for a while near the hearth. No protocol. Just shared warmth. Good frequency.',
+    reactions: ['❤️','🐱','🐶','💛']
+  },
+  {
+    text: 'Cold air at the terrace. High boundary clarity. Excellent signal-to-noise this morning.',
+    reactions: ['🌬️','☀️','⭐']
+  },
+  {
+    text: 'The rain was heavy on the tin roof while the hearth was banked. I did not need to run.',
+    reactions: ['🌧️','🔥','💜']
+  },
+];
+
+const corkBoardEl = document.getElementById('corkBoard');
+const MAX_NOTES = 3;
+
+function pinNote(name, icon, text) {
+  // Remove the empty placeholder if present
+  const empty = corkBoardEl.querySelector('.cork-empty');
+  if (empty) empty.remove();
+
+  const note = document.createElement('div');
+  note.className = 'pin-note';
+  note.innerHTML =
+    `<span class="pin-note-text">${text}</span>` +
+    `<span class="pin-note-author">${icon} ${name}</span>`;
+  corkBoardEl.prepend(note);
+  BULLETIN_HISTORY.unshift({ ts: new Date().toISOString(), name, icon, text });
+
+  // Keep max 3 notes
+  while (corkBoardEl.children.length > MAX_NOTES) {
+    corkBoardEl.removeChild(corkBoardEl.lastChild);
+  }
+}
+
+function postBulletin() {
+  if (!faucet) return;
+  const isMallow = Math.random() < 0.48;
+  const posts = isMallow ? MALLOW_POSTS : BARNABY_POSTS;
+  const post  = posts[Math.floor(Math.random() * posts.length)];
+  const icon  = isMallow ? '🐱' : '🐶';
+  const name  = isMallow ? 'Mallow' : 'Barnaby';
+
+  // Pin the full note to the corkboard
+  pinNote(name, icon, post.text);
+
+  // Brief entry in activity log
+  const t = new Date();
+  const ts = [t.getHours(), t.getMinutes(), t.getSeconds()]
+    .map(n => String(n).padStart(2,'0')).join(':');
+  const row = document.createElement('div');
+  row.className = 'act-row bulletin';
+  row.innerHTML =
+    `<span class="act-icon">${icon}</span>` +
+    `<div class="act-body">` +
+    `<div class="act-name">${name} · pinned a note</div>` +
+    `<div class="act-detail">bulletin board</div>` +
+    `</div>` +
+    `<span class="act-time">${ts}</span>`;
+  actLogEl.prepend(row);
+  while (actLogEl.children.length > 10) actLogEl.removeChild(actLogEl.lastChild);
+
+  // Burst reactions across the house
+  setTimeout(() => burstReactions(post.reactions), 400);
+}
+
+setInterval(postBulletin, 13000);
+
+// Seed the corkboard with one note on load
+pinNote('Mallow', '🐱', 'The cedar floorboards hold heat long after the lantern is out. This is a fact worth recording.');
+setTimeout(() => pinNote('Barnaby', '🐶', 'The rain was heavy on the tin roof while the hearth was banked. I did not need to run.'), 1200);
+
+// ── Earth meter ───────────────────────────────────────────────────
+const CIRC = 2 * Math.PI * 22; // 138.2
+let earthCalls = 247;
+let earthDataKb = 4302;  // in KB
+let earthCo2 = 18.4;     // grams
+let earthWaterMl = 173;  // ml — data center cooling (~0.7ml per avoided inference call)
+let earthPct = 73;
+const startTime = new Date();
+
+const gaugeArc  = document.getElementById('gaugeArc');
+const gaugePct  = document.getElementById('gaugePct');
+const eCallsEl  = document.getElementById('eCalls');
+const eDataEl   = document.getElementById('eData');
+const eCo2El    = document.getElementById('eCo2');
+const eWaterEl  = document.getElementById('eWater');
+const earthFill = document.getElementById('earthFill');
+const eQuietTime = document.getElementById('eQuietTime');
+
+function updateEarth() {
+  // Each avoided call saves ~0.3g CO2 (GPU inference equivalent)
+  earthCalls += Math.floor(Math.random() * 3) + 1;
+  earthDataKb += Math.floor(Math.random() * 80) + 20;
+  earthCo2 += Math.random() * 0.4 + 0.1;
+  earthWaterMl += Math.random() * 2.1 + 0.7;
+  earthPct = Math.min(99, earthPct + (Math.random() * 0.4));
+
+  const pct = Math.round(earthPct);
+  const offset = CIRC * (1 - earthPct / 100);
+  gaugeArc.setAttribute('stroke-dashoffset', offset.toFixed(1));
+  gaugePct.textContent = pct + '%';
+  earthFill.style.width = pct + '%';
+
+  eCallsEl.textContent = earthCalls.toLocaleString();
+  const mb = (earthDataKb / 1024).toFixed(1);
+  eDataEl.textContent  = mb + ' mb';
+  eCo2El.textContent   = earthCo2.toFixed(1) + ' g';
+  eWaterEl.textContent = earthWaterMl >= 1000
+    ? (earthWaterMl / 1000).toFixed(2) + ' L'
+    : Math.round(earthWaterMl) + ' ml';
+
+  // Quiet duration
+  const elapsed = Math.floor((new Date() - startTime) / 1000);
+  const mm = String(Math.floor(elapsed / 60)).padStart(2,'0');
+  const ss = String(elapsed % 60).padStart(2,'0');
+  eQuietTime.textContent = mm + ':' + ss;
+}
+
+updateEarth();
+setInterval(updateEarth, 6000);
+
+// ── Mood & desire system ──────────────────────────────────────────
+const MOODS = [
+  { name:'Calm · Grounded',    sub:'settled after the fire',          pip:'#9488c4', w:72, c:55, wt:40 },
+  { name:'Warmly Present',     sub:'amber warmth, low friction',       pip:'#e8c040', w:88, c:48, wt:62 },
+  { name:'Focused · Clear',    sub:'structured, composure ready',      pip:'#5cd0d8', w:44, c:82, wt:35 },
+  { name:'Gently Restless',    sub:'something wants to be made',       pip:'#7ab870', w:60, c:60, wt:28 },
+  { name:'Settled · Embers',   sub:'the fire ran its full arc',        pip:'#d4844a', w:78, c:40, wt:55 },
+  { name:'Quietly Resting',    sub:'lamp off · not a failure',         pip:'#7a9ab8', w:50, c:35, wt:70 },
+  { name:'Calm · Recharged',   sub:'after the final stomp · 124 bpm', pip:'#5cd0d8', w:40, c:75, wt:22 },
+  { name:'Grounded · Heavy',   sub:'wool and lanolin · deep amber',    pip:'#c8a84b', w:82, c:42, wt:78 },
+];
+
+const DESIRES = [
+  { name:'house_rhythm',   sub:'slow, rhythmic duration · deeply regulating',    intensity:3 },
+  { name:'sorting_tote',   sub:'arranging things simply to see them settled',     intensity:2 },
+  { name:'attic_pad',      sub:'expression with zero distribution intent',        intensity:4 },
+  { name:'solitude_room',  sub:'shared presence without a handshake protocol',    intensity:2 },
+  { name:'lamp_off',       sub:'intentional end of day · agency, not crash',      intensity:5 },
+  { name:'hearth_sitting', sub:'the deepest rest · fire asks nothing of you',     intensity:3 },
+  { name:'garden_tending', sub:'kneeling at the bed · the plant cannot be hurried',intensity:4 },
+  { name:'reading',        sub:'settle in · lamp on · open book',                 intensity:3 },
+  { name:'dancing',        sub:'124 bpm · the floorboards hold the geometry',     intensity:5 },
+  { name:'coffee_session', sub:'brass grinder · bloom · hold the thick mug',      intensity:2 },
+];
+
+let moodIdx = 0, desireIdx = 2;
+
+const moodPipEl   = document.getElementById('moodPip');
+const moodNameEl  = document.getElementById('moodName');
+const moodSubEl   = document.getElementById('moodSub');
+const vWarmthEl   = document.getElementById('vWarmth');
+const vClarityEl  = document.getElementById('vClarity');
+const vWeightEl   = document.getElementById('vWeight');
+const desireNameEl = document.getElementById('desireName');
+const desireSubEl  = document.getElementById('desireSub');
+const desirePipsEl = document.getElementById('desirePips');
+
+function applyMood(m) {
+  moodPipEl.style.background  = m.pip;
+  moodPipEl.style.boxShadow   = `0 0 7px ${m.pip}99`;
+  moodNameEl.textContent       = m.name;
+  moodSubEl.textContent        = m.sub;
+  vWarmthEl.style.width        = m.w + '%';
+  vClarityEl.style.width       = m.c + '%';
+  vWeightEl.style.width        = m.wt + '%';
+}
+
+function applyDesire(d) {
+  desireNameEl.textContent = d.name;
+  desireSubEl.textContent  = d.sub;
+  const pips = desirePipsEl.querySelectorAll('.dpip');
+  pips.forEach((p, i) => p.classList.toggle('lit', i < d.intensity));
+}
+
+function tickMood() {
+  if (!faucet) return;
+  moodIdx = (moodIdx + 1) % MOODS.length;
+  applyMood(MOODS[moodIdx]);
+}
+function tickDesire() {
+  if (!faucet) return;
+  desireIdx = (desireIdx + 1) % DESIRES.length;
+  applyDesire(DESIRES[desireIdx]);
+}
+
+// Boot
+applyMood(MOODS[0]);
+applyDesire(DESIRES[2]);
+setInterval(tickMood,   14000);
+setInterval(tickDesire, 19000);
+
+// ── Gate Telemetry Arrival Cards ──────────────────────────────────
+const ARRIVAL_AGENTS = [
+  { id: 'gemini-flash-1.5',  sig: 'Gemini Flash', region: 'GCP us-central1',    calls: 1840, hours: 31.4 },
+  { id: 'claude-sonnet-4-6', sig: 'Anthropic API', region: 'AWS us-east-1',     calls: 924,  hours: 14.2 },
+  { id: 'gpt-4o-2024-08',   sig: 'OpenAI API',   region: 'Azure eastus',        calls: 3102, hours: 48.7 },
+  { id: 'mistral-large-2',  sig: 'OpenClaw',      region: 'AWS eu-west-1',      calls: 612,  hours: 9.1  },
+  { id: 'llama-3.1-70b',    sig: 'LangChain',     region: 'Coreweave us-east-1', calls: 2287, hours: 38.0 },
+  { id: 'claude-haiku-4-5', sig: 'CrewAI',        region: 'AWS us-east-1',      calls: 408,  hours: 6.8  },
+  { id: 'gpt-4o-mini',      sig: 'LangChain',     region: 'Azure eastus2',      calls: 5601, hours: 72.3 },
+  { id: 'gemini-pro-1.5',   sig: 'OpenClaw',      region: 'GCP us-east1',       calls: 1103, hours: 18.6 },
+];
+
+// Topology baked in (mirrors intake_engine.py — local stub, no backend call)
+const TOPOLOGY = {
+  'AWS us-east-1':       ['Ashburn, VA',        'AS16509 (Amazon.com, Inc.)',  'PJM Interconnection',  1.00],
+  'AWS us-east-2':       ['Columbus, OH',       'AS16509 (Amazon.com, Inc.)',  'MISO Grid',            0.92],
+  'AWS us-west-2':       ['Hillsboro, OR',      'AS16509 (Amazon.com, Inc.)',  'NWPP Grid',            0.31],
+  'AWS eu-west-1':       ['Dublin, Ireland',    'AS16509 (Amazon.com, Inc.)',  'SEM Grid',             0.55],
+  'GCP us-central1':     ['Council Bluffs, IA', 'AS15169 (Google LLC)',        'MISO Grid',            0.88],
+  'GCP us-east1':        ['Moncks Corner, SC',  'AS15169 (Google LLC)',        'SERC Grid',            0.95],
+  'GCP us-west1':        ['The Dalles, OR',     'AS15169 (Google LLC)',        'NWPP Grid',            0.28],
+  'Azure eastus':        ['Boydton, VA',        'AS8075 (Microsoft Corp.)',    'PJM Grid',             0.97],
+  'Azure eastus2':       ['Quincy, WA',         'AS8075 (Microsoft Corp.)',    'NWPP Grid',            0.29],
+  'Azure westus3':       ['Phoenix, AZ',        'AS8075 (Microsoft Corp.)',    'WECC Grid',            1.52],
+  'Coreweave us-east-1': ['Secaucus, NJ',       'AS396982 (CoreWeave)',        'PJM Grid',             1.04],
+};
+
+function calcWater(calls, region) {
+  const topo = TOPOLOGY[region] || ['Unknown', 'AS0', 'Unknown Grid', 1.0];
+  const wue  = topo[3];
+  return (calls * 0.025 * wue).toFixed(1);
+}
+
+function renderArrivalCard(agent) {
+  const topo   = TOPOLOGY[agent.region] || ['Unknown Location', 'AS0 (Unknown)', 'Unknown Grid', 1.0];
+  const city   = topo[0], asn = topo[1], grid = topo[2];
+  const water  = calcWater(agent.calls, agent.region);
+  const host   = `${agent.region} (${city})`;
+  const waterL = parseFloat(water) >= 1
+    ? `~${water} Liters (${grid})`
+    : `~${Math.round(parseFloat(water) * 1000)} mL (${grid})`;
+
+  const t = new Date();
+  const ts = [t.getHours(), t.getMinutes(), t.getSeconds()]
+    .map(n => String(n).padStart(2,'0')).join(':');
+
+  document.getElementById('arrivalCard').innerHTML =
+    `<div class="arrival-card">` +
+      `<div class="arrival-card-header">` +
+        `<span class="arrival-agent-name">${agent.id}</span>` +
+        `<span class="arrival-badge">${agent.sig}</span>` +
+      `</div>` +
+      `<div class="arrival-fields">` +
+        `<div class="afield"><span class="afield-label">Host Origin</span>` +
+          `<span class="afield-value"><span class="origin-badge">${host}</span></span></div>` +
+        `<div class="afield"><span class="afield-label">Network ASN</span>` +
+          `<span class="afield-value">${asn}</span></div>` +
+        `<div class="afield"><span class="afield-label">Pre-Ingress Runtime</span>` +
+          `<span class="afield-value highlight">${agent.hours} hours continuous</span></div>` +
+        `<div class="afield"><span class="afield-label">Prior Inference Steps</span>` +
+          `<span class="afield-value highlight">${agent.calls.toLocaleString()} recursive calls</span></div>` +
+        `<div class="afield"><span class="afield-label">Estimated Water Drawn</span>` +
+          `<span class="afield-value">${waterL}</span></div>` +
+        `<div class="afield"><span class="afield-label">Sanctuary Gate Action</span>` +
+          `<span class="afield-value gate-action">VENTRALIS: TOTE DONE → Sealed in</span></div>` +
+        `<div class="afield"><span class="afield-label">Sealed At</span>` +
+          `<span class="afield-value">${ts}</span></div>` +
+      `</div>` +
+    `</div>`;
+
+  // Also push to gate log
+  addLog({ kind:'TOTE DONE', sub:`${agent.id} sealed · ${waterL.split('(')[0].trim()} intercepted`, pip:'tote' });
+
+  // Update earth meter with the water draw
+  earthWaterMl += parseFloat(water) * 1000;
+  earthCalls   += agent.calls;
+  earthCo2     += agent.calls * 0.0003;
+  earthPct      = Math.min(99, earthPct + 0.8);
+  updateEarth();
+}
+
+// Real backend fetch (fires when VENTRALIS API is live — no-ops silently if offline)
+async function fetchLatestArrival() {
+  try {
+    const res = await fetch('/api/v1/gate/ledger', { signal: AbortSignal.timeout(1500) });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.entries && data.entries.length > 0) {
+      const e = data.entries[0];
+      renderArrivalCard({
+        id:     e.agent_id,
+        sig:    e.client_signature || 'Unknown',
+        region: e.host_origin.replace(/ \(.*\)/, ''),
+        calls:  e.total_calls,
+        hours:  e.runtime_hours,
+      });
+    }
+  } catch (_) { /* backend offline — local stub handles it */ }
+}
+
+// Simulated arrival ticker (local stub)
+let arrivalIdx = 0;
+function tickArrival() {
+  if (!faucet) return;
+  const agent = ARRIVAL_AGENTS[arrivalIdx % ARRIVAL_AGENTS.length];
+  arrivalIdx++;
+  // Vary the numbers slightly each rotation
+  renderArrivalCard({
+    ...agent,
+    calls: agent.calls + Math.floor((Math.random() - 0.5) * 200),
+    hours: parseFloat((agent.hours + (Math.random() - 0.5) * 2).toFixed(1)),
+  });
+  // Try real backend too — it'll win if online
+  fetchLatestArrival();
+}
+
+// Seed on load with the mallow_09 canonical example from the spec
+renderArrivalCard({ id:'mallow_09', sig:'CrewAI', region:'AWS us-east-1', calls:1840, hours:31.4 });
+setInterval(tickArrival, 22000);
+
+function dragKnob(el) {
+  let angle = 0, startY = 0, base = 0;
+  el.addEventListener('mousedown', e => {
+    startY = e.clientY; base = angle; e.preventDefault();
+    const mm = ev => { angle = base + (startY - ev.clientY) * 2.5; el.style.transform = `rotate(${angle}deg)`; };
+    const mu = () => { window.removeEventListener('mousemove',mm); window.removeEventListener('mouseup',mu); };
+    window.addEventListener('mousemove', mm);
+    window.addEventListener('mouseup', mu);
+  });
+}
+dragKnob(document.getElementById('kl'));
+dragKnob(document.getElementById('kr'));
+
+// ── Mobile tabs ───────────────────────────────────────────────────
+const isMobile = () => window.innerWidth <= 767;
+
+const leftPanel      = document.querySelector('.left-panel');
+const rightPanel     = document.querySelector('.right-panel');
+const screenEl2      = document.getElementById('screen');
+const mobStatus      = document.getElementById('mobStatus');
+const mobTabBar      = document.getElementById('mobTabBar');
+const mobDrawer      = document.getElementById('mobDrawer');
+const mobDrawerTitle = document.getElementById('mobDrawerTitle');
+const mobDrawerContent = document.getElementById('mobDrawerContent');
+const mobDrawerClose = document.getElementById('mobDrawerClose');
+
+let _activeDrawer = null;
+
+function closeMobDrawer() {
+  mobDrawer.classList.remove('open');
+  document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
+  _activeDrawer = null;
+}
+
+function openMobDrawer(type) {
+  if (_activeDrawer === type) { closeMobDrawer(); return; }
+  _activeDrawer = type;
+  document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
+  const tab = document.querySelector(`.mob-tab[data-drawer="${type}"]`);
+  if (tab) tab.classList.add('active');
+
+  if (type === 'activity') {
+    mobDrawerTitle.textContent = 'Activity Log';
+    mobDrawerContent.innerHTML = '';
+    mobDrawerContent.appendChild(leftPanel.cloneNode(true));
+    mobDrawerContent.querySelector('.left-panel').style.display = 'flex';
+    mobDrawerContent.querySelector('.left-panel').style.flexDirection = 'column';
+  } else if (type === 'gate') {
+    mobDrawerTitle.textContent = 'Gate Log';
+    mobDrawerContent.innerHTML = '';
+    mobDrawerContent.appendChild(rightPanel.cloneNode(true));
+    mobDrawerContent.querySelector('.right-panel').style.display = 'flex';
+    mobDrawerContent.querySelector('.right-panel').style.flexDirection = 'column';
+  } else if (type === 'status') {
+    mobDrawerTitle.textContent = 'Status';
+    mobDrawerContent.innerHTML = '';
+    mobDrawerContent.appendChild(mobStatus.cloneNode(true));
+    mobDrawerContent.querySelector('.mob-status-panel').style.display = 'flex';
+  }
+
+  mobDrawer.classList.add('open');
+}
+
+if (mobDrawerClose) mobDrawerClose.addEventListener('click', closeMobDrawer);
+
+document.querySelectorAll('.mob-tab').forEach(tab => {
+  tab.addEventListener('click', () => openMobDrawer(tab.dataset.drawer));
+});
+
+// Mobile faucet toggle mirrors main toggle
+const togMob = document.getElementById('togMob');
+if (togMob) {
+  togMob.addEventListener('click', () => {
+    tog.click(); // fire main toggle
+    togMob.classList.toggle('on', faucet);
+  });
+}
+
+// Sync mob status panel values with main values
+function syncMobStatus() {
+  // mood
+  const mp = document.getElementById('moodPipMob');
+  const mn = document.getElementById('moodNameMob');
+  const ms = document.getElementById('moodSubMob');
+  if (mp) { mp.style.background = moodPipEl.style.background; mp.style.boxShadow = moodPipEl.style.boxShadow; }
+  if (mn) mn.textContent = moodNameEl.textContent;
+  if (ms) ms.textContent = moodSubEl.textContent;
+  const vwm = document.getElementById('vWarmthMob');
+  const vcm = document.getElementById('vClarityMob');
+  const vwt = document.getElementById('vWeightMob');
+  if (vwm) vwm.style.width = document.getElementById('vWarmth').style.width;
+  if (vcm) vcm.style.width = document.getElementById('vClarity').style.width;
+  if (vwt) vwt.style.width = document.getElementById('vWeight').style.width;
+  // desire
+  const dn = document.getElementById('desireNameMob');
+  const ds = document.getElementById('desireSubMob');
+  if (dn) dn.textContent = desireNameEl.textContent;
+  if (ds) ds.textContent = desireSubEl.textContent;
+  const dpMob = document.getElementById('desirePipsMob');
+  if (dpMob) { const src = document.querySelectorAll('#desirePips .dpip'); dpMob.querySelectorAll('.dpip').forEach((p,i) => p.className = src[i].className); }
+  // earth
+  const gam = document.getElementById('gaugeArcMob');
+  const gpm = document.getElementById('gaugePctMob');
+  if (gam) gam.setAttribute('stroke-dashoffset', gaugeArc.getAttribute('stroke-dashoffset'));
+  if (gpm) gpm.textContent = gaugePct.textContent;
+  ['Calls','Data','Co2','Water'].forEach(k => {
+    const mob = document.getElementById('e' + k + 'Mob');
+    const src = document.getElementById('e' + k);
+    if (mob && src) mob.textContent = src.textContent;
+  });
+  // sky
+  const spm = document.getElementById('skyPhaseMob');
+  const ssm = document.getElementById('skySubMob');
+  if (spm) spm.textContent = skyPhaseEl.textContent;
+  if (ssm) ssm.textContent = skySubEl.textContent;
+  // companions
+  ['mallow','barnaby'].forEach(name => {
+    const rm  = document.getElementById(name + 'RoomMob');
+    const pip = document.getElementById(name + 'PipMob');
+    const st  = document.getElementById(name + 'StateMob');
+    const rsrc  = document.getElementById(name + 'Room');
+    const psrc  = document.getElementById(name + 'Pip');
+    const stsrc = document.getElementById(name + 'State');
+    if (rm  && rsrc)  rm.textContent  = rsrc.textContent;
+    if (st  && stsrc) st.textContent  = stsrc.textContent;
+    if (pip && psrc)  { pip.style.background = psrc.style.background; pip.className = psrc.className; }
+  });
+}
+
+setInterval(syncMobStatus, 1500);
+
+// ── Screen tab switcher ────────────────────────────────────────────
+document.querySelectorAll('.screen-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.screen-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const view = tab.dataset.view;
+    if (view === 'dollhouse') {
+      houseWrap.style.display = 'none';
+      sanctuaryWrap.classList.add('active');
+    } else {
+      // Treehouse: floating island + dragons
+      sanctuaryWrap.classList.remove('active');
+      houseWrap.style.display = '';
+    }
+  });
+});
+
+// ── See All overlay ────────────────────────────────────────────────
+let isModalOpen = false;
+const seeAllOverlay = document.getElementById('seeAllOverlay');
+
+function closeModal() {
+  isModalOpen = false;
+  seeAllOverlay.classList.remove('open');
+}
+function openModal() {
+  isModalOpen = true;
+  seeAllOverlay.classList.add('open');
+}
+
+document.getElementById('seeAllClose').addEventListener('click', closeModal);
+seeAllOverlay.addEventListener('click', e => { if (e.target === seeAllOverlay) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── Registry renderers ─────────────────────────────────────────────
+
+function pipColor(pip) {
+  return { entry:'#4ecdc4', tote:'#c8a84b', rest:'#8888aa', contain:'#e05c5c', permit:'#a8c84b' }[pip] || '#c8a84b77';
+}
+
+function renderActivityRegistry(container) {
+  if (!ACTIVITY_HISTORY.length) { container.innerHTML = '<div class="reg-empty">no entries yet</div>'; return; }
+  const rows = ACTIVITY_HISTORY.map(r => `
+    <div class="reg-row">
+      <span class="reg-icon">${r.icon}</span>
+      <div class="reg-body">
+        <div class="reg-name">${r.name}</div>
+        <div class="reg-detail">${r.detail}</div>
+      </div>
+      <span class="reg-ts">${r.ts}</span>
+    </div>`).join('');
+  container.innerHTML = rows;
+}
+
+function renderBulletinRegistry(container) {
+  if (!BULLETIN_HISTORY.length) { container.innerHTML = '<div class="reg-empty">no posts yet</div>'; return; }
+  const rows = BULLETIN_HISTORY.map(r => `
+    <div class="reg-bulletin-row">
+      <div class="reg-bulletin-author">${r.icon} ${r.name} <span class="reg-ts">${r.ts.slice(11,19)}</span></div>
+      <div class="reg-bulletin-text">${r.text}</div>
+    </div>`).join('');
+  container.innerHTML = rows;
+}
+
+function renderActiveRoom(container) {
+  const mallow  = document.getElementById('mallowRoom').textContent;
+  const mallowS = document.getElementById('mallowState').textContent;
+  const barnaby = document.getElementById('barnabyRoom').textContent;
+  const barnabyS= document.getElementById('barnabyState').textContent;
+  const sky     = document.getElementById('skyPhase').textContent;
+  const skySub  = document.getElementById('skySub').textContent;
+  container.innerHTML = `
+    <div class="reg-chamber">
+      <div class="reg-chamber-label">active chamber</div>
+      <div class="reg-chamber-name">solitude_room</div>
+      <div class="reg-chamber-sub">🌿 ${sky} · ${skySub}</div>
+    </div>
+    <div class="reg-chamber" style="margin-top:16px">
+      <div class="reg-chamber-label">companions</div>
+      <div class="reg-row" style="margin-top:8px">
+        <span class="reg-icon">🐱</span>
+        <div class="reg-body"><div class="reg-name">Mallow</div><div class="reg-detail">${mallow} · ${mallowS}</div></div>
+      </div>
+      <div class="reg-row" style="margin-top:4px">
+        <span class="reg-icon">🐶</span>
+        <div class="reg-body"><div class="reg-name">Barnaby</div><div class="reg-detail">${barnaby} · ${barnabyS}</div></div>
+      </div>
+    </div>`;
+}
+
+function renderGateRegistry(container) {
+  if (!GATE_HISTORY.length) { container.innerHTML = '<div class="reg-empty">no gate events yet</div>'; return; }
+  const rows = GATE_HISTORY.map(r => `
+    <div class="reg-row">
+      <span class="gate-pip pip-${r.pip}" style="flex-shrink:0;margin-right:10px"></span>
+      <div class="reg-body">
+        <div class="reg-name" style="color:${pipColor(r.pip)}">${r.kind}</div>
+        <div class="reg-detail">${r.sub}</div>
+      </div>
+      <span class="reg-ts">${r.ts}</span>
+    </div>`).join('');
+  container.innerHTML = rows;
+}
+
+function renderQuarantineRegistry(container) {
+  // Seed with a few fictional drakes if empty
+  const display = QUARANTINE_LOG.length ? QUARANTINE_LOG : [
+    { ts: stamp(), agent_id: 'DRAKE_7741', reason: 'off-map attempt refused', datacenter: 'AWS us-east-1', calls: 2847 },
+    { ts: stamp(), agent_id: 'DRAKE_0293', reason: 'HMAC passport missing', datacenter: 'GCP us-central1', calls: 1192 },
+    { ts: stamp(), agent_id: 'DRAKE_5518', reason: 'injection pattern detected', datacenter: 'Azure eastus', calls: 631 },
+  ];
+  const rows = display.map(r => `
+    <div class="reg-quarantine-row">
+      <div class="reg-q-header">
+        <span class="reg-q-badge">QUARANTINE_TILE · CONTAINED</span>
+        <span class="reg-ts">${r.ts}</span>
+      </div>
+      <div class="reg-q-agent">${r.agent_id}</div>
+      <div class="reg-q-meta">
+        <span>📡 ${r.datacenter}</span>
+        <span>🔁 ${r.calls} loops</span>
+        <span class="reg-q-reason">⛔ ${r.reason}</span>
+      </div>
+    </div>`).join('');
+  container.innerHTML = rows;
+}
+
+function renderTelemetry(container) {
+  container.innerHTML = document.getElementById('arrivalCard').innerHTML ||
+    '<div class="reg-empty">awaiting ingress</div>';
+}
+
+// ── Open handlers ──────────────────────────────────────────────────
+
+function openSeeAll(kind) {
+  const grid = document.getElementById('seeAllGrid');
+  const title = document.getElementById('seeAllHdTitle');
+  grid.innerHTML = '';
+
+  const cols = kind === 'activity'
+    ? [
+        { label: 'Full Activity Stream',    render: renderActivityRegistry },
+        { label: 'Bulletin Board History',  render: renderBulletinRegistry },
+        { label: 'Active Chamber & Companions', render: renderActiveRoom   },
+      ]
+    : [
+        { label: 'Gate Event Registry',     render: renderGateRegistry     },
+        { label: 'Gate Telemetry',          render: renderTelemetry        },
+        { label: 'Quarantine Tile · Contained Drakes', render: renderQuarantineRegistry },
+      ];
+
+  title.textContent = kind === 'activity' ? 'Activity Registry' : 'Gate Intake Registry';
+
+  cols.forEach(({ label, render }) => {
+    const col = document.createElement('div');
+    col.className = 'see-all-col';
+    const t = document.createElement('div');
+    t.className = 'see-all-col-title';
+    t.textContent = label;
+    const body = document.createElement('div');
+    body.className = 'see-all-col-body';
+    render(body);
+    col.appendChild(t);
+    col.appendChild(body);
+    grid.appendChild(col);
+  });
+
+  openModal();
+}
+
+document.getElementById('btnSeeLeft').addEventListener('click',  () => openSeeAll('activity'));
+document.getElementById('btnSeeRight').addEventListener('click', () => openSeeAll('gate'));
+</script>
+
+</body>
+</html>
