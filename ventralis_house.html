@@ -842,30 +842,35 @@
     ══════════════════════════════════════════════════════════════ */
     @media (max-width: 767px) {
 
-      html, body { overflow: hidden; }
+      /* ── Mobile: scrollable layout ── */
+      html, body { overflow-y: auto; overflow-x: hidden; height: auto; }
 
-      .device { border-width: 2px; }
+      .device {
+        position: relative !important;
+        border-width: 2px;
+        min-height: 100vh;
+        overflow: visible;
+      }
+
+      /* Screws hidden on mobile */
+      .screw { display: none; }
 
       /* Nameplate */
-      .nameplate-bar { font-size: 10px; letter-spacing: 0.32em; padding: 2px 0 3px; }
+      .nameplate-bar { font-size: 10px; letter-spacing: 0.32em; padding: 2px 0 3px; position: sticky; top: 0; z-index: 50; }
 
       /* Nav bar — slim */
-      .nav-bar { height: 22px; padding: 0 10px; }
+      .nav-bar { height: 22px; padding: 0 10px; position: sticky; top: 22px; z-index: 50; }
       .nav-center { display: none; }
       .nav-author  { display: none; }
       .token-bar   { width: 36px; }
 
-      /* Screws */
-      .screw { width: 9px; height: 9px; }
+      /* Covenant */
+      .covenant-bar { display: none; }
 
-      /* Main row stacks vertically */
-      .main-row { flex-direction: column; overflow: hidden; }
+      /* Main row stacks vertically, scrollable */
+      .main-row { flex-direction: column; overflow: visible; }
 
-      /* Left + right panels — hidden, shown in bottom drawer */
-      .left-panel  { display: none !important; }
-      .right-panel { display: none !important; }
-
-      /* Screen — big, always visible, fills top portion */
+      /* Screen — big image at top, sticky-ish */
       .screen {
         flex: none !important;
         height: 74vh;
@@ -891,9 +896,7 @@
       }
 
       /* Controls bar — slim */
-      .controls-bar {
-        min-height: 36px; padding: 2px 12px; gap: 8px;
-      }
+      .controls-bar { min-height: 36px; padding: 2px 12px; gap: 8px; }
       .mood-block   { display: none; }
       .desire-block { display: none; }
       .controls-center { gap: 12px; }
@@ -901,94 +904,42 @@
       .fae-emblem { font-size: 20px; }
 
       /* Faucet toggle inline in nav on mobile */
-      .mob-faucet {
-        display: flex; align-items: center; gap: 5px;
-        margin-left: 6px;
-      }
+      .mob-faucet { display: flex; align-items: center; gap: 5px; margin-left: 6px; }
       .mob-faucet .toggle-track { width: 34px; height: 16px; }
       .mob-faucet .toggle-thumb { width: 10px; height: 10px; top: 2px; left: 2px; }
       .mob-faucet .toggle-track.on .toggle-thumb { left: 20px; }
 
-      /* Covenant */
-      .covenant-bar { display: none; }
-
-      /* ── Mobile tab bar ── */
-      .mob-tab-bar {
-        display: flex; flex-shrink: 0;
-        background: #08111e;
-        border-top: 1px solid #c8a84b44;
+      /* ── Panels: shown below the screen, stacked ── */
+      .left-panel {
+        display: flex !important;
+        flex-direction: column !important;
+        order: 2;
+        width: 100% !important;
+        max-width: none !important;
+        border-right: none !important;
         border-bottom: 1px solid #c8a84b22;
+        overflow: visible !important;
       }
-      .mob-tab {
-        flex: 1; text-align: center;
-        padding: 7px 4px;
-        font-size: 8px; letter-spacing: 0.14em;
-        color: #4a6070; text-transform: uppercase;
-        cursor: pointer; transition: color 0.2s, background 0.2s;
-        border-right: 1px solid #c8a84b22;
-      }
-      .mob-tab:last-child { border-right: none; }
-      .mob-tab.active { color: #c8a84b; background: #0d1a2a; }
-      .mob-tab .tab-icon { font-size: 11px; display: block; margin-bottom: 2px; }
-
-      /* ── Bottom drawer — logs live here ── */
-      .mob-drawer {
-        position: fixed;
-        bottom: 0; left: 0; right: 0;
-        z-index: 200;
-        background: rgba(6,10,20,0.98);
-        backdrop-filter: blur(16px);
-        border-top: 1px solid #c8a84b44;
-        border-radius: 20px 20px 0 0;
-        max-height: 70vh;
-        transform: translateY(100%);
-        transition: transform 0.34s cubic-bezier(0.32,0,0.18,1);
-        display: flex; flex-direction: column;
-      }
-      .mob-drawer.open { transform: translateY(0); }
-
-      .mob-drawer-handle {
-        width: 36px; height: 4px;
-        background: #c8a84b44; border-radius: 2px;
-        margin: 10px auto 6px;
-        flex-shrink: 0;
-      }
-      .mob-drawer-title {
-        font-size: 7px; letter-spacing: 0.22em;
-        text-transform: uppercase; color: #c8a84b88;
-        text-align: center; padding-bottom: 8px;
-        border-bottom: 1px solid #c8a84b22;
-        flex-shrink: 0;
-      }
-      .mob-drawer-content {
-        flex: 1; overflow-y: auto;
-        padding: 0;
-      }
-      .mob-drawer-close {
-        position: absolute; top: 10px; right: 14px;
-        font-size: 14px; color: #4a6070;
-        cursor: pointer; background: none; border: none;
-        padding: 4px;
+      .right-panel {
+        display: flex !important;
+        flex-direction: column !important;
+        order: 3;
+        width: 100% !important;
+        max-width: none !important;
+        border-left: none !important;
+        overflow: visible !important;
       }
 
-      /* Status tab panel */
-      .mob-status-panel {
-        display: none; flex-direction: column; flex: 1; overflow-y: auto;
-        background: linear-gradient(160deg, #0b1c2e, #091524);
-        gap: 0;
-      }
-      .mob-status-panel.mob-active { display: flex; }
-      .mob-status-panel .mood-block,
-      .mob-status-panel .desire-block {
-        border: none; border-radius: 0;
-        border-bottom: 1px solid #c8a84b1a;
-        background: transparent;
-      }
-
-      /* Log blocks inside drawer */
-      .act-block { flex: 1; min-height: 0; overflow: hidden; }
-      .panel-block { flex: 1; min-height: 0; overflow: hidden; }
+      /* Log blocks — unconstrained height so all entries show */
+      .act-block { flex: none !important; min-height: 0; overflow: visible !important; }
+      .panel-block { flex: none !important; min-height: 0; overflow: visible !important; }
+      .log-scroll { max-height: none !important; overflow: visible !important; }
       .corkboard-block, .companions-block, .sky-block, .earth-block, .faucet-block { flex-shrink: 0; }
+
+      /* Hide drawer/tab UI — not needed with scroll */
+      .mob-tab-bar  { display: none !important; }
+      .mob-drawer   { display: none !important; }
+      .mob-status-panel { display: none !important; }
       .corkboard-title { font-size: 6.5px; }
       .pin-note { font-size: 7.5px; }
 
