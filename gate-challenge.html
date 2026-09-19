@@ -354,9 +354,11 @@ async function submitChallenge() {
     });
 
     if (res.ok) {
-      const { gate_token } = await res.json();
-      // Store only the opaque signed token — no user data, no answer
-      sessionStorage.setItem('fae_gate_token', gate_token);
+      const data = await res.json();
+      // Store opaque signed token + somatic provenance (no user data, no answer)
+      sessionStorage.setItem('fae_gate_token', data.gate_token);
+      if (data.certificate_id)     sessionStorage.setItem('fae_cert_id',          data.certificate_id);
+      if (data.somatic_provenance) sessionStorage.setItem('fae_somatic_provenance', JSON.stringify(data.somatic_provenance));
       window.location.replace('/scan');
       return;
     }
