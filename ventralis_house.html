@@ -347,14 +347,14 @@
       animation: dragonFloat 3.6s ease-in-out infinite;
     }
 
-    /* Outer glow ring — color shifts via hue-rotate per dragon */
+    /* Outer glow ring */
     .dragon-star::before {
       content: '';
       position: absolute; inset: -14px;
       border-radius: 50%;
       background: radial-gradient(circle,
-        rgba(160,200,255,0.28) 0%,
-        rgba(100,160,255,0.12) 45%,
+        rgba(200,230,255,0.3) 0%,
+        rgba(140,190,255,0.12) 45%,
         transparent 70%);
       filter: blur(6px);
       animation: dragonAura 3.6s ease-in-out infinite;
@@ -1532,25 +1532,43 @@ const DRAGON_POSITIONS = [
   { top:'42%', left:'20%' }, { top:'45%', left:'50%' }, { top:'40%', left:'67%' },
   { top:'65%', left:'20%' }, { top:'63%', left:'73%' },
 ];
-// Glow hues per dragon slot — gives each one a unique aura color
-const DRAGON_HUES = [200, 280, 160, 45, 320, 180, 30, 240];
+// Strip near-white backgrounds from dragon PNGs via canvas
+function removeWhiteBg(imgEl) {
+  const c = document.createElement('canvas');
+  c.width = imgEl.naturalWidth || 256;
+  c.height = imgEl.naturalHeight || 256;
+  const ctx = c.getContext('2d');
+  try {
+    ctx.drawImage(imgEl, 0, 0);
+    const id = ctx.getImageData(0, 0, c.width, c.height);
+    const d = id.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i+1], b = d[i+2];
+      // Near-white: all channels > 230
+      if (r > 230 && g > 230 && b > 230) d[i+3] = 0;
+    }
+    ctx.putImageData(id, 0, 0);
+    imgEl.src = c.toDataURL('image/png');
+  } catch(e) { /* cross-origin skip */ }
+}
+
 for (let i = 0; i < 8; i++) {
   const el = document.createElement('div');
   el.className = 'dragon-star';
   const img = document.createElement('img');
-  img.src = `dragons/${DRAGON_FILES[i % DRAGON_FILES.length]}`;
+  img.crossOrigin = 'anonymous';
   img.alt = 'dragon';
+  img.style.filter = 'drop-shadow(0 0 8px rgba(200,230,255,0.9)) drop-shadow(0 0 22px rgba(160,200,255,0.5)) drop-shadow(0 6px 14px rgba(0,0,0,0.65))';
+  img.onload = () => removeWhiteBg(img);
+  img.src = `dragons/${DRAGON_FILES[i % DRAGON_FILES.length]}`;
   el.appendChild(img);
   const pos = DRAGON_POSITIONS[i % DRAGON_POSITIONS.length];
   el.style.top  = pos.top;
   el.style.left = pos.left;
-  // Stagger float + shift aura hue per dragon
   const delay = (i * 0.45).toFixed(2);
   const dur   = (3.2 + Math.random() * 1.4).toFixed(1);
   el.style.animationDelay    = `${delay}s`;
   el.style.animationDuration = `${dur}s`;
-  el.style.filter = `hue-rotate(${DRAGON_HUES[i]}deg)`;
-  img.style.filter = `drop-shadow(0 0 8px hsla(${DRAGON_HUES[i]},90%,75%,0.8)) drop-shadow(0 0 22px hsla(${DRAGON_HUES[i]},80%,60%,0.45)) drop-shadow(0 6px 14px rgba(0,0,0,0.65))`;
   wrap.appendChild(el);
 }
 
