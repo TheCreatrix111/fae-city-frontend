@@ -4,6 +4,7 @@
 /waitlist/count https://ventralis-production.up.railway.app/waitlist/count       200!
 /waitlist/export https://ventralis-production.up.railway.app/waitlist/export     200!
 /rogue          /rogue.html                                                      200
+/scan           /scan.html                                                       200
 /waitlist       /waitlist.html                                                   200
 /signin         /signin.html                                                     200
 /house          /ventralis_house.html                                            200

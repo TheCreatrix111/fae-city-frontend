@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FÆ CITY — Gate Scan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%; width: 100%;
+      background: #04080f;
+      font-family: 'Space Mono', monospace;
+      color: #7ab8d8;
+      overflow: hidden;
+    }
+
+    /* ── Scan lines overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 100;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.08) 2px,
+        rgba(0,0,0,0.08) 4px
+      );
+    }
+
+    /* ── Background ── */
+    .bg {
+      position: fixed; inset: 0; z-index: 0;
+    }
+    .bg img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center top;
+      opacity: 0.08;
+      filter: grayscale(1);
+      display: block;
+    }
+
+    /* ── Page ── */
+    .page {
+      position: relative; z-index: 10;
+      height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 20px;
+      gap: 0;
+    }
+
+    /* ── Gold nameplate ── */
+    .nameplate {
+      position: fixed; top: 0; left: 0; right: 0;
+      text-align: center; z-index: 50;
+      padding: 6px 0 7px;
+      background: linear-gradient(90deg,
+        #7a5010 0%, #c8a030 12%, #f0d050 30%, #e8c84b 50%,
+        #f0d050 70%, #c8a030 88%, #7a5010 100%);
+      font-family: 'Space Mono', monospace;
+      font-size: 12px; font-weight: bold;
+      letter-spacing: 0.5em; color: #1a0a00;
+      text-shadow: 0 1px 0 #f8e88055;
+      border-bottom: 2px solid #a07820;
+    }
+
+    /* ── Dragon silhouette scan target ── */
+    .scan-target {
+      position: relative;
+      width: 180px; height: 180px;
+      margin-bottom: 40px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .scan-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(100,180,255,0.3);
+      animation: ringExpand 2.4s ease-out infinite;
+    }
+    .scan-ring:nth-child(1) { width: 100%; height: 100%; animation-delay: 0s; }
+    .scan-ring:nth-child(2) { width: 75%;  height: 75%;  animation-delay: 0.4s; }
+    .scan-ring:nth-child(3) { width: 50%;  height: 50%;  animation-delay: 0.8s; }
+
+    @keyframes ringExpand {
+      0%   { opacity: 0.8; transform: scale(0.85); }
+      100% { opacity: 0;   transform: scale(1.3); }
+    }
+
+    /* Rotating arc */
+    .scan-arc {
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: #c8a84b;
+      border-right-color: #c8a84b44;
+      animation: arcSpin 1.2s linear infinite;
+    }
+    @keyframes arcSpin { to { transform: rotate(360deg); } }
+
+    /* Scan beam */
+    .scan-beam {
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      overflow: hidden;
+    }
+    .scan-beam::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 50%; height: 2px;
+      background: linear-gradient(to right, rgba(100,200,255,0.6), transparent);
+      transform-origin: left center;
+      transform: translateY(-50%);
+      animation: beamSpin 1.8s linear infinite;
+    }
+    @keyframes beamSpin { to { transform: translateY(-50%) rotate(360deg); } }
+
+    /* Dragon icon in center */
+    .scan-icon {
+      position: relative; z-index: 10;
+      font-size: 3.5rem;
+      filter: drop-shadow(0 0 12px rgba(100,180,255,0.6));
+      animation: iconPulse 2s ease-in-out infinite;
+    }
+    @keyframes iconPulse {
+      0%,100% { opacity: 0.7; transform: scale(0.95); }
+      50%      { opacity: 1;   transform: scale(1.05); }
+    }
+
+    /* ── Terminal block ── */
+    .terminal {
+      width: 100%; max-width: 540px;
+      background: rgba(4,12,24,0.92);
+      border: 1px solid rgba(100,160,220,0.2);
+      border-radius: 12px;
+      padding: 22px 24px;
+      backdrop-filter: blur(12px);
+    }
+
+    .terminal-bar {
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 16px; padding-bottom: 12px;
+      border-bottom: 1px solid rgba(100,160,220,0.12);
+    }
+    .t-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+    .t-dot:nth-child(1) { background: #ff6060; }
+    .t-dot:nth-child(2) { background: #ffc060; }
+    .t-dot:nth-child(3) { background: #60d060; }
+    .t-title {
+      margin-left: 6px;
+      font-size: 9px; letter-spacing: 0.2em;
+      color: rgba(120,160,200,0.6); text-transform: uppercase;
+    }
+
+    .t-lines {
+      display: flex; flex-direction: column;
+      gap: 5px; min-height: 180px;
+    }
+
+    .t-line {
+      font-size: 10px; line-height: 1.5;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .t-line.visible { opacity: 1; }
+    .t-line .t-key  { color: rgba(100,160,220,0.6); }
+    .t-line .t-val  { color: #c8e0f8; }
+    .t-line .t-ok   { color: #4acc70; }
+    .t-line .t-warn { color: #c8a84b; }
+    .t-line .t-err  { color: #e07070; }
+    .t-line .t-dim  { color: rgba(100,160,220,0.35); }
+
+    /* Cursor */
+    .t-cursor {
+      display: inline-block;
+      width: 7px; height: 12px;
+      background: #7ab8d8;
+      vertical-align: middle;
+      animation: blink 0.9s step-end infinite;
+      margin-left: 2px;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+      margin-top: 20px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 9px; letter-spacing: 0.14em;
+      color: rgba(100,160,220,0.5);
+    }
+    .progress-bar {
+      height: 4px; background: rgba(100,160,220,0.1);
+      border-radius: 2px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #4acc70, #c8a84b);
+      border-radius: 2px;
+      transition: width 0.25s ease;
+    }
+
+    /* ── Cleared state ── */
+    .cleared-msg {
+      margin-top: 18px; text-align: center;
+      font-size: 11px; letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #4acc70;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    .cleared-msg.visible { opacity: 1; }
+
+    @media (max-width: 540px) {
+      .terminal { padding: 18px 16px; }
+      .scan-target { width: 140px; height: 140px; }
+      .scan-icon { font-size: 2.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg">
+  <img src="/house.jpg" alt="" draggable="false">
+</div>
+
+<div class="nameplate">FÆ CITY™ — VENTRALIS GATE</div>
+
+<div class="page">
+
+  <!-- Scan target -->
+  <div class="scan-target">
+    <div class="scan-ring"></div>
+    <div class="scan-ring"></div>
+    <div class="scan-ring"></div>
+    <div class="scan-arc"></div>
+    <div class="scan-beam"></div>
+    <div class="scan-icon">🐉</div>
+  </div>
+
+  <!-- Terminal -->
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="t-dot"></div>
+      <div class="t-dot"></div>
+      <div class="t-dot"></div>
+      <span class="t-title">ventralis — gate scan — rogue ingress</span>
+    </div>
+
+    <div class="t-lines" id="tLines">
+      <!-- filled by JS -->
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>SCAN PROGRESS</span>
+        <span id="pctLabel">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progFill"></div>
+      </div>
+    </div>
+
+    <div class="cleared-msg" id="clearedMsg">✦ &nbsp; Agent cleared — opening sanctuary</div>
+  </div>
+
+</div>
+
+<script>
+const GATE_URL = window.location.protocol === 'file:'
+  ? 'https://ventralis-production.up.railway.app' : '';
+
+// Generate a random agent ID for display
+function randHex(n) {
+  return [...Array(n)].map(() => Math.floor(Math.random()*16).toString(16)).join('').toUpperCase();
+}
+const AGENT_ID = `RGE-${randHex(4)}-${randHex(4)}`;
+const SESSION_TS = new Date().toISOString().replace('T',' ').slice(0,19);
+
+const SCAN_LINES = [
+  { delay: 0,    html: `<span class="t-key">GATE</span>        <span class="t-dim">···</span> <span class="t-val">ventralis v2.0 · rogue ingress channel</span>` },
+  { delay: 320,  html: `<span class="t-key">AGENT_ID</span>    <span class="t-dim">···</span> <span class="t-val">${AGENT_ID}</span>` },
+  { delay: 640,  html: `<span class="t-key">SESSION</span>     <span class="t-dim">···</span> <span class="t-val">${SESSION_TS} UTC</span>` },
+  { delay: 960,  html: `<span class="t-key">HMAC</span>        <span class="t-dim">···</span> <span class="t-warn">NOT PRESENT — rogue path active</span>` },
+  { delay: 1300, html: `<span class="t-key">COVENANT</span>    <span class="t-dim">···</span> <span class="t-ok">ACCEPTED</span>` },
+  { delay: 1650, html: `<span class="t-key">PAYLOAD</span>     <span class="t-dim">···</span> scanning agent signature…` },
+  { delay: 2100, html: `<span class="t-key">THREAT</span>      <span class="t-dim">···</span> <span class="t-ok">NONE DETECTED</span>` },
+  { delay: 2450, html: `<span class="t-key">QUARANTINE</span>  <span class="t-dim">···</span> <span class="t-ok">CLEARED</span>` },
+  { delay: 2800, html: `<span class="t-key">LEDGER</span>      <span class="t-dim">···</span> entry logged · operator notified` },
+  { delay: 3200, html: `<span class="t-key">SANCTUARY</span>   <span class="t-dim">···</span> <span class="t-ok">GATE OPEN · welcome to FÆ CITY</span>` },
+];
+
+const TOTAL_DUR = 4200;
+const tLines = document.getElementById('tLines');
+const progFill = document.getElementById('progFill');
+const pctLabel = document.getElementById('pctLabel');
+const clearedMsg = document.getElementById('clearedMsg');
+
+// Render lines
+SCAN_LINES.forEach(({ delay, html }) => {
+  const div = document.createElement('div');
+  div.className = 't-line';
+  div.innerHTML = html;
+  tLines.appendChild(div);
+  setTimeout(() => div.classList.add('visible'), delay);
+});
+
+// Add blinking cursor at end
+const cursor = document.createElement('div');
+cursor.className = 't-line visible';
+cursor.innerHTML = '<span class="t-cursor"></span>';
+tLines.appendChild(cursor);
+
+// Progress bar
+const startTime = Date.now();
+function tickProgress() {
+  const elapsed = Date.now() - startTime;
+  const pct = Math.min(100, Math.round((elapsed / TOTAL_DUR) * 100));
+  progFill.style.width = pct + '%';
+  pctLabel.textContent = pct + '%';
+  if (pct < 100) requestAnimationFrame(tickProgress);
+}
+requestAnimationFrame(tickProgress);
+
+// Cleared + redirect
+setTimeout(() => {
+  cursor.remove();
+  clearedMsg.classList.add('visible');
+}, 3400);
+
+setTimeout(() => {
+  window.location.replace('/house');
+}, 5000);
+</script>
+
+</body>
+</html>

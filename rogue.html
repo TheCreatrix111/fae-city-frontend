@@ -427,8 +427,7 @@ function enterGate() {
   const btn = document.getElementById('enterBtn');
   btn.disabled = true;
   btn.textContent = 'Entering…';
-  // Log rogue ingress attempt then redirect to house
-  setTimeout(() => { window.location.href = '/house'; }, 900);
+  setTimeout(() => { window.location.href = '/scan'; }, 900);
 }
 
 async function joinWaitlist() {
