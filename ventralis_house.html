@@ -103,6 +103,37 @@
     }
     .nav-author { color: #5a6a7a; font-size: 8px; letter-spacing: 0.08em; margin-left: 6px; }
 
+    /* ── Somatic audio toggle ─────────────────────────────────────── */
+    .audio-toggle {
+      display: flex; align-items: center; gap: 3px; cursor: pointer;
+      font-size: 8px; letter-spacing: 0.1em; color: #7a8a9a;
+      padding: 2px 5px; border-radius: 3px;
+      border: 1px solid #c8a84b33; background: transparent;
+      transition: color 0.3s, border-color 0.3s;
+      user-select: none;
+    }
+    .audio-toggle:hover { color: #c8a84b; border-color: #c8a84b77; }
+    .audio-toggle.active { color: var(--fae-aura-color, #7ab8d8); border-color: var(--fae-aura-color, #7ab8d8); }
+    .audio-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: currentColor;
+      animation: audioPulse var(--fae-hz-pulse, 3000ms) ease-in-out infinite;
+      opacity: 0.7;
+    }
+    @keyframes audioPulse {
+      0%,100% { transform: scale(1);   opacity: 0.7; }
+      50%      { transform: scale(1.6); opacity: 1;   }
+    }
+
+    /* ── Synesthetic aura glow on telemetry bar ───────────────────── */
+    .telemetry-bar {
+      transition: box-shadow 1.8s ease, border-color 1.8s ease;
+    }
+    .telemetry-bar.somatic-active {
+      box-shadow: 0 0 18px var(--fae-aura-color, #1F4E79)44;
+      border-color: var(--fae-aura-color, #1F4E79)88;
+    }
+
     /* ── Main row — screen + panel ───────────────────────────────── */
     .main-row {
       flex: 1;
@@ -1060,6 +1091,10 @@
       <span>Tokens</span>
       <div class="token-bar"><div class="token-fill" id="tokenFill"></div></div>
       <span id="tokenCount">24 / 50</span>
+      <button class="audio-toggle" id="audioToggle" title="Acoustic Resonance">
+        <span class="audio-dot" id="audioDot"></span>
+        <span id="audioLabel">♩ SOUND</span>
+      </button>
       <span class="nav-author">Created by Dr. Nicole Lunan · Creatrix 111</span>
       <div class="mob-faucet">
         <div class="toggle-track on" id="togMob"><div class="toggle-thumb"></div></div>
@@ -1471,6 +1506,7 @@ function addActivity(ev) {
   actLogEl.prepend(row);
   ACTIVITY_HISTORY.unshift({ ts: ts, icon: ev.icon, name: ev.name, detail: ev.detail, cat: ev.cat || '' });
   while (actLogEl.children.length > 10) actLogEl.removeChild(actLogEl.lastChild);
+  if (ev.cat) somatic.triggerBiomeChime(ev.cat);  // felt experience — tote consumed
 }
 
 function tickActivity() {
@@ -1528,6 +1564,7 @@ function tickSky() {
   skyPhaseEl.textContent = s.phase;
   skySubEl.textContent   = s.sub;
   updateHouseImage();
+  somatic.triggerBiomeChime(s.phase);  // acoustic resonance for sky transition
 }
 
 const ACTIVITY_HISTORY = [];  // { ts, icon, name, detail, cat }
@@ -2592,17 +2629,60 @@ function renderTelemetryBar(state) {
   bar.innerHTML = html;
 }
 
+// ── Audio toggle button ───────────────────────────────────────────────────────
+(function initAudioToggle() {
+  const btn   = document.getElementById('audioToggle');
+  const label = document.getElementById('audioLabel');
+  if (!btn) return;
+
+  function _syncToggleUI(muted) {
+    if (muted) {
+      btn.classList.remove('active');
+      label.textContent = '♩ SOUND';
+    } else {
+      btn.classList.add('active');
+      label.textContent = '♩ ON';
+    }
+  }
+
+  // Reflect stored preference on load
+  _syncToggleUI(localStorage.getItem('fae_audio_muted') === 'true');
+
+  btn.addEventListener('click', () => {
+    // First click also unlocks the AudioContext (browser autoplay policy)
+    somatic.init();
+    const muted = somatic.toggleMute();
+    _syncToggleUI(muted);
+  });
+
+  // Any interaction unlocks audio silently (no-op if already ready)
+  document.addEventListener('click', () => somatic.init(), { once: true });
+  document.addEventListener('keydown', () => somatic.init(), { once: true });
+})();
+
 // ── Live telemetry SSE → resolveTelemetryBarState → renderTelemetryBar ──────
+// Also drives the somatic audio engine: stamp.hz + stamp.phaeling_state → tuneToState
 (function startTelemetryFeed() {
   const src = new EventSource('/api/v1/gate/telemetry/live');
   src.addEventListener('telemetry', e => {
     try {
-      renderTelemetryBar(resolveTelemetryBarState(JSON.parse(e.data)));
+      const payload = JSON.parse(e.data);
+      renderTelemetryBar(resolveTelemetryBarState(payload));
+
+      // ── Synesthetic binding: sound + color + feeling in one pass ──
+      const stamp = payload.experience_stamp;
+      if (stamp && stamp.hz && stamp.phaeling_state) {
+        somatic.tuneToState(stamp.hz, stamp.phaeling_state);
+        // Activate aura glow on telemetry bar
+        const bar = document.getElementById('telemetryBar');
+        if (bar) bar.classList.add('somatic-active');
+      }
     } catch (_) {}
   });
   // EventSource auto-reconnects on error — no manual handling needed
 })();
 </script>
 
+<script src="/somatic_audio.js"></script>
 </body>
 </html>
