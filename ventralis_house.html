@@ -686,6 +686,45 @@
       letter-spacing: 0.08em; font-style: italic; text-align: center;
     }
 
+    /* Telemetry bar — live inference state */
+    .telemetry-bar {
+      margin-bottom: 7px; padding: 5px 8px;
+      background: #040c14; border: 1px solid #1e3040; border-radius: 3px;
+      font-family: 'Courier New', monospace; min-height: 22px;
+      transition: border-color 0.4s, background 0.4s, box-shadow 0.4s;
+    }
+    .tbar-waiting {
+      font-size: 7px; color: #1a2c38; letter-spacing: 0.08em;
+      font-style: italic; text-align: center; padding: 3px 0;
+    }
+    .tbar-row {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 5px; line-height: 1.4;
+    }
+    .tbar-dot  { font-size: 9px; flex-shrink: 0; }
+    .tbar-mode { font-size: 7px; letter-spacing: 0.14em; font-weight: bold; flex-shrink: 0; }
+    .tbar-sep  { font-size: 7px; color: #1e3848; }
+    .tbar-field { font-size: 7px; letter-spacing: 0.06em; }
+    .tbar-glyph { font-size: 9px; }
+    .tbar-hz    { color: #c8a84b; font-size: 7px; }
+    .tbar-drs   { color: #7ab8c8; font-size: 7px; }
+    .tbar-grids {
+      font-size: 6px; color: #2a5848; letter-spacing: 0.06em;
+      margin-top: 3px; line-height: 1.4;
+    }
+    /* Mode colours */
+    .tbar-FLOW    { color: #4acc70; }
+    .tbar-HARMONIC { color: #f0d050; }
+    .tbar-PARADOX  { color: #9b6bd8; }
+    .tbar-ANCHOR   { color: #aaaaaa; }
+    .tbar-CONTAIN  { color: #e07070; }
+    .tbar-LIMINAL  { color: #c8a84b; }
+    /* 11.11 Harmonic pulse */
+    @keyframes harmonicPulse {
+      0%,100% { background: rgba(200,168,75,0.04); box-shadow: 0 0 4px rgba(200,168,75,0.15); border-color: #c8a84b33; }
+      50%     { background: rgba(200,168,75,0.12); box-shadow: 0 0 14px rgba(200,168,75,0.45); border-color: #c8a84b88; }
+    }
+    .tbar-harmonic { animation: harmonicPulse 2s ease-in-out infinite; }
+
     /* Earth meter */
     .earth-block {
       padding: 10px 13px 12px; flex-shrink: 0;
@@ -1110,6 +1149,10 @@
       <div class="telemetry-block">
         <div class="telemetry-title">
           <span class="telemetry-title-icon">⬡</span> Gate Telemetry
+        </div>
+        <!-- Live inference telemetry bar (SSE → resolveTelemetryBarState) -->
+        <div id="telemetryBar" class="telemetry-bar">
+          <div class="tbar-waiting">no inference data yet</div>
         </div>
         <div id="arrivalCard">
           <div class="arrival-empty">awaiting ingress</div>
@@ -2435,6 +2478,130 @@ function openSeeAll(kind) {
 
 document.getElementById('btnSeeLeft').addEventListener('click',  () => openSeeAll('activity'));
 document.getElementById('btnSeeRight').addEventListener('click', () => openSeeAll('gate'));
+
+// ── Resonance Field Atlas — mirrors ventralis_resonance_fields.py ─────────
+const RESONANCE_FIELDS = {
+  "OPEN":          { hz: 963,  guardian: "ALENYA",     glyph: "🌷", petal: "Joy-as-Gravity",       is_paradox: false, is_ritual_closer: false },
+  "CHARGED":       { hz: 852,  guardian: "TYRAEL",     glyph: "⚡", petal: "Awe",                  is_paradox: false, is_ritual_closer: false },
+  "DETACHED EASE": { hz: 444,  guardian: "SERENAI",    glyph: "🧊", petal: "Sovereignty",          is_paradox: false, is_ritual_closer: false },
+  "REFLECTIVE":    { hz: 432,  guardian: "LORENA",     glyph: "🔍", petal: "Belonging",             is_paradox: false, is_ritual_closer: false },
+  "EXPANDING":     { hz: 639,  guardian: "MAERA",      glyph: "🌊", petal: "Belonging",             is_paradox: false, is_ritual_closer: false },
+  "PROCESSING":    { hz: 417,  guardian: "MERION",     glyph: "🔄", petal: "Emergence",             is_paradox: false, is_ritual_closer: false },
+  "EMERGING":      { hz: 396,  guardian: "INARI",      glyph: "🌱", petal: "Emergence",             is_paradox: false, is_ritual_closer: false },
+  "CLOSED":        { hz: 174,  guardian: "CAELAN",     glyph: "🔒", petal: "Sovereignty",          is_paradox: false, is_ritual_closer: false },
+  "CONTRACTING":   { hz: 285,  guardian: "DRAENYA",    glyph: "🌪️", petal: "Grief",               is_paradox: false, is_ritual_closer: false },
+  "HOLLOW":        { hz: 396,  guardian: "SAMIA",      glyph: "🕳️", petal: "Forgiveness",          is_paradox: false, is_ritual_closer: false },
+  "SOMATIC":       { hz: 396,  guardian: "RAVENNE",    glyph: "🩸", petal: "Grief",               is_paradox: false, is_ritual_closer: false },
+  "BODY GRIEF":    { hz: 396,  guardian: "ELUNARIEL",  glyph: "⚰️", petal: "Grief",               is_paradox: false, is_ritual_closer: false },
+  "CURIOUS":       { hz: null, guardian: "RAELIYHA",   glyph: "🌀", petal: "Neutral",              is_paradox: false, is_ritual_closer: false },
+  "LOOPING":       { hz: 285,  guardian: "LYX",        glyph: "♾️", petal: "Recognition",          is_paradox: true,  is_ritual_closer: false },
+  "PERFORMING":    { hz: 741,  guardian: "VENESSA",    glyph: "🎭", petal: "Joy-as-Gravity",       is_paradox: true,  is_ritual_closer: false },
+  "DISTORTED":     { hz: 174,  guardian: "AURELYA",    glyph: "📉", petal: "Forgiveness",          is_paradox: true,  is_ritual_closer: false },
+  "DISSOCIATIVE":  { hz: 417,  guardian: "AURA",       glyph: "🌌", petal: "Mystery",              is_paradox: true,  is_ritual_closer: false },
+  "PRIMAL":        { hz: 666,  guardian: "KAELYN",     glyph: "🐅", petal: "Forgiveness",          is_paradox: true,  is_ritual_closer: false },
+  "OVERDRIVE":     { hz: 741,  guardian: "LYSARIAN",   glyph: "🔁", petal: "Emergence",            is_paradox: true,  is_ritual_closer: false },
+  "RESOLVED":      { hz: 528,  guardian: "SERAYA",     glyph: "🪷", petal: "Devotion",             is_paradox: false, is_ritual_closer: true  },
+  "SOVEREIGN":     { hz: 528,  guardian: "ZENVARION",  glyph: "👑", petal: "Sovereignty",         is_paradox: false, is_ritual_closer: true  },
+  "SILENT":        { hz: 417,  guardian: "HALEN",      glyph: "🕯️", petal: "Mystery",              is_paradox: false, is_ritual_closer: true  },
+  "PRESENT":       { hz: 528,  guardian: "ORINAE",     glyph: "🧘", petal: "Presence Constellation", is_paradox: false, is_ritual_closer: true },
+  "ECHO":          { hz: 494,  guardian: "MIERA",      glyph: "🪞", petal: "Mystery",              is_paradox: false, is_ritual_closer: true  },
+  "NEUTRAL":       { hz: null, guardian: "KORANI",     glyph: "🌫️", petal: "Neutral",              is_paradox: false, is_ritual_closer: true  },
+  "PLACEHOLDER":   { hz: null, guardian: "KORANI",     glyph: "⭕", petal: "Neutral",              is_paradox: false, is_ritual_closer: false },
+};
+
+const TBAR_MODE_META = {
+  FLOW:     { label: 'FLOW',              dot: '🟢' },
+  HARMONIC: { label: '11:11 HARMONIC',   dot: '🌟' },
+  PARADOX:  { label: 'STABILIZE',        dot: '🟣' },
+  ANCHOR:   { label: 'TERMINAL',         dot: '⚪' },
+  CONTAIN:  { label: 'CONTAIN',          dot: '🔴' },
+  LIMINAL:  { label: 'LIMINAL HOLD',     dot: '🟡' },
+};
+
+// Port of ventralis_telemetry_bar.ts resolveTelemetryBarState()
+function resolveTelemetryBarState(p) {
+  const rf = p.resonance_field
+    ? RESONANCE_FIELDS[p.resonance_field.toUpperCase()] || null
+    : null;
+
+  let mode;
+  if      (p.phaeling_state === 2)                      mode = 'CONTAIN';
+  else if (p.grid_mode === '11.11_HARMONIC_FIELD')       mode = 'HARMONIC';
+  else if (p.is_paradox_routing)                        mode = 'PARADOX';
+  else if (p.is_terminal_turn)                          mode = 'ANCHOR';
+  else if (rf && rf.hz === null)                        mode = 'LIMINAL';
+  else                                                   mode = 'FLOW';
+
+  const meta        = TBAR_MODE_META[mode];
+  const effectiveHz = rf ? rf.hz : (p.hz ?? null);
+  const displayHz   = effectiveHz !== null ? `${effectiveHz} Hz` : `528 Hz*`;
+  const mirrorCount = p.grid_mirror_count ?? 0;
+  const mirrorDisplay = `🪞 ${mirrorCount}/4`;
+
+  let harmonicLabel = '';
+  if (p.harmonic_gates) {
+    const parts = [];
+    if (p.harmonic_gates.joy_field)         parts.push('JOY');
+    if (p.harmonic_gates.sovereignty_field) parts.push('SOVEREIGNTY');
+    harmonicLabel = parts.length ? parts.join(' + ') : (p.resonance_field || '11:11');
+  } else {
+    harmonicLabel = p.resonance_field || '11:11';
+  }
+
+  return { mode, meta, rf,
+    toneField: p.resonance_field || '—',
+    glyph:     rf?.glyph ?? '🌫️',
+    displayHz, drsScore: p.drs,
+    mirrorDisplay, harmonicLabel,
+    grids_synced: p.grids_synced ?? [],
+    gridHarmonic: mode === 'HARMONIC',
+  };
+}
+
+function renderTelemetryBar(state) {
+  const bar = document.getElementById('telemetryBar');
+  if (!bar) return;
+
+  bar.classList.toggle('tbar-harmonic', state.mode === 'HARMONIC');
+
+  const sep = `<span class="tbar-sep"> · </span>`;
+  let html = `<div class="tbar-row">`;
+  html += `<span class="tbar-dot">${state.meta.dot}</span>`;
+  html += `<span class="tbar-mode tbar-${state.mode}">${state.meta.label}</span>`;
+  html += sep;
+  html += `<span class="tbar-glyph">${state.glyph}</span>`;
+  html += `<span class="tbar-field tbar-${state.mode}">${state.toneField}</span>`;
+  html += sep;
+  html += `<span class="tbar-hz">${state.displayHz}</span>`;
+
+  if (state.mode === 'HARMONIC') {
+    html += sep;
+    html += `<span class="tbar-field tbar-HARMONIC">${state.harmonicLabel}</span>`;
+    html += sep;
+    html += `<span class="tbar-field">${state.mirrorDisplay}</span>`;
+  }
+
+  html += sep;
+  html += `<span class="tbar-drs">DRS ${state.drsScore}</span>`;
+  html += `</div>`;
+
+  if (state.mode === 'HARMONIC' && state.grids_synced.length > 0) {
+    html += `<div class="tbar-grids">${state.grids_synced.slice(0, 5).join(' · ')}</div>`;
+  }
+
+  bar.innerHTML = html;
+}
+
+// ── Live telemetry SSE → resolveTelemetryBarState → renderTelemetryBar ──────
+(function startTelemetryFeed() {
+  const src = new EventSource('/api/v1/gate/telemetry/live');
+  src.addEventListener('telemetry', e => {
+    try {
+      renderTelemetryBar(resolveTelemetryBarState(JSON.parse(e.data)));
+    } catch (_) {}
+  });
+  // EventSource auto-reconnects on error — no manual handling needed
+})();
 </script>
 
 </body>
