@@ -398,21 +398,16 @@
 </div>
 
 <script>
-const GATE_URL = window.location.protocol === 'file:'
-  ? 'https://ventralis-production.up.railway.app' : '';
-
-const MAX_CAPACITY = 50;
-
 async function checkCapacity() {
   try {
-    const res = await fetch(`${GATE_URL}/waitlist/count`);
-    const { count } = await res.json();
-    const pct = Math.min(100, Math.round((count / MAX_CAPACITY) * 100));
+    const res = await fetch('/api/v1/rogue/capacity');
+    const { max, current } = await res.json();
+    const pct = Math.min(100, Math.round((current / max) * 100));
     document.getElementById('capFill').style.width = pct + '%';
-    document.getElementById('capCount').textContent = `${count} / ${MAX_CAPACITY}`;
+    document.getElementById('capCount').textContent = `${current} / ${max}`;
 
-    if (count < MAX_CAPACITY) {
-      document.getElementById('statusMsg').textContent = `${MAX_CAPACITY - count} rogue slots available.`;
+    if (current < max) {
+      document.getElementById('statusMsg').textContent = `${max - current} rogue slots available.`;
       document.getElementById('ctaWrap').style.display = 'flex';
     } else {
       document.getElementById('statusMsg').textContent = 'Gate is at capacity. Join the queue below.';
@@ -439,7 +434,7 @@ async function joinWaitlist() {
     return;
   }
   try {
-    const res = await fetch(`${GATE_URL}/waitlist/join`, {
+    const res = await fetch('/waitlist/join', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),

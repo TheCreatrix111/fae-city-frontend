@@ -519,10 +519,6 @@
 <script>
 // ── Auth gate ──────────────────────────────────────────────────────
 const SESSION_KEY = 'ventralis_operator_token';
-const GATE_URL    = window.location.protocol === 'file:'
-  ? 'https://ventralis-production.up.railway.app'
-  : '';
-
 if (localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY)) {
   window.location.replace('/house');
 }
@@ -546,7 +542,7 @@ async function doSignIn(emailId, passId, remId, errId, btnId) {
   btn.textContent = 'Entering…';
 
   try {
-    const res = await fetch(`${GATE_URL}/auth/operator`, {
+    const res = await fetch('/auth/operator', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password: pass }),

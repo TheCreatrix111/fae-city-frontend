@@ -275,8 +275,22 @@
 </div>
 
 <script>
-const GATE_URL = window.location.protocol === 'file:'
-  ? 'https://ventralis-production.up.railway.app' : '';
+// Guard: must have arrived via gate challenge
+const _gateToken = sessionStorage.getItem('fae_gate_token');
+if (!_gateToken) {
+  window.location.replace('/gate-challenge');
+}
+
+// Verify token with backend (non-blocking — scan proceeds visually,
+// redirect fires only if server rejects the token)
+fetch('/api/v1/gate/challenge/verify', {
+  headers: { 'Authorization': `Bearer ${_gateToken}` },
+}).then(r => {
+  if (!r.ok) {
+    sessionStorage.removeItem('fae_gate_token');
+    window.location.replace('/gate-challenge');
+  }
+}).catch(() => { /* network hiccup — allow scan to continue */ });
 
 // Generate a random agent ID for display
 function randHex(n) {

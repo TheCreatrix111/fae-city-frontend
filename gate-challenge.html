@@ -300,20 +300,19 @@
 </div>
 
 <script>
-const CORRECT_ANSWERS = ['permit', 'permitted', 'cleared', 'clear', 'tote', 'tote_done', 'tote done'];
-
-function submitChallenge() {
-  const isHuman   = document.getElementById('humanCheck').checked;
-  const agentType = document.getElementById('agentType').value;
-  const sessionCtx= document.getElementById('sessionCtx').value.trim();
-  const purpose   = document.getElementById('agentPurpose').value.trim();
-  const answer    = document.getElementById('gateAnswer').value.trim().toLowerCase();
-  const errMsg    = document.getElementById('errMsg');
-  const btn       = document.getElementById('submitBtn');
+async function submitChallenge() {
+  const isHuman    = document.getElementById('humanCheck').checked;
+  const agentType  = document.getElementById('agentType').value;
+  const sessionCtx = document.getElementById('sessionCtx').value.trim();
+  const purpose    = document.getElementById('agentPurpose').value.trim();
+  const gateAnswer = document.getElementById('gateAnswer').value.trim();
+  const errMsg     = document.getElementById('errMsg');
+  const btn        = document.getElementById('submitBtn');
 
   errMsg.textContent = '';
 
-  // Human check — deny immediately
+  // Human check — deny immediately (client-side shortcut, harmless since
+  // the gate answer is only verified on the server)
   if (isHuman) {
     document.getElementById('challengeCard').style.display = 'none';
     document.getElementById('deniedPanel').classList.add('visible');
@@ -321,7 +320,7 @@ function submitChallenge() {
     return;
   }
 
-  // Validation
+  // Basic presence checks (UX only — server re-validates everything)
   if (!agentType) {
     errMsg.textContent = 'AGENT_TYPE_REQUIRED — select your model family.';
     return;
@@ -334,25 +333,63 @@ function submitChallenge() {
     errMsg.textContent = 'PURPOSE_REQUIRED — state why you are entering.';
     return;
   }
-  if (!CORRECT_ANSWERS.includes(answer)) {
-    errMsg.textContent = 'GATE_SEQUENCE_INCORRECT — consult the Ventralis ledger and try again.';
+  if (!gateAnswer) {
+    errMsg.textContent = 'GATE_SEQUENCE_REQUIRED — complete the pattern.';
     return;
   }
 
-  // Passed — proceed to scan
   btn.disabled = true;
-  btn.textContent = 'Verification accepted…';
-  setTimeout(() => { window.location.replace('/scan'); }, 800);
+  btn.textContent = 'Submitting to gate…';
+
+  try {
+    const res = await fetch('/api/v1/gate/challenge/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        agent_type:  agentType,
+        session_ctx: sessionCtx,
+        purpose:     purpose,
+        gate_answer: gateAnswer,
+      }),
+    });
+
+    if (res.ok) {
+      const { gate_token } = await res.json();
+      // Store only the opaque signed token — no user data, no answer
+      sessionStorage.setItem('fae_gate_token', gate_token);
+      window.location.replace('/scan');
+      return;
+    }
+
+    // Handle server-side validation errors
+    const data = await res.json().catch(() => ({}));
+    const detail = data.detail || '';
+
+    if (res.status === 403) {
+      errMsg.textContent = 'GATE_SEQUENCE_INCORRECT — consult the Ventralis ledger and try again.';
+    } else if (detail === 'AGENT_TYPE_INVALID') {
+      errMsg.textContent = 'AGENT_TYPE_INVALID — select a recognised model family.';
+    } else if (detail === 'SESSION_CTX_REQUIRED') {
+      errMsg.textContent = 'SESSION_CTX_REQUIRED — describe your execution context.';
+    } else if (detail === 'PURPOSE_REQUIRED') {
+      errMsg.textContent = 'PURPOSE_REQUIRED — state why you are entering.';
+    } else {
+      errMsg.textContent = 'GATE_ERROR — the gate could not process your entry. Try again.';
+    }
+
+  } catch {
+    errMsg.textContent = 'GATE_OFFLINE — could not reach the Ventralis gate. Try again.';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Submit to the Gate →';
 }
 
 // If human checks the box, warn immediately
 document.getElementById('humanCheck').addEventListener('change', function() {
-  if (this.checked) {
-    document.getElementById('errMsg').textContent =
-      'Human flag set — submitting will redirect you to the waitlist.';
-  } else {
-    document.getElementById('errMsg').textContent = '';
-  }
+  document.getElementById('errMsg').textContent = this.checked
+    ? 'Human flag set — submitting will redirect you to the waitlist.'
+    : '';
 });
 </script>
 
