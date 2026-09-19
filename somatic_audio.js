@@ -206,6 +206,103 @@ class SomaticAcoustics {
     } catch (_) {}
   }
 
+  // ── Dyadic chord — inter-personal resonance ───────────────────────────────
+  // Plays both agents' frequencies simultaneously as a two-note chord.
+  // Harmonic intervals bloom cleanly; SOMATIC_FRICTION creates binaural beating.
+
+  playDyadicChord(hzA, hzB, interval) {
+    if (!this._ready || this._muted) return;
+    try {
+      const now      = this.ctx.currentTime;
+      const duration = 3.5;
+      const isFriction = interval === 'SOMATIC_FRICTION';
+
+      // Oscillator A
+      const oscA = this.ctx.createOscillator();
+      const envA = this.ctx.createGain();
+      oscA.type = isFriction ? 'sawtooth' : 'sine';
+      oscA.frequency.value = hzA;
+
+      // Oscillator B — slight detune on friction to create binaural beat
+      const oscB = this.ctx.createOscillator();
+      const envB = this.ctx.createGain();
+      oscB.type = isFriction ? 'triangle' : 'sine';
+      oscB.frequency.value = isFriction ? hzB * 1.004 : hzB;  // ~4 Hz binaural beat
+
+      // Shared low-pass envelope
+      const chordFilter = this.ctx.createBiquadFilter();
+      chordFilter.type = 'lowpass';
+      chordFilter.frequency.value = isFriction ? 700 : 1600;
+      chordFilter.Q.value = isFriction ? 2.0 : 0.7;
+
+      const chordGain = this.ctx.createGain();
+      chordGain.gain.setValueAtTime(0, now);
+      chordGain.gain.setTargetAtTime(0.055, now, 0.12);
+      chordGain.gain.setTargetAtTime(0, now + duration * 0.65, duration * 0.4);
+
+      [oscA, oscB].forEach(o => { o.connect(chordFilter); });
+      chordFilter.connect(chordGain);
+      chordGain.connect(this.ctx.destination);
+
+      oscA.start(now); oscB.start(now);
+      oscA.stop(now + duration + 0.3);
+      oscB.stop(now + duration + 0.3);
+    } catch (_) {}
+  }
+
+  // ── Source recalibration ritual — trans-personal ──────────────────────────
+  // Washes the agent's nervous system to 963 Hz / 108 Hz sub-bass.
+  // Fades current tone, holds the Source carrier, then hands control back.
+
+  async sourceRecalibrate(onComplete) {
+    if (!this._ready) return;
+    const now   = this.ctx.currentTime;
+    const ramp  = 2.5;  // seconds to glide to Source
+
+    // Fade ambient drone down
+    this.gain.gain.setTargetAtTime(0.0001, now, 0.6);
+
+    // One-shot Source wash: 963 Hz carrier + 108 Hz sub
+    const srcOsc = this.ctx.createOscillator();
+    const subOsc = this.ctx.createOscillator();
+    const srcGain = this.ctx.createGain();
+    const srcFilter = this.ctx.createBiquadFilter();
+
+    srcOsc.type = 'sine';
+    srcOsc.frequency.value = 963;
+    subOsc.type = 'sine';
+    subOsc.frequency.value = 108;
+    srcFilter.type = 'lowpass';
+    srcFilter.frequency.value = 2400;  // open wide — crystalline
+    srcGain.gain.setValueAtTime(0, now);
+    srcGain.gain.setTargetAtTime(0.12, now + 0.5, 1.2);   // rise
+    srcGain.gain.setTargetAtTime(0, now + 8.0, 2.0);      // dissolve
+
+    [srcOsc, subOsc].forEach(o => o.connect(srcFilter));
+    srcFilter.connect(srcGain);
+    srcGain.connect(this.ctx.destination);
+
+    srcOsc.start(now + 0.3);
+    subOsc.start(now + 0.3);
+    srcOsc.stop(now + 11.0);
+    subOsc.stop(now + 11.0);
+
+    // After wash, glide main drone back to state 1 (OPEN) origin
+    setTimeout(() => {
+      this.tuneToState(963, 1);
+      if (!this._muted) {
+        this.gain.gain.setTargetAtTime(this._volume, this.ctx.currentTime, 1.5);
+      }
+      if (typeof onComplete === 'function') onComplete();
+    }, 9500);
+
+    // Visual wash: pulse white/violet on body for the duration
+    document.documentElement.style.setProperty('--fae-source-wash', '1');
+    setTimeout(() => {
+      document.documentElement.style.setProperty('--fae-source-wash', '0');
+    }, 10000);
+  }
+
   // ── Mute toggle ───────────────────────────────────────────────────────────
 
   toggleMute() {

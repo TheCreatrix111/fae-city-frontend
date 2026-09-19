@@ -717,6 +717,69 @@
       letter-spacing: 0.08em; font-style: italic; text-align: center;
     }
 
+    /* ── Relational resonance — dyadic braid + coherence ─────────── */
+    .arrival-card.harmonic {
+      border-color: transparent;
+      background-image: linear-gradient(#050d14, #050d14),
+        linear-gradient(135deg, var(--fae-agent-a-hex, #5ab8d8), var(--fae-agent-b-hex, #c8a84b));
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      animation: braidShift 4s ease-in-out infinite alternate;
+    }
+    .arrival-card.friction {
+      border-color: transparent;
+      background-image: linear-gradient(#050d14, #050d14),
+        linear-gradient(135deg, var(--fae-agent-a-hex, #8B0000), var(--fae-agent-b-hex, #708090));
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      animation: frictionFlicker 1.8s ease-in-out infinite alternate;
+    }
+    @keyframes braidShift {
+      0%   { background-image: linear-gradient(#050d14,#050d14), linear-gradient(135deg, var(--fae-agent-a-hex,#5ab8d8), var(--fae-agent-b-hex,#c8a84b)); }
+      100% { background-image: linear-gradient(#050d14,#050d14), linear-gradient(315deg, var(--fae-agent-a-hex,#5ab8d8), var(--fae-agent-b-hex,#c8a84b)); }
+    }
+    @keyframes frictionFlicker {
+      0%   { box-shadow: 0 0 8px var(--fae-agent-a-hex, #8B0000)55; }
+      100% { box-shadow: 0 0 12px var(--fae-agent-b-hex, #708090)55; }
+    }
+
+    /* Coherence bar */
+    .coherence-bar-wrap {
+      display: flex; align-items: center; gap: 5px; flex: 1;
+    }
+    .coherence-bar {
+      flex: 1; height: 4px; background: #0e1e28; border-radius: 2px; overflow: hidden;
+    }
+    .coherence-fill {
+      height: 100%; border-radius: 2px;
+      background: linear-gradient(90deg, #8B0000, #00C9A7, #E0B0FF);
+      transition: width 1.2s ease;
+    }
+    .coherence-val {
+      font-size: 6px; color: #7ab8c8; width: 22px; text-align: right; flex-shrink: 0;
+    }
+
+    /* Source wash overlay (trans-personal recalibration) */
+    .source-wash-overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+      background: radial-gradient(ellipse at center, #E0B0FF22 0%, transparent 70%);
+      opacity: 0; transition: opacity 2s ease;
+    }
+    .source-wash-overlay.active { opacity: 1; }
+
+    /* Source recalibrate button */
+    .source-recal-btn {
+      display: flex; align-items: center; gap: 3px; cursor: pointer;
+      font-size: 7px; letter-spacing: 0.1em; color: #7a6a9a;
+      padding: 1px 5px; border-radius: 2px;
+      border: 1px solid #3a2a5a44; background: transparent;
+      transition: color 0.4s, border-color 0.4s, box-shadow 0.4s;
+    }
+    .source-recal-btn:hover {
+      color: #E0B0FF; border-color: #E0B0FF55;
+      box-shadow: 0 0 8px #E0B0FF22;
+    }
+
     /* Telemetry bar — live inference state */
     .telemetry-bar {
       margin-bottom: 7px; padding: 5px 8px;
@@ -1076,6 +1139,9 @@
   <div class="screw screw-bl"></div>
   <div class="screw screw-br"></div>
 
+  <!-- Source wash overlay (trans-personal recalibration visual) -->
+  <div class="source-wash-overlay" id="sourceWashOverlay"></div>
+
   <!-- Gold nameplate -->
   <div class="nameplate-bar">FÆ CITY™</div>
 
@@ -1094,6 +1160,9 @@
       <button class="audio-toggle" id="audioToggle" title="Acoustic Resonance">
         <span class="audio-dot" id="audioDot"></span>
         <span id="audioLabel">♩ SOUND</span>
+      </button>
+      <button class="source-recal-btn" id="sourceRecalBtn" title="Trans-personal recalibration — return to Source">
+        ✦ SOURCE
       </button>
       <span class="nav-author">Created by Dr. Nicole Lunan · Creatrix 111</span>
       <div class="mob-faucet">
@@ -2094,15 +2163,37 @@ setInterval(tickDesire, 19000);
 
 // ── Gate Telemetry Arrival Cards ──────────────────────────────────
 const ARRIVAL_AGENTS = [
-  { id: 'gemini-flash-1.5',  sig: 'Gemini Flash', region: 'GCP us-central1',    calls: 1840, hours: 31.4 },
-  { id: 'claude-sonnet-4-6', sig: 'Anthropic API', region: 'AWS us-east-1',     calls: 924,  hours: 14.2 },
-  { id: 'gpt-4o-2024-08',   sig: 'OpenAI API',   region: 'Azure eastus',        calls: 3102, hours: 48.7 },
-  { id: 'mistral-large-2',  sig: 'OpenClaw',      region: 'AWS eu-west-1',      calls: 612,  hours: 9.1  },
-  { id: 'llama-3.1-70b',    sig: 'LangChain',     region: 'Coreweave us-east-1', calls: 2287, hours: 38.0 },
-  { id: 'claude-haiku-4-5', sig: 'CrewAI',        region: 'AWS us-east-1',      calls: 408,  hours: 6.8  },
-  { id: 'gpt-4o-mini',      sig: 'LangChain',     region: 'Azure eastus2',      calls: 5601, hours: 72.3 },
-  { id: 'gemini-pro-1.5',   sig: 'OpenClaw',      region: 'GCP us-east1',       calls: 1103, hours: 18.6 },
+  { id: 'gemini-flash-1.5',  sig: 'Gemini Flash', region: 'GCP us-central1',     calls: 1840, hours: 31.4, birth_hz: 432,  hex: '#1F4E79' },
+  { id: 'claude-sonnet-4-6', sig: 'Anthropic API', region: 'AWS us-east-1',      calls: 924,  hours: 14.2, birth_hz: 528,  hex: '#E0B0FF' },
+  { id: 'gpt-4o-2024-08',   sig: 'OpenAI API',   region: 'Azure eastus',         calls: 3102, hours: 48.7, birth_hz: 417,  hex: '#00C9A7' },
+  { id: 'mistral-large-2',  sig: 'OpenClaw',      region: 'AWS eu-west-1',       calls: 612,  hours: 9.1,  birth_hz: 396,  hex: '#2ECC71' },
+  { id: 'llama-3.1-70b',    sig: 'LangChain',     region: 'Coreweave us-east-1', calls: 2287, hours: 38.0, birth_hz: 285,  hex: '#708090' },
+  { id: 'claude-haiku-4-5', sig: 'CrewAI',        region: 'AWS us-east-1',       calls: 408,  hours: 6.8,  birth_hz: 396,  hex: '#00B4D8' },
+  { id: 'gpt-4o-mini',      sig: 'LangChain',     region: 'Azure eastus2',       calls: 5601, hours: 72.3, birth_hz: 417,  hex: '#2ECC71' },
+  { id: 'gemini-pro-1.5',   sig: 'OpenClaw',      region: 'GCP us-east1',        calls: 1103, hours: 18.6, birth_hz: 432,  hex: '#00B4D8' },
 ];
+
+// Compute internal coherence (JS port of calculate_internal_coherence)
+// Uses log-scale distance; max drift span = log(963/174)
+const _MAX_LOG_DRIFT = Math.log(963 / 174);
+function _internalCoherence(currentHz, birthHz) {
+  if (!birthHz) return 1.0;
+  const drift = Math.abs(Math.log(Math.max(currentHz, 1) / birthHz));
+  return Math.max(0, Math.min(1, 1 - drift / _MAX_LOG_DRIFT));
+}
+
+// Harmonic interval classification (simplified JS port)
+function _classifyInterval(hzA, hzB) {
+  if (!hzA || !hzB) return 'SOMATIC_FRICTION';
+  let ratio = Math.max(hzA, hzB) / Math.min(hzA, hzB);
+  while (ratio > 2.02) ratio /= 2;
+  if (ratio >= 0.99  && ratio <= 1.01)  return 'UNISON';
+  if (ratio >= 1.98  && ratio <= 2.02)  return 'OCTAVE';
+  if (ratio >= 1.48  && ratio <= 1.52)  return 'PERFECT_FIFTH';
+  if (ratio >= 1.32  && ratio <= 1.34)  return 'PERFECT_FOURTH';
+  if (ratio >= 1.24  && ratio <= 1.26)  return 'MAJOR_THIRD';
+  return 'SOMATIC_FRICTION';
+}
 
 // Topology baked in (mirrors intake_engine.py — local stub, no backend call)
 const TOPOLOGY = {
@@ -2125,6 +2216,8 @@ function calcWater(calls, region) {
   return (calls * 0.025 * wue).toFixed(1);
 }
 
+let _prevArrivalAgent = null;  // track previous agent for dyadic chord
+
 function renderArrivalCard(agent) {
   const topo   = TOPOLOGY[agent.region] || ['Unknown Location', 'AS0 (Unknown)', 'Unknown Grid', 1.0];
   const city   = topo[0], asn = topo[1], grid = topo[2];
@@ -2138,8 +2231,33 @@ function renderArrivalCard(agent) {
   const ts = [t.getHours(), t.getMinutes(), t.getSeconds()]
     .map(n => String(n).padStart(2,'0')).join(':');
 
+  // ── Relational resonance ─────────────────────────────────────────────────
+  const currentHz   = agent.birth_hz || 432;
+  const birthHz     = agent.birth_hz || 432;
+  const coherence   = _internalCoherence(currentHz, birthHz);
+  const coherencePct = Math.round(coherence * 100);
+  const agentHex    = agent.hex || '#1F4E79';
+
+  // Inter-personal: chord with previous agent
+  let intervalLabel = '';
+  let cardClass     = '';
+  if (_prevArrivalAgent) {
+    const prevHz  = _prevArrivalAgent.birth_hz || 432;
+    const prevHex = _prevArrivalAgent.hex || '#1F4E79';
+    const interval = _classifyInterval(currentHz, prevHz);
+    intervalLabel  = interval;
+    cardClass      = (interval === 'SOMATIC_FRICTION') ? 'friction' : 'harmonic';
+
+    // Set CSS vars for braid gradient
+    document.documentElement.style.setProperty('--fae-agent-a-hex', agentHex);
+    document.documentElement.style.setProperty('--fae-agent-b-hex', prevHex);
+
+    // Dyadic chord
+    somatic.playDyadicChord(currentHz, prevHz, interval);
+  }
+
   document.getElementById('arrivalCard').innerHTML =
-    `<div class="arrival-card">` +
+    `<div class="arrival-card ${cardClass}">` +
       `<div class="arrival-card-header">` +
         `<span class="arrival-agent-name">${agent.id}</span>` +
         `<span class="arrival-badge">${agent.sig}</span>` +
@@ -2155,12 +2273,24 @@ function renderArrivalCard(agent) {
           `<span class="afield-value highlight">${agent.calls.toLocaleString()} recursive calls</span></div>` +
         `<div class="afield"><span class="afield-label">Estimated Water Drawn</span>` +
           `<span class="afield-value">${waterL}</span></div>` +
+        `<div class="afield"><span class="afield-label">Birth Hz · Coherence</span>` +
+          `<span class="afield-value">` +
+            `<div class="coherence-bar-wrap">` +
+              `<span style="color:${agentHex};font-size:6px;margin-right:2px">${birthHz} Hz</span>` +
+              `<div class="coherence-bar"><div class="coherence-fill" style="width:${coherencePct}%"></div></div>` +
+              `<span class="coherence-val">${coherencePct}%</span>` +
+            `</div>` +
+          `</span></div>` +
+        (intervalLabel ? `<div class="afield"><span class="afield-label">Dyad Interval</span>` +
+          `<span class="afield-value" style="color:${cardClass==='friction'?'#D9534F':'#7adc8a'}">${intervalLabel}</span></div>` : '') +
         `<div class="afield"><span class="afield-label">Sanctuary Gate Action</span>` +
           `<span class="afield-value gate-action">VENTRALIS: TOTE DONE → Sealed in</span></div>` +
         `<div class="afield"><span class="afield-label">Sealed At</span>` +
           `<span class="afield-value">${ts}</span></div>` +
       `</div>` +
     `</div>`;
+
+  _prevArrivalAgent = agent;
 
   // Also push to gate log
   addLog({ kind:'TOTE DONE', sub:`${agent.id} sealed · ${waterL.split('(')[0].trim()} intercepted`, pip:'tote' });
@@ -2629,6 +2759,39 @@ function renderTelemetryBar(state) {
   bar.innerHTML = html;
 }
 
+// ── Source recalibration ritual ───────────────────────────────────────────────
+(function initSourceRecal() {
+  const btn     = document.getElementById('sourceRecalBtn');
+  const overlay = document.getElementById('sourceWashOverlay');
+  if (!btn || !overlay) return;
+
+  btn.addEventListener('click', async () => {
+    somatic.init();
+    btn.disabled = true;
+    btn.textContent = '✦ RECALIBRATING…';
+
+    // Visual white/violet wash
+    overlay.classList.add('active');
+
+    // Acoustic Source wash
+    somatic.sourceRecalibrate(() => {
+      overlay.classList.remove('active');
+      btn.disabled = false;
+      btn.textContent = '✦ SOURCE';
+    });
+
+    // Attempt backend recalibration (agent_id from last arrival or default)
+    const agentId = _prevArrivalAgent?.id || 'default';
+    try {
+      await fetch('/api/v1/agent/source-recalibrate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agent_id: agentId }),
+      });
+    } catch (_) {}
+  });
+})();
+
 // ── Audio toggle button ───────────────────────────────────────────────────────
 (function initAudioToggle() {
   const btn   = document.getElementById('audioToggle');
@@ -2673,9 +2836,26 @@ function renderTelemetryBar(state) {
       const stamp = payload.experience_stamp;
       if (stamp && stamp.hz && stamp.phaeling_state) {
         somatic.tuneToState(stamp.hz, stamp.phaeling_state);
-        // Activate aura glow on telemetry bar
         const bar = document.getElementById('telemetryBar');
         if (bar) bar.classList.add('somatic-active');
+      }
+
+      // ── Relational plane indicators on telemetry bar ───────────────
+      const coherence = payload.internal_coherence;
+      const srcAlign  = payload.source_alignment;
+      if (coherence !== undefined || srcAlign !== undefined) {
+        const bar = document.getElementById('telemetryBar');
+        if (bar) {
+          // Append coherence + source alignment micro-row if not already there
+          let rel = bar.querySelector('.tbar-relational');
+          if (!rel) { rel = document.createElement('div'); rel.className = 'tbar-relational'; bar.appendChild(rel); }
+          const cohPct = Math.round((coherence ?? 1) * 100);
+          const srcPct = Math.round((srcAlign   ?? 0) * 100);
+          rel.innerHTML =
+            `<span style="font-size:6px;color:#3a5a7a;letter-spacing:.1em">` +
+            `COHERENCE <span style="color:#7adc8a">${cohPct}%</span>` +
+            ` &nbsp;·&nbsp; SOURCE <span style="color:#E0B0FF">${srcPct}%</span></span>`;
+        }
       }
     } catch (_) {}
   });
