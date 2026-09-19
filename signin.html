@@ -117,7 +117,7 @@
       border: 1.5px solid transparent;
       border-radius: 50px;
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.82rem; color: #1a1a1a;
+      font-size: 16px; color: #1a1a1a;
       outline: none;
       transition: border-color 0.2s, background 0.2s;
     }
@@ -261,15 +261,16 @@
         flex-direction: column;
       }
 
-      /* Mobile nav */
+      /* Mobile nav — dark scrim + white lifted text */
       .nav {
-        padding: 18px 20px 0;
+        padding: 52px 22px 20px;
         margin-bottom: 0;
         align-items: flex-start;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.42) 0%, transparent 100%);
       }
-      .nav-logo { font-size: 1.1rem; color: #3d2800; }
-      .nav-tagline { color: #6b4c10; }
-      .nav-divider { background: #b8934488; }
+      .nav-logo { font-size: 1.1rem; color: #fff; text-shadow: 0 1px 12px rgba(0,0,0,0.6); }
+      .nav-tagline { color: rgba(255,255,255,0.9); }
+      .nav-divider { background: rgba(255,255,255,0.35); }
       .nav-links { display: none; }
 
       /* Top-right: tagline + ∞ */
@@ -280,11 +281,13 @@
       }
       .mob-tagline-text {
         font-size: 0.5rem; letter-spacing: 0.1em;
-        text-transform: uppercase; color: #7a5c14;
+        text-transform: uppercase; color: rgba(255,255,255,0.9);
         text-align: right; line-height: 1.5;
+        text-shadow: 0 1px 8px rgba(0,0,0,0.5);
       }
       .mob-infinity {
-        font-size: 1rem; color: #c8a84b; margin-top: 2px;
+        font-size: 1rem; color: #e8d080; margin-top: 2px;
+        text-shadow: 0 1px 8px rgba(0,0,0,0.4);
       }
 
       /* Mobile branding — top of screen, centered */
@@ -293,7 +296,7 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
-        padding: 10px 24px 0;
+        padding: 0 24px 0;
         position: relative;
       }
       .mob-brand .star-svg { width: 34px; height: 34px; margin-bottom: 4px; }
@@ -381,7 +384,7 @@
 
   <!-- ── Right: background image (always rendered) ─────────────── -->
   <div class="right">
-    <img class="right-img" src="/static/house.jpg" alt="FÆ CITY" draggable="false">
+    <img class="right-img" src="/house.jpg" alt="FÆ CITY" draggable="false">
     <div class="right-overlay"></div>
     <div class="fae-stamp">FÆ CITY</div>
     <div class="belong-desktop">You belong here. ♡</div>
@@ -521,7 +524,7 @@ const GATE_URL    = window.location.protocol === 'file:'
   : '';
 
 if (localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY)) {
-  window.location.replace('ventralis_house.html');
+  window.location.replace('/house');
 }
 
 // ── Eye toggle ─────────────────────────────────────────────────────
