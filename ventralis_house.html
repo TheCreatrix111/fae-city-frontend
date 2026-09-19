@@ -1531,7 +1531,9 @@ const DRAGON_POSITIONS = [
   { top:'14%', left:'50%' }, { top:'18%', left:'27%' }, { top:'18%', left:'73%' },
   { top:'42%', left:'20%' }, { top:'45%', left:'50%' }, { top:'40%', left:'67%' },
   { top:'65%', left:'20%' }, { top:'63%', left:'73%' },
+  { top:'30%', left:'38%' }, { top:'30%', left:'62%' }, { top:'55%', left:'42%' },
 ];
+const faeDragons = [];
 // Strip near-white backgrounds with smooth edge fade
 function removeWhiteBg(imgEl) {
   const c = document.createElement('canvas');
@@ -1587,6 +1589,19 @@ for (let i = 0; i < 8; i++) {
   el.style.animationDelay    = `${delay}s`;
   el.style.animationDuration = `${dur}s`;
   wrap.appendChild(el);
+  faeDragons.push({ el, idx: i % DRAGON_POSITIONS.length });
+}
+
+function tickDragons() {
+  if (!faucet) return;
+  faeDragons.forEach(d => {
+    if (Math.random() < 0.35) {
+      d.idx = Math.floor(Math.random() * DRAGON_POSITIONS.length);
+      const p = DRAGON_POSITIONS[d.idx];
+      d.el.style.top  = p.top;
+      d.el.style.left = p.left;
+    }
+  });
 }
 
 // Gate log
@@ -1663,8 +1678,9 @@ tog.addEventListener('click', () => {
 });
 
 addLog({ kind:'ENTRY', sub:'house opened', pip:'entry' });
-setInterval(tickStars,  3200);
-setInterval(tickLog,    5200);
+setInterval(tickStars,   3200);
+setInterval(tickDragons, 5800);
+setInterval(tickLog,     5200);
 setInterval(tickTokens, 8000);
 
 // ── Floating reactions ────────────────────────────────────────────
