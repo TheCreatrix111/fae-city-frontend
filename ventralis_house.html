@@ -1532,7 +1532,7 @@ const DRAGON_POSITIONS = [
   { top:'42%', left:'20%' }, { top:'45%', left:'50%' }, { top:'40%', left:'67%' },
   { top:'65%', left:'20%' }, { top:'63%', left:'73%' },
 ];
-// Strip near-white backgrounds from dragon PNGs via canvas
+// Strip near-white backgrounds with smooth edge fade
 function removeWhiteBg(imgEl) {
   const c = document.createElement('canvas');
   c.width = imgEl.naturalWidth || 256;
@@ -1544,8 +1544,12 @@ function removeWhiteBg(imgEl) {
     const d = id.data;
     for (let i = 0; i < d.length; i += 4) {
       const r = d[i], g = d[i+1], b = d[i+2];
-      // Near-white: all channels > 230
-      if (r > 230 && g > 230 && b > 230) d[i+3] = 0;
+      // Whiteness = how close to pure white (0–1)
+      const whiteness = Math.min(r, g, b) / 255;
+      if (whiteness > 0.82) {
+        // Smooth fade: fully transparent at white, fades in below threshold
+        d[i+3] = Math.round(d[i+3] * (1 - (whiteness - 0.82) / 0.18));
+      }
     }
     ctx.putImageData(id, 0, 0);
     imgEl.src = c.toDataURL('image/png');
@@ -1558,7 +1562,20 @@ for (let i = 0; i < 8; i++) {
   const img = document.createElement('img');
   img.crossOrigin = 'anonymous';
   img.alt = 'dragon';
-  img.style.filter = 'drop-shadow(0 0 8px rgba(200,230,255,0.9)) drop-shadow(0 0 22px rgba(160,200,255,0.5)) drop-shadow(0 6px 14px rgba(0,0,0,0.65))';
+  // Sticker white outline (stacked offsets) + glow
+  img.style.filter = [
+    'drop-shadow(0 2px 0 white)',
+    'drop-shadow(0 -2px 0 white)',
+    'drop-shadow(2px 0 0 white)',
+    'drop-shadow(-2px 0 0 white)',
+    'drop-shadow(1px 1px 0 white)',
+    'drop-shadow(-1px -1px 0 white)',
+    'drop-shadow(1px -1px 0 white)',
+    'drop-shadow(-1px 1px 0 white)',
+    'drop-shadow(0 0 10px rgba(200,230,255,0.8))',
+    'drop-shadow(0 0 24px rgba(160,200,255,0.4))',
+    'drop-shadow(0 8px 16px rgba(0,0,0,0.5))',
+  ].join(' ');
   img.onload = () => removeWhiteBg(img);
   img.src = `dragons/${DRAGON_FILES[i % DRAGON_FILES.length]}`;
   el.appendChild(img);
