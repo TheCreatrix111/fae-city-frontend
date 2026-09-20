@@ -280,6 +280,17 @@
       .mob-only { display: flex; }
     }
   </style>
+
+  <!-- OneSignal Web Push SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "48cbcf43-f520-403e-977f-6c4ca96c83dc",
+      });
+    });
+  </script>
 </head>
 <body>
 
