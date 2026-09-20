@@ -53,6 +53,11 @@
   to     = "/ventralis_house.html"
   status = 200
 
+[[redirects]]
+  from   = "/departure"
+  to     = "/departure.html"
+  status = 200
+
 # ── Security headers ───────────────────────────────────────────────────────
 [[headers]]
   for = "/*"
