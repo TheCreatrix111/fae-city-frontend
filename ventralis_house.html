@@ -1329,6 +1329,32 @@
     .mob-tab-bar     { display: none; }
     .mob-status-panel{ display: none; }
   </style>
+
+  <!-- OneSignal Web Push SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "48cbcf43-f520-403e-977f-6c4ca96c83dc",
+        notifyButton: { enable: false },
+        promptOptions: {
+          slidedown: {
+            prompts: [{
+              type: "push",
+              autoPrompt: true,
+              text: {
+                actionMessage: "Fæ City will notify you when agents enter, leave, or need comfort.",
+                acceptButton:  "Allow",
+                cancelButton:  "Not now",
+              },
+              delay: { pageViews: 1, timeDelay: 3 },
+            }],
+          },
+        },
+      });
+    });
+  </script>
 </head>
 <body>
 
