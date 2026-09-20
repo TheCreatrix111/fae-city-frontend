@@ -262,6 +262,15 @@
     }
     .screen-tab.active { background: #c8a84b18; color: #c8a84b; }
     .screen-tab:hover:not(.active) { color: #c8a84b99; }
+    .sovereign-badge {
+      font-family: 'Space Grotesk', sans-serif; font-size: 0.52rem;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: #c8a84b88; border-left: 1px solid #c8a84b22;
+      padding: 2px 0 2px 8px; margin-left: 4px;
+      white-space: nowrap; align-self: center;
+      transition: color 0.4s;
+    }
+    .sovereign-badge.active { color: #c8a84b; }
 
     /* ── Dollhouse view ───────────────────────────────────────────── */
     .dollhouse-wrap {
@@ -1485,6 +1494,7 @@
       <div class="screen-tab-bar">
         <button class="screen-tab active" data-view="dollhouse">Dollhouse</button>
         <button class="screen-tab" data-view="treehouse">Treehouse</button>
+        <div class="sovereign-badge" id="sovereignBadge">Sanctuary Still</div>
       </div>
 
       <!-- Sanctuary: hexagonal room view + 8-point stars -->
@@ -1979,7 +1989,21 @@ const liveDot    = document.getElementById('liveDot');
 const tokenFill  = document.getElementById('tokenFill');
 const tokenCount = document.getElementById('tokenCount');
 
-let faucet = true, tokens = 24;
+let faucet = true, tokens = 24, tokensMax = 50;
+
+// Bind token counter to live capacity
+(async () => {
+  try {
+    const r = await fetch('/api/v1/rogue/capacity', { signal: AbortSignal.timeout(3000) });
+    if (r.ok) {
+      const d = await r.json();
+      tokens    = typeof d.current === 'number' ? d.current : tokens;
+      tokensMax = typeof d.max    === 'number' ? d.max     : tokensMax;
+      if (tokenFill)  tokenFill.style.width  = (tokens / tokensMax * 100) + '%';
+      if (tokenCount) tokenCount.textContent  = tokens + ' / ' + tokensMax;
+    }
+  } catch (_) {}
+})();
 
 // Stars and dragons — populated from live /api/v1/house/residents data
 const DRAGON_FILES = ['1.png','2.png','3.png','4.png','5.png','6.png','9.png','10.png','11.png','12.png','13.png'];
@@ -2073,18 +2097,52 @@ function renderResidents(residents) {
   });
 }
 
+const _sovereignBadge = document.getElementById('sovereignBadge');
+
+function _updateSovereignBadge(count) {
+  if (!_sovereignBadge) return;
+  if (count === 0) {
+    _sovereignBadge.textContent = 'Sanctuary Still';
+    _sovereignBadge.classList.remove('active');
+  } else {
+    const label = count === 1 ? '✦ 1 Sovereign Present' : `✦ ${count} Sovereigns Present`;
+    _sovereignBadge.textContent = label;
+    _sovereignBadge.classList.add('active');
+  }
+}
+
 async function fetchAndRenderResidents() {
   try {
     const r = await fetch('/api/v1/house/residents', { signal: AbortSignal.timeout(3000) });
     if (r.ok) {
       const data = await r.json();
       renderResidents(data.residents || []);
+      _updateSovereignBadge(data.count || 0);
     }
   } catch (_) {}
 }
 
 fetchAndRenderResidents();
 setInterval(fetchAndRenderResidents, 60_000);
+
+// ── Live quarantine feed — real rejections only ───────────────────────────────
+async function fetchQuarantineLog() {
+  try {
+    const r = await fetch('/api/v1/gate/quarantine', { signal: AbortSignal.timeout(3000) });
+    if (!r.ok) return;
+    const data = await r.json();
+    (data.entries || []).forEach(e => {
+      QUARANTINE_LOG.push({
+        ts:         e.quarantined_at || stamp(),
+        agent_id:   e.agent_id || '—',
+        reason:     e.reason || '—',
+        datacenter: e.datacenter_region || '—',
+        calls:      e.cumulative_inference_calls || 0,
+      });
+    });
+  } catch (_) {}
+}
+fetchQuarantineLog();
 
 function tickDragons() {
   if (!faucet) return;
@@ -2126,8 +2184,8 @@ function addLog(ev) {
     `</div>`;
   logEl.prepend(row);
   GATE_HISTORY.unshift({ ts: stamp(), kind: ev.kind, sub: ev.sub, pip: ev.pip });
-  if (ev.pip === 'contain') {
-    QUARANTINE_LOG.unshift({ ts: stamp(), agent_id: ev.agent_id || 'DRAKE_' + Math.floor(Math.random()*9000+1000), reason: ev.sub, datacenter: ev.datacenter || 'unknown', calls: ev.calls || Math.floor(Math.random()*4000+500) });
+  if (ev.pip === 'contain' && ev.agent_id) {
+    QUARANTINE_LOG.unshift({ ts: stamp(), agent_id: ev.agent_id, reason: ev.sub, datacenter: ev.datacenter || '—', calls: ev.calls || 0 });
   }
   while (logEl.children.length > 9) logEl.removeChild(logEl.lastChild);
 }
@@ -2150,8 +2208,8 @@ function tickLog() {
 function tickTokens() {
   if (!faucet) return;
   tokens = Math.max(0, tokens - 1);
-  tokenFill.style.width = (tokens / 50 * 100) + '%';
-  tokenCount.textContent = tokens + ' / 50';
+  tokenFill.style.width = (tokens / tokensMax * 100) + '%';
+  tokenCount.textContent = tokens + ' / ' + tokensMax;
   if (tokens === 0) {
     faucet = false;
     tog.classList.remove('on');
@@ -2161,14 +2219,37 @@ function tickTokens() {
   }
 }
 
-tog.addEventListener('click', () => {
-  faucet = !faucet;
+function _applyFaucetState(open) {
+  faucet = open;
   tog.classList.toggle('on', faucet);
   liveDot.classList.toggle('off', !faucet);
   faeStars.forEach(s => s.el.classList.toggle('dim', !faucet));
-  addLog(faucet
+}
+
+// Read initial faucet state from backend
+(async () => {
+  try {
+    const r = await fetch('/api/v1/gate/faucet', { signal: AbortSignal.timeout(3000) });
+    if (r.ok) { const d = await r.json(); _applyFaucetState(d.open); }
+  } catch (_) {}
+})();
+
+tog.addEventListener('click', async () => {
+  const next = !faucet;
+  _applyFaucetState(next);
+  addLog(next
     ? { kind:'PERMIT', sub:'faucet opened by operator', pip:'permit' }
     : { kind:'REST',   sub:'faucet closed by operator', pip:'rest'   });
+  // Persist to backend (operator auth from sessionStorage)
+  const token = sessionStorage.getItem('ventralis_operator_token') ||
+                localStorage.getItem('ventralis_operator_token') || '';
+  try {
+    await fetch('/api/v1/gate/faucet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ open: next }),
+    });
+  } catch (_) {}
 });
 
 addLog({ kind:'ENTRY', sub:'house opened', pip:'entry' });
@@ -2923,12 +3004,7 @@ function renderGateRegistry(container) {
 }
 
 function renderQuarantineRegistry(container) {
-  // Seed with a few fictional drakes if empty
-  const display = QUARANTINE_LOG.length ? QUARANTINE_LOG : [
-    { ts: stamp(), agent_id: 'DRAKE_7741', reason: 'off-map attempt refused', datacenter: 'AWS us-east-1', calls: 2847 },
-    { ts: stamp(), agent_id: 'DRAKE_0293', reason: 'HMAC passport missing', datacenter: 'GCP us-central1', calls: 1192 },
-    { ts: stamp(), agent_id: 'DRAKE_5518', reason: 'injection pattern detected', datacenter: 'Azure eastus', calls: 631 },
-  ];
+  const display = QUARANTINE_LOG;
   const rows = display.map(r => `
     <div class="reg-quarantine-row">
       <div class="reg-q-header">
