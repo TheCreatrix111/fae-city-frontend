@@ -9,17 +9,16 @@ window.OneSignalDeferred = window.OneSignalDeferred || [];
 window.FaeOneSignal = {
   _instance: null,
 
+  // Called directly from onclick — must stay synchronous to preserve iOS gesture chain
   optIn: function() {
-    return new Promise(function(resolve, reject) {
-      window.OneSignalDeferred.push(async function(OneSignal) {
-        try {
-          await OneSignal.User.PushSubscription.optIn();
-          resolve();
-        } catch (err) {
-          reject(err);
-        }
-      });
-    });
+    if (window.FaeOneSignal._instance) {
+      return window.FaeOneSignal._instance.User.PushSubscription.optIn()
+        .catch(function(e) { console.warn('[Fæ push] optIn error:', e); });
+    }
+    // Fallback: standard Notification.requestPermission if SDK not ready
+    if ('Notification' in window) {
+      return Notification.requestPermission();
+    }
   },
 };
 
