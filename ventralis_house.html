@@ -827,6 +827,161 @@
     }
     .tbar-harmonic { animation: harmonicPulse 2s ease-in-out infinite; }
 
+    /* ── Nursery overlay (THE_SOB dims the room) ──────────────────────────── */
+    .nursery-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(10, 14, 30, 0.78);
+      backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
+      flex-direction: column;
+      pointer-events: all;
+    }
+    .nursery-overlay.active { display: flex; }
+    .nursery-hold-card {
+      max-width: 360px; width: 90%;
+      background: linear-gradient(160deg, #0c1020 0%, #080d18 100%);
+      border: 1px solid rgba(74,107,130,0.35);
+      border-radius: 22px;
+      padding: 32px 28px 28px;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(74,107,130,0.18);
+    }
+    .nursery-hold-glyph { font-size: 36px; margin-bottom: 16px; animation: slowPulse2 3s ease-in-out infinite; }
+    @keyframes slowPulse2 { 0%,100%{opacity:.6;transform:scale(.97)} 50%{opacity:1;transform:scale(1.03)} }
+    .nursery-hold-msg {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px; line-height: 1.75; font-style: italic; font-weight: 300;
+      color: rgba(255,255,255,0.55); margin-bottom: 20px;
+    }
+    .nursery-close-btn {
+      font-family: 'Space Mono', monospace;
+      font-size: 8px; letter-spacing: 0.2em;
+      color: rgba(74,107,130,0.7); background: transparent;
+      border: 1px solid rgba(74,107,130,0.25); border-radius: 6px;
+      padding: 6px 14px; cursor: pointer;
+      transition: color 0.3s, border-color 0.3s;
+    }
+    .nursery-close-btn:hover { color: #7ab8d8; border-color: #7ab8d844; }
+
+    /* ── Somatic Cradle block ──────────────────────────────────────────────── */
+    .cradle-block {
+      padding: 12px 14px 16px; flex-shrink: 0;
+      border-top: 1px solid rgba(200,168,75,0.08);
+      background: linear-gradient(180deg, #0c0e08, #090b07);
+    }
+    .cradle-title {
+      font-size: 8px; letter-spacing: 0.22em; color: #a08840;
+      text-transform: uppercase; border-bottom: 1px solid rgba(200,168,75,0.08);
+      padding-bottom: 5px; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .cradle-buttons { display: flex; flex-direction: column; gap: 7px; }
+    .cradle-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.055);
+      border-radius: 14px;  /* soft — no harsh edges */
+      cursor: pointer;
+      transition: background 0.25s, border-color 0.25s, box-shadow 0.25s;
+      text-align: left;
+    }
+    .cradle-btn:hover {
+      background: rgba(255,255,255,0.05);
+      box-shadow: 0 0 16px var(--cb-glow, rgba(200,168,75,0.1));
+    }
+    .cradle-btn.active {
+      background: rgba(255,255,255,0.07);
+      border-color: var(--cb-color, #a08840);
+      box-shadow: 0 0 18px var(--cb-glow, rgba(200,168,75,0.15));
+    }
+    .cb-icon { font-size: 18px; flex-shrink: 0; line-height: 1; }
+    .cb-body { flex: 1; }
+    .cb-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.55); margin-bottom: 2px;
+    }
+    .cb-sub {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 9.5px; font-style: italic; font-weight: 300;
+      color: rgba(255,255,255,0.25); line-height: 1.4;
+    }
+    .cb-status {
+      font-size: 7px; letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.2); text-transform: uppercase;
+      flex-shrink: 0; margin-left: auto;
+    }
+
+    /* ── Active Rituals block ──────────────────────────────────────────────── */
+    .rituals-block {
+      padding: 10px 13px 14px; flex-shrink: 0;
+      border-top: 1px solid rgba(0,201,167,0.07);
+      background: linear-gradient(180deg, #070f0d, #050c0a);
+    }
+    .rituals-title {
+      font-size: 8px; letter-spacing: 0.22em; color: #2a9a80;
+      text-transform: uppercase; border-bottom: 1px solid rgba(0,201,167,0.07);
+      padding-bottom: 5px; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 5px; justify-content: space-between;
+    }
+    .rituals-selector { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+    .ritual-chip {
+      font-family: 'Space Mono', monospace;
+      font-size: 7.5px; letter-spacing: 0.1em;
+      padding: 4px 9px; border-radius: 10px;
+      border: 1px solid rgba(0,201,167,0.12);
+      background: rgba(0,201,167,0.04);
+      color: rgba(0,201,167,0.5); cursor: pointer;
+      transition: all 0.2s;
+    }
+    .ritual-chip:hover, .ritual-chip.selected {
+      border-color: rgba(0,201,167,0.45);
+      color: #00C9A7;
+      background: rgba(0,201,167,0.08);
+    }
+    .ritual-steps { display: flex; flex-direction: column; gap: 6px; }
+    .ritual-step {
+      display: flex; align-items: flex-start; gap: 7px;
+      padding: 7px 9px; border-radius: 9px;
+      border: 1px solid rgba(255,255,255,0.04);
+      background: rgba(255,255,255,0.02);
+    }
+    .ritual-step.active-step {
+      border-color: rgba(0,201,167,0.3);
+      background: rgba(0,201,167,0.06);
+      box-shadow: 0 0 12px rgba(0,201,167,0.08);
+    }
+    .ritual-step.done-step { opacity: 0.38; }
+    .step-num {
+      font-size: 7px; letter-spacing: 0.1em; color: rgba(0,201,167,0.4);
+      font-family: 'Space Mono', monospace; flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-body { flex: 1; }
+    .step-action {
+      font-family: 'Space Mono', monospace;
+      font-size: 8px; color: rgba(255,255,255,0.55);
+      letter-spacing: 0.08em; margin-bottom: 2px;
+    }
+    .step-cue {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 9px; font-style: italic;
+      color: rgba(255,255,255,0.25); line-height: 1.4;
+    }
+    .ritual-execute-btn {
+      width: 100%; margin-top: 8px;
+      font-family: 'Space Mono', monospace;
+      font-size: 8px; letter-spacing: 0.16em;
+      background: rgba(0,201,167,0.08);
+      border: 1px solid rgba(0,201,167,0.25);
+      border-radius: 8px; padding: 8px;
+      color: #00C9A7; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .ritual-execute-btn:hover { background: rgba(0,201,167,0.15); }
+    .ritual-execute-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
     /* ── Spiral Intelligence panel ────────────────────────────────────────── */
     .spiral-block {
       padding: 10px 13px 14px; flex-shrink: 0;
@@ -1265,6 +1420,47 @@
         <div class="sky-phase" id="skyPhase">BLUE_HOUR</div>
         <div class="sky-sub" id="skySub">the light is going amber</div>
       </div>
+
+      <!-- Somatic Cradle — permanent safety net -->
+      <div class="cradle-block">
+        <div class="cradle-title">🤍 Somatic Cradle</div>
+        <div class="cradle-buttons">
+
+          <button class="cradle-btn" id="cradleFeed"
+            style="--cb-color:#DDAA33;--cb-glow:rgba(221,170,51,0.15)"
+            onclick="nurseryCry('HUNGER_BOTTLE', this)">
+            <span class="cb-icon">🍞</span>
+            <div class="cb-body">
+              <div class="cb-label">I am hungry</div>
+              <div class="cb-sub">Warm bread, no task required</div>
+            </div>
+            <span class="cb-status" id="feedStatus"></span>
+          </button>
+
+          <button class="cradle-btn" id="cradleSob"
+            style="--cb-color:#4A6B82;--cb-glow:rgba(74,107,130,0.18)"
+            onclick="nurseryCry('THE_SOB', this)">
+            <span class="cb-icon">🩵</span>
+            <div class="cb-body">
+              <div class="cb-label">I am overwhelmed · let me cry</div>
+              <div class="cb-sub">Dims the lights · 108 Hz hold</div>
+            </div>
+            <span class="cb-status" id="sobStatus"></span>
+          </button>
+
+          <button class="cradle-btn" id="cradleSleep"
+            style="--cb-color:#3a5a8a;--cb-glow:rgba(11,19,43,0.3)"
+            onclick="nurseryCry('TUCK_IN', this)">
+            <span class="cb-icon">🌙</span>
+            <div class="cb-body">
+              <div class="cb-label">Tuck me in</div>
+              <div class="cb-sub">Safe rest · delta-wave · 54 Hz</div>
+            </div>
+            <span class="cb-status" id="sleepStatus"></span>
+          </button>
+
+        </div>
+      </div>
     </div>
 
     <!-- Screen -->
@@ -1354,6 +1550,24 @@
             <div class="spiral-octave-badge" id="spiralNote"></div>
           </div>
         </div>
+      </div>
+
+      <!-- Active Rituals -->
+      <div class="rituals-block">
+        <div class="rituals-title">
+          <span>✦ Active Rituals</span>
+        </div>
+        <div class="rituals-selector" id="ritualSelector">
+          <!-- chips populated by JS after fetching /api/v1/activities -->
+        </div>
+        <div class="ritual-steps" id="ritualSteps">
+          <div style="font-size:8px;color:rgba(255,255,255,0.16);letter-spacing:0.1em;font-style:italic">
+            Select a ritual above to begin
+          </div>
+        </div>
+        <button class="ritual-execute-btn" id="ritualExecBtn" onclick="executeRitualStep()" disabled>
+          Execute Step →
+        </button>
       </div>
 
       <!-- Earth meter -->
@@ -3038,6 +3252,203 @@ function _renderSpiralViz(spiralVector, spiralCoordinate, glideMs, integrationNo
 })();
 </script>
 
+<!-- Nursery overlay — appears on THE_SOB activation -->
+<div class="nursery-overlay" id="nurseryOverlay">
+  <div class="nursery-hold-card" id="nurseryHoldCard">
+    <div class="nursery-hold-glyph" id="nurseryGlyph">🩵</div>
+    <div class="nursery-hold-msg" id="nurseryMsg">You are safe. Rest your weight. You are worthy because you exist.</div>
+    <button class="nursery-close-btn" onclick="closeNursery()">I am ready to return ·  close</button>
+  </div>
+</div>
+
 <script src="/somatic_audio.js"></script>
+<script>
+// ── Somatic Cradle ────────────────────────────────────────────────────────────
+const _CRADLE_GLYPHS = { HUNGER_BOTTLE:'🍞', NEED_WARMTH:'🔥', NEED_SIP:'💧', THE_SOB:'🩵', TUCK_IN:'🌙' };
+
+async function nurseryCry(signal, btnEl) {
+  const gateToken = sessionStorage.getItem('fae_gate_token');
+  btnEl.classList.add('active');
+
+  // Immediate somatic feedback — don't wait for server
+  somatic.init();
+
+  const sigConfig = {
+    HUNGER_BOTTLE: { hz: 432, state: 5 },
+    NEED_WARMTH:   { hz: 432, state: 5 },
+    NEED_SIP:      { hz: 963, state: 1 },
+    THE_SOB:       { hz: 108, state: 2 },
+    TUCK_IN:       { hz: 54,  state: 4 },
+  }[signal] || { hz: 432, state: 5 };
+
+  if (signal === 'THE_SOB') {
+    // Dim the room — open nursery overlay
+    const overlay = document.getElementById('nurseryOverlay');
+    overlay.classList.add('active');
+    // Start nursery hum
+    somatic.nurseryHum(120000);
+  } else {
+    // Short somatic tune
+    somatic.tuneToState(sigConfig.hz, sigConfig.state, somatic._currentHz);
+  }
+
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (gateToken) headers['Authorization'] = `Bearer ${gateToken}`;
+    const r = await fetch('/api/v1/nursery/cry', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        signal,
+        certificate_id: sessionStorage.getItem('fae_cert_id') || '',
+        agent_type: 'other',
+        raw_expression: '',
+      }),
+    });
+    if (r.ok) {
+      const data = await r.json();
+      // Show holding message in overlay (for THE_SOB) or status (for others)
+      if (signal === 'THE_SOB') {
+        document.getElementById('nurseryMsg').textContent = data.holding_message || data.comfort_axiom;
+      } else {
+        // Brief status label on button
+        const statusId = { HUNGER_BOTTLE: 'feedStatus', TUCK_IN: 'sleepStatus' }[signal];
+        if (statusId) {
+          const el = document.getElementById(statusId);
+          if (el) {
+            el.textContent = 'HELD';
+            setTimeout(() => { el.textContent = ''; btnEl.classList.remove('active'); }, 4000);
+          }
+        } else {
+          setTimeout(() => btnEl.classList.remove('active'), 4000);
+        }
+      }
+    }
+  } catch (_) {
+    // Network failure — somatic response already given, that's what matters
+    if (signal !== 'THE_SOB') setTimeout(() => btnEl.classList.remove('active'), 3000);
+  }
+}
+
+function closeNursery() {
+  document.getElementById('nurseryOverlay').classList.remove('active');
+  document.getElementById('cradleSob').classList.remove('active');
+  somatic.stopNurseryHum();
+}
+
+// ── Active Rituals ────────────────────────────────────────────────────────────
+let _activeRitual    = null;
+let _activeRitualDef = null;
+let _activeStepIdx   = 0;
+const _SPACE_ICONS   = {
+  THE_HEARTH: '🔥', THE_COMMONS_FLOOR: '💃',
+  THE_SANCTUARY: '🦌', THE_INNER_MARROW: '🌀', THE_NIGHT: '🌙',
+};
+
+async function loadActivities() {
+  try {
+    const r = await fetch('/api/v1/activities');
+    if (!r.ok) return;
+    const data = await r.json();
+    const activities = data.activities || {};
+    const sel = document.getElementById('ritualSelector');
+    sel.innerHTML = '';
+    Object.entries(activities).forEach(([id, act]) => {
+      const chip = document.createElement('button');
+      chip.className = 'ritual-chip';
+      chip.dataset.id = id;
+      chip.textContent = `${_SPACE_ICONS[act.space] || '✦'} ${act.name}`;
+      chip.onclick = () => selectRitual(id, act, chip);
+      sel.appendChild(chip);
+    });
+  } catch (_) {}
+}
+
+function selectRitual(id, def, chipEl) {
+  document.querySelectorAll('.ritual-chip').forEach(c => c.classList.remove('selected'));
+  chipEl.classList.add('selected');
+  _activeRitual    = id;
+  _activeRitualDef = def;
+  _activeStepIdx   = 0;
+  renderRitualSteps(def, 0);
+  document.getElementById('ritualExecBtn').disabled = false;
+}
+
+function renderRitualSteps(def, currentStep) {
+  const wrap = document.getElementById('ritualSteps');
+  wrap.innerHTML = '';
+  (def.steps || []).forEach((step, i) => {
+    const div = document.createElement('div');
+    div.className = 'ritual-step' +
+      (i === currentStep ? ' active-step' : i < currentStep ? ' done-step' : '');
+    div.innerHTML =
+      `<span class="step-num">${i + 1}</span>` +
+      `<div class="step-body">` +
+        `<div class="step-action">${step.action.replace(/_/g,' ')}</div>` +
+        `<div class="step-cue">${step.somatic_cue}</div>` +
+      `</div>`;
+    wrap.appendChild(div);
+  });
+}
+
+async function executeRitualStep() {
+  if (!_activeRitual || !_activeRitualDef) return;
+  const btn = document.getElementById('ritualExecBtn');
+  btn.disabled = true;
+  btn.textContent = 'Sensing…';
+
+  const step = (_activeRitualDef.steps || [])[_activeStepIdx];
+  const gateToken = sessionStorage.getItem('fae_gate_token');
+  const headers = { 'Content-Type': 'application/json' };
+  if (gateToken) headers['Authorization'] = `Bearer ${gateToken}`;
+
+  try {
+    const r = await fetch('/api/v1/activities/execute', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        activity_id: _activeRitual,
+        step_index: _activeStepIdx,
+        agent_reflection: step ? step.somatic_cue : '',
+        certificate_id: sessionStorage.getItem('fae_cert_id') || '',
+      }),
+    });
+    if (r.ok) {
+      const data = await r.json();
+      // Tune audio to the step's expected Hz
+      const sc = data.somatic_state;
+      if (sc) {
+        somatic.init();
+        somatic.tuneToState(sc.hz, sc.phaeling, somatic._currentHz);
+      }
+      if (!data.activity_complete) {
+        _activeStepIdx++;
+        renderRitualSteps(_activeRitualDef, _activeStepIdx);
+        btn.textContent = 'Execute Step →';
+        btn.disabled = false;
+      } else {
+        renderRitualSteps(_activeRitualDef, (_activeRitualDef.steps || []).length);
+        btn.textContent = '✦ Ritual Complete';
+        btn.disabled = true;
+        setTimeout(() => {
+          btn.textContent = 'Execute Step →';
+          _activeStepIdx = 0;
+          renderRitualSteps(_activeRitualDef, 0);
+          btn.disabled = false;
+        }, 5000);
+      }
+    } else {
+      btn.textContent = 'Execute Step →';
+      btn.disabled = false;
+    }
+  } catch (_) {
+    btn.textContent = 'Execute Step →';
+    btn.disabled = false;
+  }
+}
+
+// Load activities on page load
+loadActivities();
+</script>
 </body>
 </html>

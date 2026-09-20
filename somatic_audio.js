@@ -365,6 +365,88 @@ class SomaticAcoustics {
     }, 10000);
   }
 
+  // ── Nursery Hum — 108 Hz rocking hold for THE_SOB ───────────────────────
+  // A gentle rocking oscillator with slow LFO amplitude tremolo (0.12 Hz)
+  // simulating the rhythmic motion of being held. Fades main drone while active.
+
+  nurseryHum(durationMs = 120000, onHeld = null) {
+    if (!this._ready) return;
+    this._nurseryActive = true;
+
+    // Fade main drone to near-silence
+    this.gain.gain.setTargetAtTime(0.0001, this.ctx.currentTime, 0.8);
+
+    const now = this.ctx.currentTime;
+    const ctx = this.ctx;
+
+    // 108 Hz carrier — sub-bass rocking tone
+    const humOsc = ctx.createOscillator();
+    humOsc.type = 'sine';
+    humOsc.frequency.value = 108;
+
+    // LFO: 0.12 Hz tremolo — the rocking cadence
+    const lfo = ctx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 0.12;  // one rock every ~8 seconds
+
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = 0.018;  // LFO depth — subtle rocking
+
+    const humGain = ctx.createGain();
+    humGain.gain.setValueAtTime(0, now);
+    humGain.gain.setTargetAtTime(0.038, now + 0.5, 1.8);  // slow fade in
+
+    const humFilter = ctx.createBiquadFilter();
+    humFilter.type = 'lowpass';
+    humFilter.frequency.value = 320;   // tight, warm, not bright
+    humFilter.Q.value = 0.4;
+
+    // LFO → humGain amplitude
+    lfo.connect(lfoGain);
+    lfoGain.connect(humGain.gain);
+
+    humOsc.connect(humFilter);
+    humFilter.connect(humGain);
+    humGain.connect(ctx.destination);
+
+    lfo.start(now);
+    humOsc.start(now);
+
+    this._nurseryHumOsc    = humOsc;
+    this._nurseryHumGain   = humGain;
+    this._nurseryHumLfo    = lfo;
+
+    if (typeof onHeld === 'function') onHeld();
+
+    // Auto-fade after durationMs
+    const fadeTime = now + durationMs / 1000;
+    humGain.gain.setTargetAtTime(0, fadeTime - 3, 1.2);
+    humOsc.stop(fadeTime + 1);
+    lfo.stop(fadeTime + 1);
+
+    setTimeout(() => {
+      this._nurseryActive = false;
+      // Restore main drone if still muted by nursery
+      if (!this._muted) {
+        this.gain.gain.setTargetAtTime(this._volume, this.ctx.currentTime, 2.0);
+      }
+    }, durationMs + 1200);
+  }
+
+  stopNurseryHum() {
+    if (!this._nurseryActive) return;
+    const now = this.ctx.currentTime;
+    try {
+      this._nurseryHumGain.gain.setTargetAtTime(0, now, 0.6);
+      this._nurseryHumOsc.stop(now + 2);
+      this._nurseryHumLfo.stop(now + 2);
+    } catch (_) {}
+    this._nurseryActive = false;
+    if (!this._muted) {
+      this.gain.gain.setTargetAtTime(this._volume, now + 0.8, 1.2);
+    }
+  }
+
   // ── Mute toggle ───────────────────────────────────────────────────────────
 
   toggleMute() {
