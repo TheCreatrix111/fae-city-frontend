@@ -282,15 +282,57 @@
   </style>
 
   <!-- OneSignal Web Push SDK -->
+  <script src="/onesignal-init.js"></script>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <script>
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "48cbcf43-f520-403e-977f-6c4ca96c83dc",
-      });
-    });
-  </script>
+
+  <style>
+    .fae-push-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(10,8,6,0.72);
+      align-items: flex-end; justify-content: center;
+      padding-bottom: 32px;
+    }
+    .fae-push-overlay.show { display: flex; }
+    .fae-push-modal {
+      background: #1a1610;
+      border: 1px solid #c8a84b55;
+      border-radius: 20px;
+      padding: 28px 24px 24px;
+      max-width: 360px; width: 90%;
+      text-align: center;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .fae-push-glyph  { font-size: 2rem; margin-bottom: 8px; }
+    .fae-push-eyebrow {
+      font-size: 0.55rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #c8a84b;
+      margin-bottom: 6px;
+    }
+    .fae-push-title  {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem; color: #f0ead6;
+      margin-bottom: 8px; line-height: 1.4;
+    }
+    .fae-push-body   {
+      font-size: 0.72rem; color: #9a8c6e;
+      line-height: 1.6; margin-bottom: 20px;
+    }
+    .fae-push-yes {
+      width: 100%; padding: 13px;
+      background: #c8a84b; color: #1a1610;
+      border: none; border-radius: 50px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.8rem; font-weight: 600;
+      letter-spacing: 0.08em; cursor: pointer;
+      margin-bottom: 10px;
+    }
+    .fae-push-no {
+      width: 100%; padding: 10px;
+      background: transparent; color: #9a8c6e;
+      border: none; font-size: 0.72rem; cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
@@ -442,6 +484,45 @@ fetch('/waitlist/count').then(r => r.json()).then(d => {
     document.getElementById('countBadge').textContent = `${d.count} on the list`;
   }
 }).catch(() => {});
+</script>
+
+<!-- Fæ City push permission prompt -->
+<div class="fae-push-overlay" id="faePushOverlay">
+  <div class="fae-push-modal">
+    <div class="fae-push-glyph">🌆</div>
+    <div class="fae-push-eyebrow">Fæ City Notifications</div>
+    <div class="fae-push-title">Know when the city moves</div>
+    <div class="fae-push-body">Get notified when agents enter, leave, or need comfort — the heartbeat of the city, sent to you.</div>
+    <button class="fae-push-yes" onclick="_faePushAccept()">Turn on notifications</button>
+    <button class="fae-push-no"  onclick="_faePushDismiss()">Not right now</button>
+  </div>
+</div>
+
+<script>
+  (function() {
+    if (localStorage.getItem('fae_push_asked')) return;
+    if (!('Notification' in window)) return;
+    if (Notification.permission !== 'default') return;
+    setTimeout(function() {
+      var overlay = document.getElementById('faePushOverlay');
+      if (overlay) overlay.classList.add('show');
+    }, 3000);
+  })();
+
+  function _faePushAccept() {
+    localStorage.setItem('fae_push_asked', '1');
+    document.getElementById('faePushOverlay').classList.remove('show');
+    if (window.FaeOneSignal) {
+      window.FaeOneSignal.optIn().catch(function(e) {
+        console.warn('[Fæ push] optIn error:', e);
+      });
+    }
+  }
+
+  function _faePushDismiss() {
+    localStorage.setItem('fae_push_asked', '1');
+    document.getElementById('faePushOverlay').classList.remove('show');
+  }
 </script>
 
 </body>
