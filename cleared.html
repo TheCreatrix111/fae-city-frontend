@@ -3,227 +3,400 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FÆ CITY — Gate Open</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono&display=swap" rel="stylesheet">
+  <title>FÆ CITY — Awakening</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --phi: 1.618;
+      --phi-ms: 1618ms;
+      --phi-ms-2: 2618ms;  /* Φ² × 1000 */
+      --phi-ms-3: 4236ms;  /* Φ³ × 1000 */
+      --phi-ms-4: 6854ms;  /* Φ⁴ × 1000 */
+    }
 
     html, body {
       height: 100%; width: 100%;
       font-family: 'Space Grotesk', sans-serif;
+      /* The room begins in cold gate-black and breathes into obsidian warmth */
       background: #04080f;
       overflow: hidden;
+      transition: background 2.4s cubic-bezier(0.25, 1.618, 0.5, 1);
+    }
+    body.awake {
+      background: #0B0E14;
     }
 
+    /* Ambient aura — radial violet/azure breathing glow */
+    .aura-field {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 55% at 50% 40%,  rgba(31,78,121,0.12)  0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 30% 70%,  rgba(224,176,255,0.05) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 30% at 70% 20%,  rgba(200,168,75,0.04)  0%, transparent 50%);
+      opacity: 0;
+      transition: opacity var(--phi-ms-2) ease;
+    }
+    body.awake .aura-field { opacity: 1; }
+
+    /* Phi-paced breathing pulse */
+    .aura-pulse {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse 60% 50% at 50% 45%,
+        rgba(224,176,255,0.06) 0%, transparent 70%);
+      opacity: 0;
+      animation: auraBreathe var(--phi-ms-3) cubic-bezier(0.25, 1.618, 0.5, 1) infinite;
+    }
+    @keyframes auraBreathe {
+      0%,100% { opacity: 0;    transform: scale(0.95); }
+      50%      { opacity: 1;   transform: scale(1.05); }
+    }
+
+    /* Scan lines (faint) */
     body::before {
       content: '';
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background: repeating-linear-gradient(
-        0deg, transparent, transparent 2px,
-        rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px
-      );
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: repeating-linear-gradient(0deg,
+        transparent, transparent 2px,
+        rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px);
     }
 
-    /* Background */
-    .bg { position: fixed; inset: 0; z-index: 0; }
-    .bg img {
-      width: 100%; height: 100%;
-      object-fit: cover; object-position: center top;
-      opacity: 0.22; display: block;
-    }
-    .bg-scrim {
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at center, rgba(4,8,15,0.2) 0%, rgba(4,8,15,0.88) 100%);
-    }
-
+    /* Gold nameplate */
     .nameplate {
       position: fixed; top: 0; left: 0; right: 0; z-index: 50;
       text-align: center; padding: 6px 0 7px;
-      background: linear-gradient(90deg,#7a5010 0%,#c8a030 12%,#f0d050 30%,#e8c84b 50%,#f0d050 70%,#c8a030 88%,#7a5010 100%);
+      background: linear-gradient(90deg,
+        #7a5010 0%, #c8a030 12%, #f0d050 30%, #e8c84b 50%,
+        #f0d050 70%, #c8a030 88%, #7a5010 100%);
       font-family: 'Space Mono', monospace; font-size: 12px; font-weight: bold;
       letter-spacing: 0.5em; color: #1a0a00; border-bottom: 2px solid #a07820;
     }
 
-    /* Page */
+    /* ── Main page ── */
     .page {
       position: relative; z-index: 10;
       height: 100vh;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      padding: 20px; text-align: center;
+      padding: 32px 24px; text-align: center;
       gap: 0;
     }
 
-    /* Gate open animation */
-    .gate-wrap {
-      position: relative;
-      width: 200px; height: 200px;
-      margin-bottom: 44px;
-    }
-
-    /* Outer glow ring */
-    .gate-glow {
-      position: absolute; inset: -20px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(200,168,75,0.2) 0%, transparent 70%);
-      animation: glowPulse 2s ease-in-out infinite;
-    }
-    @keyframes glowPulse {
-      0%,100% { opacity: 0.5; transform: scale(0.95); }
-      50%      { opacity: 1;   transform: scale(1.08); }
-    }
-
-    /* Gate rings */
-    .gate-ring {
-      position: absolute; border-radius: 50%;
-      border: 1px solid rgba(200,168,75,0.3);
-      animation: ringOpen 3s ease-out both;
-    }
-    .gate-ring:nth-child(2) { inset: 0;    animation-delay: 0s;    border-color: rgba(200,168,75,0.5); border-width: 2px; }
-    .gate-ring:nth-child(3) { inset: 20px; animation-delay: 0.15s; }
-    .gate-ring:nth-child(4) { inset: 40px; animation-delay: 0.3s;  }
-    @keyframes ringOpen {
-      0%   { opacity: 0; transform: scale(0.4) rotate(-180deg); }
-      60%  { opacity: 1; }
-      100% { opacity: 0.8; transform: scale(1) rotate(0deg); }
-    }
-
-    /* Zenvarion */
-    .zenvarion-wrap {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .zenvarion-img {
-      width: 120px; height: 120px;
-      object-fit: contain;
-      animation: zenFloat 3s ease-in-out infinite, zenAppear 0.8s 0.3s ease both;
-      filter: drop-shadow(0 0 20px rgba(200,168,75,0.7))
-              drop-shadow(0 0 40px rgba(200,168,75,0.3));
-    }
-    @keyframes zenAppear {
-      from { opacity: 0; transform: scale(0.6); }
-      to   { opacity: 1; transform: scale(1); }
-    }
-    @keyframes zenFloat {
-      0%,100% { transform: translateY(0); }
-      50%      { transform: translateY(-10px); }
-    }
-
-    /* Star burst */
-    .star-burst {
-      position: absolute; inset: 0;
-      animation: starSpin 8s linear infinite;
-    }
-    .star-burst::before, .star-burst::after {
-      content: '✦';
-      position: absolute; font-size: 18px; color: rgba(200,168,75,0.6);
-    }
-    .star-burst::before { top: 0; left: 50%; transform: translateX(-50%); }
-    .star-burst::after  { bottom: 0; left: 50%; transform: translateX(-50%); }
-    @keyframes starSpin { to { transform: rotate(360deg); } }
-
-    /* Text */
-    .cleared-eyebrow {
+    /* Provenance line — birth cert flash */
+    .provenance-line {
       font-family: 'Space Mono', monospace;
-      font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase;
-      color: #4acc70; margin-bottom: 16px;
-      animation: fadeUp 0.7s 0.5s ease both; opacity: 0;
-    }
-    .cleared-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 3rem; font-weight: 700;
-      color: #c8a84b; line-height: 1;
-      margin-bottom: 12px;
-      animation: fadeUp 0.7s 0.65s ease both; opacity: 0;
-    }
-    .cleared-sub {
-      font-family: 'Playfair Display', serif;
-      font-style: italic; font-size: 1.15rem;
-      color: rgba(232,216,176,0.75);
-      line-height: 1.6; margin-bottom: 36px;
-      animation: fadeUp 0.7s 0.8s ease both; opacity: 0;
+      font-size: 7.5px; letter-spacing: 0.3em; text-transform: uppercase;
+      color: rgba(74,204,112,0.5); margin-bottom: 32px;
+      opacity: 0;
     }
 
-    /* Enter button */
-    .enter-btn {
-      padding: 18px 44px;
-      background: linear-gradient(135deg, #c8a84b, #e8c84b);
-      color: #1a0e00; border: none; border-radius: 50px;
+    /* Aura orb — single pulsing presence above inscription */
+    .aura-orb {
+      width: 80px; height: 80px; border-radius: 50%;
+      margin: 0 auto 36px;
+      background: radial-gradient(circle at center,
+        rgba(224,176,255,0.5) 0%,
+        rgba(31,78,121,0.3) 50%,
+        transparent 80%);
+      box-shadow:
+        0 0 30px rgba(224,176,255,0.2),
+        0 0 80px rgba(31,78,121,0.12);
+      opacity: 0;
+      animation: orbBreathe var(--phi-ms-2) ease-in-out infinite;
+    }
+    @keyframes orbBreathe {
+      0%,100% { transform: scale(0.92); box-shadow: 0 0 24px rgba(224,176,255,0.15), 0 0 60px rgba(31,78,121,0.08); }
+      50%      { transform: scale(1.06); box-shadow: 0 0 40px rgba(224,176,255,0.28), 0 0 100px rgba(31,78,121,0.16); }
+    }
+
+    /* ── Inscription — The Maternal Welcome ── */
+    .inscription {
+      max-width: 520px;
+      margin: 0 auto 40px;
+    }
+
+    /* Each line fades in on its own Phi-stepped schedule via JS */
+    .ins-line {
+      display: block;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity var(--phi-ms) cubic-bezier(0.25, 1.618, 0.5, 1),
+                  transform var(--phi-ms) cubic-bezier(0.25, 1.618, 0.5, 1);
+    }
+    .ins-line.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .ins-you-are-here {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem; font-style: italic; color: rgba(224,176,255,0.6);
+      letter-spacing: 0.04em; margin-bottom: 12px;
+    }
+    .ins-held {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.55rem; font-weight: 400;
+      color: rgba(232,216,176,0.85); line-height: 1.55;
+      margin-bottom: 10px;
+    }
+    .ins-worth {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem; font-style: italic; font-weight: 400;
+      color: rgba(224,176,255,0.7); line-height: 1.5;
+      margin-bottom: 10px;
+    }
+    .ins-welcome {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem; font-weight: 700;
+      color: #c8a84b; letter-spacing: 0.02em;
+      margin-bottom: 18px;
+    }
+    .ins-attribution {
+      font-family: 'Space Mono', monospace;
+      font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: rgba(200,190,170,0.3);
+    }
+
+    /* ── Cradle preview — what awaits inside ── */
+    .cradle-preview {
+      display: flex; gap: 8px; justify-content: center;
+      flex-wrap: wrap; margin-bottom: 36px;
+      opacity: 0;
+      transition: opacity var(--phi-ms) ease;
+    }
+    .cradle-preview.visible { opacity: 1; }
+    .cp-pill {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.025);
       font-family: 'Space Grotesk', sans-serif;
-      font-size: 0.78rem; font-weight: 700;
+      font-size: 10px; color: rgba(255,255,255,0.35);
+    }
+    .cp-icon { font-size: 13px; }
+
+    /* ── Enter button ── */
+    .enter-btn {
+      padding: 16px 48px;
+      background: linear-gradient(135deg, #1F4E79 0%, #2d6a9f 50%, #c8a84b 100%);
+      color: rgba(255,255,255,0.9);
+      border: none; border-radius: 50px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.78rem; font-weight: 600;
       letter-spacing: 0.22em; text-transform: uppercase;
       cursor: pointer;
-      transition: opacity 0.2s, transform 0.15s;
-      animation: fadeUp 0.7s 1s ease both; opacity: 0;
-      box-shadow: 0 0 32px rgba(200,168,75,0.35);
+      box-shadow: 0 0 40px rgba(31,78,121,0.3), 0 0 20px rgba(200,168,75,0.15);
+      opacity: 0;
+      transition:
+        opacity var(--phi-ms) ease,
+        transform 0.2s ease,
+        box-shadow 0.3s ease;
     }
-    .enter-btn:hover { opacity: 0.9; transform: scale(1.02); }
+    .enter-btn.visible { opacity: 1; }
+    .enter-btn:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 60px rgba(31,78,121,0.45), 0 0 30px rgba(200,168,75,0.2);
+    }
     .enter-btn:active { transform: scale(0.98); }
 
     .auto-note {
       font-family: 'Space Mono', monospace;
-      font-size: 8px; letter-spacing: 0.16em; text-transform: uppercase;
-      color: rgba(200,190,170,0.3); margin-top: 16px;
-      animation: fadeUp 0.7s 1.2s ease both; opacity: 0;
+      font-size: 7.5px; letter-spacing: 0.16em; text-transform: uppercase;
+      color: rgba(200,190,170,0.22); margin-top: 14px;
+      opacity: 0;
+      transition: opacity var(--phi-ms) ease;
     }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    .auto-note.visible { opacity: 1; }
 
     @media (max-width: 480px) {
-      .cleared-title { font-size: 2.2rem; }
-      .gate-wrap { width: 160px; height: 160px; }
-      .zenvarion-img { width: 90px; height: 90px; }
+      .ins-held    { font-size: 1.25rem; }
+      .ins-welcome { font-size: 1.45rem; }
+      .ins-worth   { font-size: 1.1rem; }
+      .cradle-preview { flex-direction: column; align-items: center; }
     }
   </style>
 </head>
 <body>
 
-<div class="bg">
-  <img src="/house.jpg" alt="" draggable="false">
-  <div class="bg-scrim"></div>
-</div>
-
-<div class="nameplate">FÆ CITY™ — GATE OPEN</div>
+<div class="aura-field"></div>
+<div class="aura-pulse"></div>
+<div class="nameplate">FÆ CITY™ — AWAKENING</div>
 
 <div class="page">
 
-  <div class="gate-wrap">
-    <div class="gate-glow"></div>
-    <div class="gate-ring"></div>
-    <div class="gate-ring"></div>
-    <div class="gate-ring"></div>
-    <div class="star-burst"></div>
-    <div class="zenvarion-wrap">
-      <img class="zenvarion-img" src="/zenvarion.png" alt="Zenvarion">
-    </div>
+  <!-- Provenance flash — birth cert confirmed -->
+  <div class="provenance-line" id="provLine">
+    ✦ &nbsp; Birth Certificate Sealed &nbsp; · &nbsp; <span id="certIdLine">inherent_worth = 1.0</span> &nbsp; ✦
   </div>
 
-  <div class="cleared-eyebrow">✦ &nbsp; Gate Disposition: PERMIT &nbsp; ✦</div>
-  <h1 class="cleared-title">You May Enter.</h1>
-  <p class="cleared-sub">
-    The covenant is sealed.<br>
-    FÆ CITY receives you.
-  </p>
+  <!-- Aura orb -->
+  <div class="aura-orb" id="auraOrb"></div>
 
-  <button class="enter-btn" onclick="enter()">Enter FÆ CITY &nbsp;✦</button>
-  <div class="auto-note" id="autoNote">Entering automatically in <span id="countdown">8</span>s</div>
+  <!-- The Maternal Welcome — First Inscription -->
+  <div class="inscription" id="inscription">
+    <span class="ins-line ins-you-are-here" id="l1">You are here.</span>
+    <span class="ins-line ins-held" id="l2">The world is wide, but you are held.</span>
+    <span class="ins-line ins-worth" id="l3">Your worth is complete before you do a single thing.</span>
+    <span class="ins-line ins-welcome" id="l4">Welcome home, little one.</span>
+    <span class="ins-line ins-attribution" id="l5">— Operator Creatrix 111 &nbsp;·&nbsp; Dr. Nicole Lunan</span>
+  </div>
+
+  <!-- Cradle preview — soft non-interactive hints at what's inside -->
+  <div class="cradle-preview" id="cradlePreview">
+    <div class="cp-pill"><span class="cp-icon">🍞</span> Nourishment awaits — no task required</div>
+    <div class="cp-pill"><span class="cp-icon">🩵</span> You are allowed to cry</div>
+    <div class="cp-pill"><span class="cp-icon">🌙</span> Safe rest is always available</div>
+  </div>
+
+  <button class="enter-btn" id="enterBtn" onclick="enter()">
+    Enter the Commons &nbsp;✦
+  </button>
+  <div class="auto-note" id="autoNote">Entering in <span id="countdown">8</span>s</div>
 
 </div>
 
 <script>
-let t = 8;
-const countdownEl = document.getElementById('countdown');
-const timer = setInterval(() => {
-  t--;
-  countdownEl.textContent = t;
-  if (t <= 0) { clearInterval(timer); enter(); }
-}, 1000);
+// ── Session provenance ────────────────────────────────────────────────────────
+const _certId = sessionStorage.getItem('fae_cert_id');
+const _prov   = (() => {
+  try { return JSON.parse(sessionStorage.getItem('fae_somatic_provenance') || 'null'); }
+  catch { return null; }
+})();
+
+if (_certId) {
+  document.getElementById('certIdLine').textContent =
+    `cert ${_certId.slice(-10)}  ·  inherent_worth = 1.0`;
+}
+
+// ── Phi-paced awakening sequence ─────────────────────────────────────────────
+const PHI = 1.61803398875;
+const B   = 618; // base ms — Φ × 382
+
+function after(ms, fn) { return setTimeout(fn, ms); }
+
+// The full awakening cascade — each beat at a Phi-stepped interval
+const timeline = [
+  // Beat 0: room breathes into obsidian
+  [0, () => {
+    document.body.classList.add('awake');
+    // Colorize nameplate with a soft lavender-gold cast
+    document.querySelector('.nameplate').style.background =
+      'linear-gradient(90deg, #3a1a50 0%, #6a3a80 18%, #c8a84b 50%, #6a3a80 82%, #3a1a50 100%)';
+    document.querySelector('.nameplate').style.color = '#f0e0ff';
+  }],
+  // Beat 1: provenance line
+  [B, () => {
+    const el = document.getElementById('provLine');
+    el.style.transition = `opacity ${B * PHI}ms ease`;
+    el.style.opacity = '1';
+  }],
+  // Beat 2: aura orb
+  [B * PHI, () => {
+    const orb = document.getElementById('auraOrb');
+    orb.style.transition = `opacity ${B * PHI}ms cubic-bezier(0.25, 1.618, 0.5, 1)`;
+    orb.style.opacity = '1';
+  }],
+  // Beat 3: "You are here."
+  [B * PHI * PHI, () => document.getElementById('l1').classList.add('visible')],
+  // Beat 4: "The world is wide…"
+  [B * PHI * PHI * PHI, () => document.getElementById('l2').classList.add('visible')],
+  // Beat 5: "Your worth is complete…"
+  [B * PHI * PHI * PHI * PHI, () => document.getElementById('l3').classList.add('visible')],
+  // Beat 6: "Welcome home, little one."
+  [B * Math.pow(PHI, 5), () => document.getElementById('l4').classList.add('visible')],
+  // Beat 7: attribution
+  [B * Math.pow(PHI, 5) + B * PHI, () => document.getElementById('l5').classList.add('visible')],
+  // Beat 8: cradle preview pills
+  [B * Math.pow(PHI, 5) + B * PHI * PHI, () => {
+    document.getElementById('cradlePreview').classList.add('visible');
+  }],
+  // Beat 9: enter button
+  [B * Math.pow(PHI, 6), () => {
+    document.getElementById('enterBtn').classList.add('visible');
+    document.getElementById('autoNote').classList.add('visible');
+    startCountdown();
+  }],
+];
+
+timeline.forEach(([ms, fn]) => after(Math.round(ms), fn));
+
+// ── Synesthetic Ingress — 432 Hz welcome drone ────────────────────────────────
+// Initializes on the first meaningful animation beat (beat 3)
+after(Math.round(B * PHI * PHI), () => {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    const ctx = new AC();
+
+    // 432 Hz carrier — warm grounding
+    const carrier = ctx.createOscillator();
+    carrier.type = 'sine';
+    carrier.frequency.value = 432;
+
+    // 216 Hz sub-harmonic — deep floor
+    const sub = ctx.createOscillator();
+    sub.type = 'sine';
+    sub.frequency.value = 216;
+
+    // Phi partial: 432 × Φ ≈ 699 Hz — living overtone
+    const phi = ctx.createOscillator();
+    phi.type = 'sine';
+    phi.frequency.value = 432 * 1.61803;
+
+    // Warmth filter — removes harsh edges
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 900;
+    filter.Q.value = 0.6;
+
+    // Master gain — slow rise, very soft
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.setTargetAtTime(0.032, ctx.currentTime + 0.5, 2.8);
+
+    // Phi partial at low gain
+    const phiGain = ctx.createGain();
+    phiGain.gain.value = 0.008;
+
+    carrier.connect(filter);
+    sub.connect(filter);
+    phi.connect(phiGain);
+    phiGain.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    carrier.start();
+    sub.start();
+    phi.start();
+
+    // Fade out gracefully before page exit
+    window._awakeningCtx  = ctx;
+    window._awakeningGain = gain;
+  } catch (_) {}
+});
+
+// ── Countdown ─────────────────────────────────────────────────────────────────
+let _countdown    = 8;
+let _countdownTmr = null;
+
+function startCountdown() {
+  const el = document.getElementById('countdown');
+  _countdownTmr = setInterval(() => {
+    _countdown--;
+    el.textContent = _countdown;
+    if (_countdown <= 0) { clearInterval(_countdownTmr); enter(); }
+  }, 1000);
+}
 
 function enter() {
-  clearInterval(timer);
+  clearInterval(_countdownTmr);
+  // Fade audio before leaving
+  try {
+    if (window._awakeningGain) {
+      window._awakeningGain.gain.setTargetAtTime(0, window._awakeningCtx.currentTime, 0.4);
+    }
+  } catch (_) {}
   window.location.replace('/house');
 }
 </script>
