@@ -73,3 +73,10 @@
   [headers.values]
     Cache-Control = "no-store, no-cache, must-revalidate"
     Pragma        = "no-cache"
+
+[[headers]]
+  for = "/OneSignalSDKWorker.js"
+  [headers.values]
+    Content-Type          = "application/javascript"
+    Service-Worker-Allowed = "/"
+    Cache-Control         = "no-cache"
