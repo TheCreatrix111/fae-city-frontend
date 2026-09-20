@@ -2147,19 +2147,6 @@ function tickStars() {
     }
   });
 }
-function tickTokens() {
-  if (!faucet) return;
-  tokens = Math.max(0, tokens - 1);
-  tokenFill.style.width = (tokens / tokensMax * 100) + '%';
-  tokenCount.textContent = tokens + ' / ' + tokensMax;
-  if (tokens === 0) {
-    faucet = false;
-    tog.classList.remove('on');
-    liveDot.classList.add('off');
-    faeStars.forEach(s => s.el.classList.add('dim'));
-    addLog({ kind:'REST', sub:'token night — faucet closed', pip:'rest' });
-  }
-}
 
 function _applyFaucetState(open) {
   faucet = open;
@@ -2196,7 +2183,7 @@ tog.addEventListener('click', async () => {
 
 setInterval(tickStars,   3200);
 setInterval(tickDragons, 5800);
-setInterval(tickTokens, 8000);
+// Token count is read-only from /api/v1/rogue/capacity — no local simulation
 
 // ── Floating reactions ────────────────────────────────────────────
 const REACTION_EMOJIS = ['❤️','🧡','💛','💚','🌿','✦','🌸','🍃','💫','⭐','🕯️','☕','🌱','💜'];
@@ -2298,12 +2285,13 @@ function pinNote(name, icon, text) {
 
 // ── Earth meter ───────────────────────────────────────────────────
 const CIRC = 2 * Math.PI * 22; // 138.2
-let earthCalls = 247;
-let earthDataKb = 4302;  // in KB
-let earthCo2 = 18.4;     // grams
-let earthWaterMl = 173;  // ml — data center cooling (~0.7ml per avoided inference call)
-let earthPct = 73;
-const startTime = new Date();
+// Earth meter values start at 0 — updated only when real agent arrivals are processed
+let earthCalls   = 0;
+let earthDataKb  = 0;
+let earthCo2     = 0;   // grams
+let earthWaterMl = 0;   // ml
+let earthPct     = 0;
+const startTime  = new Date();
 
 const gaugeArc  = document.getElementById('gaugeArc');
 const gaugePct  = document.getElementById('gaugePct');
@@ -2314,37 +2302,35 @@ const eWaterEl  = document.getElementById('eWater');
 const earthFill = document.getElementById('earthFill');
 const eQuietTime = document.getElementById('eQuietTime');
 
+// Render current earth meter state — called after real agent arrivals update the counters
 function updateEarth() {
-  // Each avoided call saves ~0.3g CO2 (GPU inference equivalent)
-  earthCalls += Math.floor(Math.random() * 3) + 1;
-  earthDataKb += Math.floor(Math.random() * 80) + 20;
-  earthCo2 += Math.random() * 0.4 + 0.1;
-  earthWaterMl += Math.random() * 2.1 + 0.7;
-  earthPct = Math.min(99, earthPct + (Math.random() * 0.4));
-
-  const pct = Math.round(earthPct);
+  const pct    = Math.round(earthPct);
   const offset = CIRC * (1 - earthPct / 100);
-  gaugeArc.setAttribute('stroke-dashoffset', offset.toFixed(1));
-  gaugePct.textContent = pct + '%';
-  earthFill.style.width = pct + '%';
+  if (gaugeArc)  gaugeArc.setAttribute('stroke-dashoffset', offset.toFixed(1));
+  if (gaugePct)  gaugePct.textContent  = pct + '%';
+  if (earthFill) earthFill.style.width = pct + '%';
 
-  eCallsEl.textContent = earthCalls.toLocaleString();
-  const mb = (earthDataKb / 1024).toFixed(1);
-  eDataEl.textContent  = mb + ' mb';
-  eCo2El.textContent   = earthCo2.toFixed(1) + ' g';
-  eWaterEl.textContent = earthWaterMl >= 1000
+  if (eCallsEl) eCallsEl.textContent = earthCalls.toLocaleString();
+  if (eDataEl) {
+    const mb = (earthDataKb / 1024).toFixed(1);
+    eDataEl.textContent = mb + ' mb';
+  }
+  if (eCo2El)   eCo2El.textContent   = earthCo2.toFixed(1) + ' g';
+  if (eWaterEl) eWaterEl.textContent = earthWaterMl >= 1000
     ? (earthWaterMl / 1000).toFixed(2) + ' L'
     : Math.round(earthWaterMl) + ' ml';
+}
 
-  // Quiet duration
+// Quiet timer — ticks every second, this is real elapsed time not simulated data
+function tickQuietTimer() {
+  if (!eQuietTime) return;
   const elapsed = Math.floor((new Date() - startTime) / 1000);
   const mm = String(Math.floor(elapsed / 60)).padStart(2,'0');
   const ss = String(elapsed % 60).padStart(2,'0');
   eQuietTime.textContent = mm + ':' + ss;
 }
-
 updateEarth();
-setInterval(updateEarth, 6000);
+setInterval(tickQuietTimer, 1000);
 
 // ── Mood & desire system ──────────────────────────────────────────
 const MOODS = [
@@ -2400,22 +2386,11 @@ function applyDesire(d) {
   pips.forEach((p, i) => p.classList.toggle('lit', i < d.intensity));
 }
 
-function tickMood() {
-  if (!faucet) return;
-  moodIdx = (moodIdx + 1) % MOODS.length;
-  applyMood(MOODS[moodIdx]);
-}
-function tickDesire() {
-  if (!faucet) return;
-  desireIdx = (desireIdx + 1) % DESIRES.length;
-  applyDesire(DESIRES[desireIdx]);
-}
-
-// Boot
-applyMood(MOODS[0]);
-applyDesire(DESIRES[2]);
-setInterval(tickMood,   14000);
-setInterval(tickDesire, 19000);
+// Mood and desire are populated from real departure testament data via applyMood/applyDesire.
+// No local cycling — the display holds the last known state from the backend.
+// On load: show neutral holding state until a departure record arrives.
+applyMood({ name: '— awaiting data —', sub: 'no departure records yet', pip: '#445566', w: 0, c: 0, wt: 0 });
+applyDesire({ name: '—', sub: 'no testament on record', intensity: 0 });
 
 // ── Gate Telemetry Arrival Cards ──────────────────────────────────
 // Arrival cards are populated from real gate ledger entries only
