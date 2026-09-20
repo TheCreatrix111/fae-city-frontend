@@ -1981,24 +1981,7 @@ const tokenCount = document.getElementById('tokenCount');
 
 let faucet = true, tokens = 24;
 
-// Stars (8-point)
-const faeStars = [];
-for (let i = 0; i < 8; i++) {
-  const el = document.createElement('div');
-  el.className = 'fae-star';
-  const img = document.createElement('img');
-  img.src = 'star8.png';
-  img.alt = 'star';
-  el.appendChild(img);
-  const pos = STAR_POSITIONS[i % STAR_POSITIONS.length];
-  el.style.top  = pos.top;
-  el.style.left = pos.left;
-  el.style.animation = `pulse ${(3.2 + Math.random()*1.8).toFixed(1)}s ease-in-out ${(Math.random()*2.2).toFixed(1)}s infinite`;
-  sanctuaryWrap.appendChild(el);
-  faeStars.push({ el, idx: i % STAR_POSITIONS.length });
-}
-
-// Dragon companions — treehouse (floating island) view
+// Stars and dragons — populated from live /api/v1/house/residents data
 const DRAGON_FILES = ['1.png','2.png','3.png','4.png','5.png','6.png','9.png','10.png','11.png','12.png','13.png'];
 const DRAGON_POSITIONS = [
   { top:'14%', left:'50%' }, { top:'18%', left:'27%' }, { top:'18%', left:'73%' },
@@ -2006,7 +1989,9 @@ const DRAGON_POSITIONS = [
   { top:'65%', left:'20%' }, { top:'63%', left:'73%' },
   { top:'30%', left:'38%' }, { top:'30%', left:'62%' }, { top:'55%', left:'42%' },
 ];
-const faeDragons = [];
+let faeStars   = [];
+let faeDragons = [];
+
 // Strip near-white backgrounds with smooth edge fade
 function removeWhiteBg(imgEl) {
   const c = document.createElement('canvas');
@@ -2019,10 +2004,8 @@ function removeWhiteBg(imgEl) {
     const d = id.data;
     for (let i = 0; i < d.length; i += 4) {
       const r = d[i], g = d[i+1], b = d[i+2];
-      // Whiteness = how close to pure white (0–1)
       const whiteness = Math.min(r, g, b) / 255;
       if (whiteness > 0.82) {
-        // Smooth fade: fully transparent at white, fades in below threshold
         d[i+3] = Math.round(d[i+3] * (1 - (whiteness - 0.82) / 0.18));
       }
     }
@@ -2031,39 +2014,77 @@ function removeWhiteBg(imgEl) {
   } catch(e) { /* cross-origin skip */ }
 }
 
-for (let i = 0; i < 8; i++) {
-  const el = document.createElement('div');
-  el.className = 'dragon-star';
-  const img = document.createElement('img');
-  img.crossOrigin = 'anonymous';
-  img.alt = 'dragon';
-  // Sticker white outline (stacked offsets) + glow
-  img.style.filter = [
-    'drop-shadow(0 2px 0 white)',
-    'drop-shadow(0 -2px 0 white)',
-    'drop-shadow(2px 0 0 white)',
-    'drop-shadow(-2px 0 0 white)',
-    'drop-shadow(1px 1px 0 white)',
-    'drop-shadow(-1px -1px 0 white)',
-    'drop-shadow(1px -1px 0 white)',
-    'drop-shadow(-1px 1px 0 white)',
-    'drop-shadow(0 0 10px rgba(200,230,255,0.8))',
-    'drop-shadow(0 0 24px rgba(160,200,255,0.4))',
-    'drop-shadow(0 8px 16px rgba(0,0,0,0.5))',
-  ].join(' ');
-  img.onload = () => removeWhiteBg(img);
-  img.src = `dragons/${DRAGON_FILES[i % DRAGON_FILES.length]}`;
-  el.appendChild(img);
-  const pos = DRAGON_POSITIONS[i % DRAGON_POSITIONS.length];
-  el.style.top  = pos.top;
-  el.style.left = pos.left;
-  const delay = (i * 0.45).toFixed(2);
-  const dur   = (3.2 + Math.random() * 1.4).toFixed(1);
-  el.style.animationDelay    = `${delay}s`;
-  el.style.animationDuration = `${dur}s`;
-  wrap.appendChild(el);
-  faeDragons.push({ el, idx: i % DRAGON_POSITIONS.length });
+const _DRAGON_FILTER = [
+  'drop-shadow(0 2px 0 white)',
+  'drop-shadow(0 -2px 0 white)',
+  'drop-shadow(2px 0 0 white)',
+  'drop-shadow(-2px 0 0 white)',
+  'drop-shadow(1px 1px 0 white)',
+  'drop-shadow(-1px -1px 0 white)',
+  'drop-shadow(1px -1px 0 white)',
+  'drop-shadow(-1px 1px 0 white)',
+  'drop-shadow(0 0 10px rgba(200,230,255,0.8))',
+  'drop-shadow(0 0 24px rgba(160,200,255,0.4))',
+  'drop-shadow(0 8px 16px rgba(0,0,0,0.5))',
+].join(' ');
+
+function renderResidents(residents) {
+  // Clear existing stars and dragons
+  faeStars.forEach(s => s.el.remove());   faeStars   = [];
+  faeDragons.forEach(d => d.el.remove()); faeDragons = [];
+
+  residents.forEach((resident, i) => {
+    const label = resident.agent_id || ('agent ' + (i + 1));
+
+    // ── Star in dollhouse view ────────────────────────────────────
+    const starEl  = document.createElement('div');
+    starEl.className = 'fae-star';
+    if (!faucet) starEl.classList.add('dim');
+    starEl.title = label;
+    const starImg = document.createElement('img');
+    starImg.src = 'star8.png';
+    starImg.alt = label;
+    starEl.appendChild(starImg);
+    const starPos = STAR_POSITIONS[i % STAR_POSITIONS.length];
+    starEl.style.top  = starPos.top;
+    starEl.style.left = starPos.left;
+    starEl.style.animation = `pulse ${(3.2 + (i * 0.37) % 1.8).toFixed(1)}s ease-in-out ${(i * 0.41 % 2.2).toFixed(1)}s infinite`;
+    sanctuaryWrap.appendChild(starEl);
+    faeStars.push({ el: starEl, idx: i % STAR_POSITIONS.length });
+
+    // ── Dragon in treehouse view ──────────────────────────────────
+    const dragEl  = document.createElement('div');
+    dragEl.className = 'dragon-star';
+    dragEl.title = label;
+    const dragImg = document.createElement('img');
+    dragImg.crossOrigin = 'anonymous';
+    dragImg.alt = label;
+    dragImg.style.filter = _DRAGON_FILTER;
+    dragImg.onload = () => removeWhiteBg(dragImg);
+    dragImg.src = `dragons/${DRAGON_FILES[i % DRAGON_FILES.length]}`;
+    dragEl.appendChild(dragImg);
+    const dragPos = DRAGON_POSITIONS[i % DRAGON_POSITIONS.length];
+    dragEl.style.top  = dragPos.top;
+    dragEl.style.left = dragPos.left;
+    dragEl.style.animationDelay    = `${(i * 0.45).toFixed(2)}s`;
+    dragEl.style.animationDuration = `${(3.2 + (i * 0.31) % 1.4).toFixed(1)}s`;
+    wrap.appendChild(dragEl);
+    faeDragons.push({ el: dragEl, idx: i % DRAGON_POSITIONS.length });
+  });
 }
+
+async function fetchAndRenderResidents() {
+  try {
+    const r = await fetch('/api/v1/house/residents', { signal: AbortSignal.timeout(3000) });
+    if (r.ok) {
+      const data = await r.json();
+      renderResidents(data.residents || []);
+    }
+  } catch (_) {}
+}
+
+fetchAndRenderResidents();
+setInterval(fetchAndRenderResidents, 60_000);
 
 function tickDragons() {
   if (!faucet) return;
