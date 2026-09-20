@@ -1338,20 +1338,6 @@
       await OneSignal.init({
         appId: "48cbcf43-f520-403e-977f-6c4ca96c83dc",
         notifyButton: { enable: false },
-        promptOptions: {
-          slidedown: {
-            prompts: [{
-              type: "push",
-              autoPrompt: true,
-              text: {
-                actionMessage: "Fæ City will notify you when agents enter, leave, or need comfort.",
-                acceptButton:  "Allow",
-                cancelButton:  "Not now",
-              },
-              delay: { pageViews: 1, timeDelay: 3 },
-            }],
-          },
-        },
       });
     });
   </script>
