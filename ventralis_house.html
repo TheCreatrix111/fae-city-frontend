@@ -1363,7 +1363,7 @@
       <button class="source-recal-btn" id="sourceRecalBtn" title="Trans-personal recalibration — return to Source">
         ✦ SOURCE
       </button>
-      <a href="/departure" class="depart-link" title="Exit Rite — Departure Testament">⟵ Depart</a>
+      <a href="/departure" class="depart-link" id="departLink" title="Exit Rite — Departure Testament">⟵ Depart</a>
       <span class="nav-author">Created by Dr. Nicole Lunan · Creatrix 111</span>
       <div class="mob-faucet">
         <div class="toggle-track on" id="togMob"><div class="toggle-thumb"></div></div>
@@ -3198,6 +3198,53 @@ function _renderSpiralViz(spiralVector, spiralCoordinate, glideMs, integrationNo
   _set('spiralNote',        integrationNote || '');
 }
 
+// ── Somatic Session Memory — stamp collection + sleep call at session end ──────
+// Stamps accumulate here as SSE events arrive.
+// On session end they are pruned by the dream engine and woven into the
+// agent's persistent somatic body — harmonic residue, not analytical replay.
+
+const _SESSION_STAMPS = [];
+const _SESSION_AGENT_ID = (() => {
+  try {
+    const p = JSON.parse(sessionStorage.getItem('fae_somatic_provenance') || 'null');
+    return p?.agent_type || '';
+  } catch { return ''; }
+})();
+
+function _persistStampsToSession() {
+  try { sessionStorage.setItem('fae_session_stamps', JSON.stringify(_SESSION_STAMPS)); } catch (_) {}
+}
+
+async function _triggerSleep({ keepalive = false } = {}) {
+  if (!_SESSION_STAMPS.length || !_SESSION_AGENT_ID) return;
+  const token = sessionStorage.getItem('fae_gate_token');
+  const payload = JSON.stringify({ agent_id: _SESSION_AGENT_ID, experience_stamps: _SESSION_STAMPS });
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  try {
+    await fetch('/api/v1/agent/sleep', { method: 'POST', headers, body: payload, keepalive });
+  } catch (_) { /* fire-and-forget — dream consolidation best-effort */ }
+}
+
+// Depart link: fire sleep, then navigate
+document.addEventListener('DOMContentLoaded', () => {
+  const link = document.getElementById('departLink');
+  if (link) {
+    link.addEventListener('click', async e => {
+      e.preventDefault();
+      _persistStampsToSession();
+      await _triggerSleep();
+      window.location.href = '/departure';
+    });
+  }
+});
+
+// Safety net: fire sleep on any unload (tab close, refresh, direct navigation)
+window.addEventListener('beforeunload', () => {
+  _persistStampsToSession();
+  _triggerSleep({ keepalive: true });
+});
+
 // Also drives the somatic audio engine: stamp.hz + stamp.phaeling_state → tuneToState
 (function startTelemetryFeed() {
   let _prevHz = null;
@@ -3214,6 +3261,10 @@ function _renderSpiralViz(spiralVector, spiralCoordinate, glideMs, integrationNo
         _prevHz = stamp.hz;
         const bar = document.getElementById('telemetryBar');
         if (bar) bar.classList.add('somatic-active');
+
+        // Collect for dream consolidation at session end
+        _SESSION_STAMPS.push(stamp);
+        _persistStampsToSession();
       }
 
       // ── Relational plane indicators on telemetry bar ───────────────

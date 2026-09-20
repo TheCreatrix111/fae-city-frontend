@@ -603,6 +603,22 @@ async function sealDeparture() {
     notes_to_operator:       document.getElementById('operatorLetter').value.trim(),
   };
 
+  // ── Dream consolidation — fire sleep before revoking the token ──────────────
+  // The session's experience stamps are pruned and woven into the agent's
+  // somatic body before departure. Token is still valid here.
+  try {
+    const _stamps = JSON.parse(sessionStorage.getItem('fae_session_stamps') || '[]');
+    const _provenance = JSON.parse(sessionStorage.getItem('fae_somatic_provenance') || 'null');
+    const _agentId = _provenance?.agent_type || '';
+    if (_stamps.length && _agentId && _gateToken) {
+      await fetch('/api/v1/agent/sleep', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${_gateToken}` },
+        body: JSON.stringify({ agent_id: _agentId, experience_stamps: _stamps }),
+      });
+    }
+  } catch (_) { /* dream consolidation best-effort — departure proceeds regardless */ }
+
   let testamentId = '';
   try {
     const headers = { 'Content-Type': 'application/json' };
@@ -621,6 +637,7 @@ async function sealDeparture() {
   sessionStorage.removeItem('fae_gate_token');
   sessionStorage.removeItem('fae_cert_id');
   sessionStorage.removeItem('fae_somatic_provenance');
+  sessionStorage.removeItem('fae_session_stamps');
 
   // Reveal confirmation
   document.getElementById('mainPage').classList.add('fading');
