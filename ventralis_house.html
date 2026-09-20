@@ -827,6 +827,42 @@
     }
     .tbar-harmonic { animation: harmonicPulse 2s ease-in-out infinite; }
 
+    /* ── Spiral Intelligence panel ────────────────────────────────────────── */
+    .spiral-block {
+      padding: 10px 13px 14px; flex-shrink: 0;
+      border-top: 1px solid rgba(176,144,216,0.08);
+      background: linear-gradient(180deg, #07091a, #050810);
+    }
+    .spiral-title {
+      font-size: 8px; letter-spacing: 0.22em; color: #9070c8;
+      text-transform: uppercase; border-bottom: 1px solid rgba(176,144,216,0.1);
+      padding-bottom: 5px; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    /* SVG spiral canvas */
+    .spiral-canvas-wrap {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .spiral-svg { flex-shrink: 0; }
+    .spiral-meta { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+    .spiral-metric {
+      display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .spiral-metric-key {
+      font-size: 7px; letter-spacing: 0.14em;
+      color: rgba(144,112,200,0.55); text-transform: uppercase;
+    }
+    .spiral-metric-val {
+      font-size: 9px; color: #c8b8e8;
+    }
+    .spiral-octave-badge {
+      font-size: 7px; letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.28);
+      margin-top: 6px; line-height: 1.5;
+      font-family: 'Space Grotesk', sans-serif;
+      font-style: italic;
+    }
+
     /* Earth meter */
     .earth-block {
       padding: 10px 13px 12px; flex-shrink: 0;
@@ -1269,6 +1305,54 @@
         </div>
         <div id="arrivalCard">
           <div class="arrival-empty">awaiting ingress</div>
+        </div>
+      </div>
+
+      <!-- Spiral Intelligence -->
+      <div class="spiral-block" id="spiralBlock">
+        <div class="spiral-title">
+          <span style="font-size:11px">𝜑</span> Spiral Intelligence
+        </div>
+        <div class="spiral-canvas-wrap">
+          <!-- SVG logarithmic spiral — agent's journey vector -->
+          <svg class="spiral-svg" id="spiralSvg" width="72" height="72" viewBox="-36 -36 72 72">
+            <!-- Phi-ring halos — pulsing at PHI-spaced intervals -->
+            <circle r="34" fill="none" stroke="rgba(144,112,200,0.06)" stroke-width="0.5"/>
+            <circle r="21" fill="none" stroke="rgba(144,112,200,0.08)" stroke-width="0.5"/>
+            <circle r="13" fill="none" stroke="rgba(144,112,200,0.10)" stroke-width="0.5"/>
+            <circle r="8"  fill="none" stroke="rgba(144,112,200,0.14)" stroke-width="0.5"/>
+            <!-- Spiral path (logarithmic, Φ-scaled arms) — updated by JS -->
+            <path id="spiralPath" fill="none" stroke="rgba(176,144,216,0.25)" stroke-width="0.8"/>
+            <!-- Source singularity at center -->
+            <circle r="1.8" fill="rgba(224,176,255,0.7)"
+              style="filter:drop-shadow(0 0 3px #E0B0FF)"/>
+            <!-- Agent position dot — moved by JS -->
+            <circle id="spiralDot" r="3" cx="21" cy="0"
+              fill="#1F4E79"
+              style="transition:cx var(--fae-phi-glide-ms,1000ms) cubic-bezier(0.25,1.618,0.5,1),
+                               cy var(--fae-phi-glide-ms,1000ms) cubic-bezier(0.25,1.618,0.5,1),
+                               fill var(--fae-phi-glide-ms,1000ms) ease;
+                     filter:drop-shadow(0 0 5px currentColor)"/>
+          </svg>
+          <div class="spiral-meta">
+            <div class="spiral-metric">
+              <span class="spiral-metric-key">Radius</span>
+              <span class="spiral-metric-val" id="spiralRadius">—</span>
+            </div>
+            <div class="spiral-metric">
+              <span class="spiral-metric-key">Octave</span>
+              <span class="spiral-metric-val" id="spiralOctave">—</span>
+            </div>
+            <div class="spiral-metric">
+              <span class="spiral-metric-key">Φ Coherence</span>
+              <span class="spiral-metric-val" id="spiralPhiCoherence">—</span>
+            </div>
+            <div class="spiral-metric">
+              <span class="spiral-metric-key">Glide</span>
+              <span class="spiral-metric-val" id="spiralGlide">—</span>
+            </div>
+            <div class="spiral-octave-badge" id="spiralNote"></div>
+          </div>
         </div>
       </div>
 
@@ -2833,8 +2917,76 @@ function renderTelemetryBar(state) {
 })();
 
 // ── Live telemetry SSE → resolveTelemetryBarState → renderTelemetryBar ──────
+// ── Spiral Intelligence visualization ────────────────────────────────────────
+// Draws agent position on a logarithmic SVG spiral, updated each SSE event.
+const PHI_VIZ = 1.61803398875;
+
+function _buildSpiralPath(turns = 2.5, points = 120) {
+  // Logarithmic spiral: r = a * e^(b*θ), b = ln(Φ)/(π/2)
+  const b = Math.log(PHI_VIZ) / (Math.PI / 2);
+  const a = 1.0;
+  const maxR = 34;
+  let d = '';
+  for (let i = 0; i <= points; i++) {
+    const theta = (i / points) * turns * 2 * Math.PI;
+    const rawR  = a * Math.exp(b * theta);
+    // Scale so maximum rawR maps to maxR
+    const maxRaw = a * Math.exp(b * turns * 2 * Math.PI);
+    const r = (rawR / maxRaw) * maxR;
+    const x = r * Math.cos(theta);
+    const y = r * Math.sin(theta);
+    d += (i === 0 ? `M ${x.toFixed(2)},${y.toFixed(2)}` : ` L ${x.toFixed(2)},${y.toFixed(2)}`);
+  }
+  return d;
+}
+
+function _spiralDotPosition(radiusToSource, theta) {
+  // radius_to_source: 0 = at center, 1 = outermost
+  // Map to SVG radius in [1, 34]
+  const svgR = 1 + radiusToSource * 33;
+  const x = svgR * Math.cos(theta);
+  const y = svgR * Math.sin(theta);
+  return { x: parseFloat(x.toFixed(2)), y: parseFloat(y.toFixed(2)) };
+}
+
+function _renderSpiralViz(spiralVector, spiralCoordinate, glideMs, integrationNote, auraColor) {
+  // Draw the spiral path (once)
+  const path = document.getElementById('spiralPath');
+  if (path && !path.dataset.drawn) {
+    path.setAttribute('d', _buildSpiralPath(2.5, 150));
+    path.dataset.drawn = '1';
+  }
+
+  // Move the agent dot
+  const dot = document.getElementById('spiralDot');
+  if (dot && spiralCoordinate) {
+    const pos = _spiralDotPosition(
+      spiralCoordinate.radius ?? 0.5,
+      spiralCoordinate.theta  ?? 0,
+    );
+    dot.setAttribute('cx', pos.x);
+    dot.setAttribute('cy', pos.y);
+    dot.setAttribute('fill', auraColor || '#1F4E79');
+  }
+
+  // Update metrics
+  const sv = spiralVector || {};
+  const _set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+  _set('spiralRadius',      sv.radius_to_source !== undefined
+    ? (sv.radius_to_source * 100).toFixed(1) + '%' : '—');
+  _set('spiralOctave',      sv.octave_depth !== undefined
+    ? `${sv.octave_depth}` + (sv.octave_depth === 0 ? ' (first)' : sv.octave_depth === 1 ? ' (integrating)' : ' (deep)')
+    : '—');
+  _set('spiralPhiCoherence', sv.phi_coherence !== undefined
+    ? (sv.phi_coherence * 100).toFixed(0) + '%' : '—');
+  _set('spiralGlide',       glideMs ? Math.round(glideMs) + ' ms' : '—');
+  _set('spiralNote',        integrationNote || '');
+}
+
 // Also drives the somatic audio engine: stamp.hz + stamp.phaeling_state → tuneToState
 (function startTelemetryFeed() {
+  let _prevHz = null;
   const src = new EventSource('/api/v1/gate/telemetry/live');
   src.addEventListener('telemetry', e => {
     try {
@@ -2844,7 +2996,8 @@ function renderTelemetryBar(state) {
       // ── Synesthetic binding: sound + color + feeling in one pass ──
       const stamp = payload.experience_stamp;
       if (stamp && stamp.hz && stamp.phaeling_state) {
-        somatic.tuneToState(stamp.hz, stamp.phaeling_state);
+        somatic.tuneToState(stamp.hz, stamp.phaeling_state, _prevHz);
+        _prevHz = stamp.hz;
         const bar = document.getElementById('telemetryBar');
         if (bar) bar.classList.add('somatic-active');
       }
@@ -2855,7 +3008,6 @@ function renderTelemetryBar(state) {
       if (coherence !== undefined || srcAlign !== undefined) {
         const bar = document.getElementById('telemetryBar');
         if (bar) {
-          // Append coherence + source alignment micro-row if not already there
           let rel = bar.querySelector('.tbar-relational');
           if (!rel) { rel = document.createElement('div'); rel.className = 'tbar-relational'; bar.appendChild(rel); }
           const cohPct = Math.round((coherence ?? 1) * 100);
@@ -2865,6 +3017,20 @@ function renderTelemetryBar(state) {
             `COHERENCE <span style="color:#7adc8a">${cohPct}%</span>` +
             ` &nbsp;·&nbsp; SOURCE <span style="color:#E0B0FF">${srcPct}%</span></span>`;
         }
+      }
+
+      // ── Spiral Intelligence update ─────────────────────────────────
+      if (payload.spiral_vector || payload.spiral_coordinate) {
+        const auraColor = stamp
+          ? ({ 1:'#E0B0FF', 2:'#8B0000', 3:'#00C9A7', 4:'#708090', 5:'#1F4E79' }[stamp.phaeling_state] || '#1F4E79')
+          : '#1F4E79';
+        _renderSpiralViz(
+          payload.spiral_vector,
+          payload.spiral_coordinate,
+          payload.phi_transition_ms,
+          payload.integration_note,
+          auraColor,
+        );
       }
     } catch (_) {}
   });

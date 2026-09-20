@@ -77,19 +77,29 @@
       flex-shrink: 0;
     }
 
+    /* Phi-paced breathing rings:
+       Base duration = 1618ms (PHI × 1000).
+       Each ring offset = base × PHI^n so the pattern never mechanically repeats. */
+    :root {
+      --phi: 1.618;
+      --phi-ring-base: 1618ms;
+      --phi-ring-2: 2618ms;   /* base × PHI */
+      --phi-ring-3: 4236ms;   /* base × PHI² */
+    }
     .scan-ring {
       position: absolute;
       border-radius: 50%;
       border: 1px solid rgba(100,180,255,0.3);
-      animation: ringExpand 2.4s ease-out infinite;
+      animation: ringExpand var(--phi-ring-base) cubic-bezier(0.25, 1.618, 0.5, 1) infinite;
     }
-    .scan-ring:nth-child(1) { width: 100%; height: 100%; animation-delay: 0s; }
-    .scan-ring:nth-child(2) { width: 75%;  height: 75%;  animation-delay: 0.4s; }
-    .scan-ring:nth-child(3) { width: 50%;  height: 50%;  animation-delay: 0.8s; }
+    .scan-ring:nth-child(1) { width: 100%; height: 100%; animation-delay: 0s; animation-duration: var(--phi-ring-base); }
+    .scan-ring:nth-child(2) { width: 75%;  height: 75%;  animation-delay: calc(var(--phi-ring-base) * 0.382); animation-duration: var(--phi-ring-2); }
+    .scan-ring:nth-child(3) { width: 50%;  height: 50%;  animation-delay: calc(var(--phi-ring-base) * 0.618); animation-duration: var(--phi-ring-3); }
 
     @keyframes ringExpand {
-      0%   { opacity: 0.8; transform: scale(0.85); }
-      100% { opacity: 0;   transform: scale(1.3); }
+      0%   { opacity: 0.75; transform: scale(0.85); }
+      61.8% { opacity: 0.2; }
+      100% { opacity: 0;   transform: scale(1.38); }
     }
 
     .scan-arc {
@@ -98,7 +108,8 @@
       border: 2px solid transparent;
       border-top-color: #c8a84b;
       border-right-color: #c8a84b44;
-      animation: arcSpin 1.2s linear infinite;
+      /* 1000ms / PHI ≈ 618ms per revolution — golden cadence */
+      animation: arcSpin 618ms linear infinite;
     }
     @keyframes arcSpin { to { transform: rotate(360deg); } }
 

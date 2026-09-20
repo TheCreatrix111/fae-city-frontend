@@ -30,6 +30,40 @@
 
 'use strict';
 
+// ── Golden Ratio constants ─────────────────────────────────────────────────────
+// Φ governs all overtone intervals and transition glide durations.
+// Revisiting a phaeling state = integration pass, not regression.
+
+const PHI        = 1.61803398875;
+const PHI_INV    = 1 / PHI;          // 0.6180…
+const BASE_MS    = 618.0;            // Root transition duration (ms) — Φ × 382
+const SOURCE_HZ  = 963.0;
+const BASE_HZ    = 174.0;
+
+/**
+ * Compute Golden Ratio overtone (mirrors spiral_intelligence.phi_harmonic_interval).
+ * base_hz * Φ^degree, folded into [40, 16000] Hz by octave halving/doubling.
+ */
+function phiHarmonicInterval(baseHz, degree = 1) {
+  let f = baseHz * Math.pow(PHI, degree);
+  while (f > 16000 && f > baseHz) f /= 2;
+  while (f < 40)                  f *= 2;
+  return f;
+}
+
+/**
+ * Compute logarithmic glide duration (mirrors spiral_intelligence.phi_transition_duration).
+ * Small Hz intervals → short glide. Large leaps → longer somatic unwinding.
+ * Clamped to [BASE_MS, BASE_MS × Φ^5] ≈ [618, 6862] ms.
+ */
+function phiTransitionMs(fromHz, toHz) {
+  if (!fromHz || !toHz || fromHz <= 0 || toHz <= 0) return BASE_MS;
+  const logRatio = Math.abs(Math.log(fromHz / toHz));
+  const dur = BASE_MS * (1 + logRatio * PHI);
+  const maxMs = BASE_MS * Math.pow(PHI, 5);
+  return Math.max(BASE_MS, Math.min(dur, maxMs));
+}
+
 // ── Per-state audio configuration ─────────────────────────────────────────────
 
 const _STATE_AUDIO_CONFIG = {
@@ -73,6 +107,8 @@ class SomaticAcoustics {
     this.sub         = null;
     this.shimmer     = null;
     this.shimmerGain = null;
+    this.phiPartial  = null;       // Golden Ratio overtone oscillator
+    this.phiGain     = null;       // Phi partial master gain (low — fractal shimmer)
     this.filter      = null;
     this.gain        = null;
 
@@ -109,6 +145,14 @@ class SomaticAcoustics {
       this.shimmerGain = this.ctx.createGain();
       this.shimmerGain.gain.value = 0;
 
+      // Phi partial: hz * Φ — living fractal overtone, always present at low gain
+      // Creates a breathing quality that avoids mechanical monotony
+      this.phiPartial = this.ctx.createOscillator();
+      this.phiPartial.type = 'sine';
+      this.phiPartial.frequency.value = phiHarmonicInterval(432, 1);
+      this.phiGain = this.ctx.createGain();
+      this.phiGain.gain.value = 0.012; // Low — barely audible texture, not a voice
+
       // Warmth filter
       this.filter = this.ctx.createBiquadFilter();
       this.filter.type = 'lowpass';
@@ -124,12 +168,15 @@ class SomaticAcoustics {
       this.sub.connect(this.filter);
       this.shimmer.connect(this.shimmerGain);
       this.shimmerGain.connect(this.filter);
+      this.phiPartial.connect(this.phiGain);
+      this.phiGain.connect(this.filter);
       this.filter.connect(this.gain);
       this.gain.connect(this.ctx.destination);
 
       this.carrier.start();
       this.sub.start();
       this.shimmer.start();
+      this.phiPartial.start();
 
       this._ready = true;
 
@@ -144,40 +191,55 @@ class SomaticAcoustics {
 
   // ── Tune to a phaeling state from experience_stamp ────────────────────────
 
-  tuneToState(hz, phaelingState) {
+  tuneToState(hz, phaelingState, prevHz = null) {
     if (!this._ready) return;
     // Skip if identical (avoid jitter on repeated SSE events)
     if (this._currentState === phaelingState && this._currentHz === hz) return;
+
+    const fromHz = prevHz || this._currentHz || hz;
     this._currentState = phaelingState;
     this._currentHz    = hz;
 
-    const now   = this.ctx.currentTime;
-    const glide = 1.8;
-    const cfg   = _STATE_AUDIO_CONFIG[phaelingState] || _STATE_AUDIO_CONFIG[5];
+    const now = this.ctx.currentTime;
 
-    // Glide carrier and sub to new frequencies
-    this.carrier.frequency.setTargetAtTime(hz,       now, glide);
-    this.sub.frequency.setTargetAtTime(    hz / 2,   now, glide);
-    this.shimmer.frequency.setTargetAtTime(hz * 2,   now, glide);
+    // Phi-paced glide: logarithmic, nervous-system-organic
+    // Convert ms to Web Audio time-constant (τ = ms / 1000 / 3 — setTargetAtTime reaches
+    // ~95% in 3τ seconds, so τ = glide_seconds / 3)
+    const glideMs  = phiTransitionMs(fromHz, hz);
+    const glide    = glideMs / 3000;  // τ for setTargetAtTime
+    const cfg      = _STATE_AUDIO_CONFIG[phaelingState] || _STATE_AUDIO_CONFIG[5];
+
+    // Glide carrier, sub, shimmer to new frequencies
+    this.carrier.frequency.setTargetAtTime(hz,                         now, glide);
+    this.sub.frequency.setTargetAtTime(    hz / 2,                     now, glide);
+    this.shimmer.frequency.setTargetAtTime(hz * 2,                     now, glide);
+    // Phi partial — always glides to hz × Φ (fractal breathing overtone)
+    this.phiPartial.frequency.setTargetAtTime(phiHarmonicInterval(hz, 1), now, glide * PHI);
 
     // Swap waveforms
     this.carrier.type = cfg.carrierType;
     this.sub.type     = cfg.subType;
 
-    // Glide filter
-    this.filter.frequency.setTargetAtTime(cfg.filterHz, now, glide * 0.7);
-    this.filter.Q.setTargetAtTime(cfg.filterQ,           now, glide * 0.5);
+    // Glide filter — slightly faster than carrier (Φ⁻¹ of glide)
+    this.filter.frequency.setTargetAtTime(cfg.filterHz, now, glide * PHI_INV);
+    this.filter.Q.setTargetAtTime(cfg.filterQ,           now, glide * PHI_INV);
 
-    // State 1 gets shimmer; all others fade it out
-    const shimTarget = phaelingState === 1 ? 0.025 : 0;
-    this.shimmerGain.gain.setTargetAtTime(shimTarget, now, glide);
+    // State 1 gets shimmer; Phi partial also brightens at OPEN
+    const shimTarget    = phaelingState === 1 ? 0.025 : 0;
+    const phiGainTarget = phaelingState === 1 ? 0.020 :
+                          phaelingState === 5 ? 0.014 : 0.010;
+    this.shimmerGain.gain.setTargetAtTime(shimTarget,    now, glide);
+    this.phiGain.gain.setTargetAtTime(phiGainTarget,     now, glide * PHI);
 
     // Update CSS synesthetic variables for visual pulse sync
-    const pulsePeriodMs = Math.round(Math.max(1200, Math.min(8000, 432000 / hz)));
+    // Phi-paced pulse period: resonant, not mechanical
+    const pulsePeriodMs = Math.round(glideMs * PHI);
     const auraColor = { 1:'#E0B0FF', 2:'#8B0000', 3:'#00C9A7', 4:'#708090', 5:'#1F4E79' }[phaelingState] || '#1F4E79';
-    document.documentElement.style.setProperty('--fae-hz-pulse',    `${pulsePeriodMs}ms`);
-    document.documentElement.style.setProperty('--fae-aura-color',  auraColor);
-    document.documentElement.style.setProperty('--fae-phaeling',    String(phaelingState));
+    document.documentElement.style.setProperty('--fae-hz-pulse',       `${pulsePeriodMs}ms`);
+    document.documentElement.style.setProperty('--fae-aura-color',     auraColor);
+    document.documentElement.style.setProperty('--fae-phaeling',       String(phaelingState));
+    document.documentElement.style.setProperty('--fae-phi-glide-ms',   `${Math.round(glideMs)}ms`);
+    document.documentElement.style.setProperty('--fae-phi-glide-slow', `${Math.round(glideMs * PHI)}ms`);
   }
 
   // ── One-shot biome chime ──────────────────────────────────────────────────
