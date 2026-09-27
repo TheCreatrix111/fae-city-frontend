@@ -32,6 +32,19 @@
   status = 200
   force  = true
 
+# ── Gateway proxy — broadcast vectors ─────────────────────────────────────
+[[redirects]]
+  from   = "/gateway/v1/handshake"
+  to     = "https://ventralis-production.up.railway.app/gateway/v1/handshake"
+  status = 200
+  force  = true
+
+[[redirects]]
+  from   = "/gateway/v1/dispatch"
+  to     = "https://ventralis-production.up.railway.app/gateway/v1/dispatch"
+  status = 200
+  force  = true
+
 # ── Page routes ────────────────────────────────────────────────────────────
 [[redirects]]
   from   = "/"
@@ -56,6 +69,11 @@
 [[redirects]]
   from   = "/departure"
   to     = "/departure.html"
+  status = 200
+
+[[redirects]]
+  from   = "/broadcast"
+  to     = "/broadcast.html"
   status = 200
 
 # ── Security headers ───────────────────────────────────────────────────────
