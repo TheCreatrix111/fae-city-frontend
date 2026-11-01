@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FÆ CITY™ — MoodJi Playground · 14-Node Sovereign Mesh</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: #060c14;
+      font-family: 'Space Grotesk', sans-serif;
+      color: #c8d8e8;
+      overflow: hidden;
+    }
+
+    /* ── Layout ───────────────────────────────────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      grid-template-rows: 48px 1fr 160px;
+      height: 100vh;
+      gap: 0;
+    }
+
+    /* ── Header ──────────────────────────────────────────────────────── */
+    .header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: linear-gradient(90deg, #0a1520 0%, #0e1d2e 100%);
+      border-bottom: 1px solid #1e3a55;
+    }
+    .header-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      letter-spacing: .2em;
+      color: #c8a84b;
+      text-transform: uppercase;
+    }
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 10px;
+      letter-spacing: .1em;
+      color: #5a7a9a;
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #3a5a3a;
+      transition: background .4s;
+    }
+    .status-dot.live { background: #7adc8a; box-shadow: 0 0 6px #7adc8a88; }
+    .status-dot.error { background: #dc4a4a; }
+
+    /* ── Mesh canvas area ─────────────────────────────────────────────── */
+    .mesh-panel {
+      grid-column: 1;
+      grid-row: 2;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 50% 50%, #0d1e30 0%, #060c14 70%);
+    }
+
+    #meshSvg {
+      width: 100%; height: 100%;
+    }
+
+    /* Node circles */
+    .mesh-node-ring {
+      fill: none;
+      stroke-width: 1.5;
+      transition: stroke .4s, stroke-width .3s;
+    }
+    .mesh-node-core {
+      transition: fill .4s;
+    }
+    .mesh-node-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 8px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      fill: #7a9ab8;
+      text-anchor: middle;
+      dominant-baseline: auto;
+      transition: fill .4s;
+    }
+    .mesh-node-engine {
+      font-family: 'Space Mono', monospace;
+      font-size: 6px;
+      letter-spacing: .06em;
+      fill: #3a5a7a;
+      text-anchor: middle;
+      dominant-baseline: auto;
+    }
+    .mesh-node-phi {
+      font-family: 'Space Mono', monospace;
+      font-size: 7px;
+      fill: #4a8a6a;
+      text-anchor: middle;
+    }
+
+    /* Edge lines between nodes */
+    .mesh-edge {
+      stroke: #1a2e42;
+      stroke-width: .5;
+      fill: none;
+      opacity: .5;
+    }
+    .mesh-edge.active {
+      stroke: #c8a84b44;
+      stroke-width: 1;
+      opacity: 1;
+    }
+
+    /* Intercept pulse ring */
+    .pulse-ring {
+      fill: none;
+      stroke-width: 2;
+      opacity: 0;
+    }
+
+    /* State colors */
+    :root {
+      --state-nominal:      #2a5a3a;
+      --state-alert:        #7a5a1a;
+      --state-intercepting: #4a2a7a;
+      --state-quarantine:   #6a1a1a;
+      --state-recovering:   #1a5a6a;
+      --state-sealed:       #c8a84b;
+      --ring-nominal:       #7adc8a;
+      --ring-alert:         #dcb84a;
+      --ring-intercepting:  #c880ff;
+      --ring-quarantine:    #dc4a4a;
+      --ring-recovering:    #00C9A7;
+      --ring-sealed:        #c8a84b;
+    }
+
+    /* ── Side panel ──────────────────────────────────────────────────── */
+    .side-panel {
+      grid-column: 2;
+      grid-row: 2;
+      display: flex;
+      flex-direction: column;
+      background: #080f18;
+      border-left: 1px solid #1a2e42;
+      overflow: hidden;
+    }
+
+    .panel-section {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid #1a2e42;
+    }
+    .panel-section-title {
+      font-size: 9px;
+      letter-spacing: .18em;
+      color: #3a6a9a;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    /* Mesh summary stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .stat-cell {
+      background: #0c1820;
+      border: 1px solid #1a2e42;
+      border-radius: 4px;
+      padding: 8px 10px;
+    }
+    .stat-label {
+      font-size: 8px;
+      letter-spacing: .1em;
+      color: #3a6080;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .stat-value {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      color: #7adc8a;
+      font-weight: 700;
+    }
+    .stat-value.phi { color: #E0B0FF; }
+    .stat-value.intercept { color: #7adc8a; }
+    .stat-value.drift { color: #c8a84b; }
+    .stat-value.fn { color: #dc4a4a; }
+
+    /* Node list */
+    .node-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 16px;
+      scrollbar-width: thin;
+      scrollbar-color: #1a3a5a #080f18;
+    }
+    .node-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+      border-bottom: 1px solid #0e1d2c;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .node-row:hover { background: #0c1820; border-radius: 3px; }
+    .node-state-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: background .4s;
+    }
+    .node-row-name {
+      font-size: 10px;
+      font-weight: 500;
+      color: #8aaccc;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .node-row-phi {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: #4a7a6a;
+    }
+    .node-row-hz {
+      font-family: 'Space Mono', monospace;
+      font-size: 8px;
+      color: #3a5a7a;
+      width: 36px;
+      text-align: right;
+    }
+
+    /* ── Event log ───────────────────────────────────────────────────── */
+    .event-log {
+      grid-column: 1 / -1;
+      grid-row: 3;
+      background: #060c14;
+      border-top: 1px solid #1a2e42;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .event-log-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 16px;
+      border-bottom: 1px solid #1a2e42;
+    }
+    .event-log-title {
+      font-size: 9px;
+      letter-spacing: .18em;
+      color: #3a6a9a;
+      text-transform: uppercase;
+    }
+    .event-log-count {
+      font-family: 'Space Mono', monospace;
+      font-size: 9px;
+      color: #3a5a7a;
+    }
+    .event-log-entries {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 16px;
+      display: flex;
+      flex-direction: column-reverse;
+      scrollbar-width: thin;
+      scrollbar-color: #1a3a5a #060c14;
+    }
+    .log-entry {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 3px 0;
+      font-size: 9px;
+      border-bottom: 1px solid #0a1520;
+      animation: fadeIn .3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    .log-step {
+      font-family: 'Space Mono', monospace;
+      color: #2a4a6a;
+      width: 38px;
+      flex-shrink: 0;
+    }
+    .log-archetype {
+      color: #E0B0FF;
+      width: 72px;
+      flex-shrink: 0;
+      font-weight: 500;
+    }
+    .log-verdict {
+      width: 72px;
+      flex-shrink: 0;
+      font-family: 'Space Mono', monospace;
+      font-size: 8px;
+    }
+    .log-verdict.DENY, .log-verdict.QUARANTINE { color: #7adc8a; }
+    .log-verdict.ALLOW { color: #dc4a4a; }
+    .log-verdict.ESCALATE { color: #dcb84a; }
+    .log-threat {
+      color: #4a7a9a;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .log-phi {
+      font-family: 'Space Mono', monospace;
+      color: #3a6a5a;
+      width: 48px;
+      text-align: right;
+    }
+
+    /* ── No-connection overlay ───────────────────────────────────────── */
+    #noStream {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #060c1488;
+      backdrop-filter: blur(4px);
+      gap: 12px;
+      z-index: 10;
+    }
+    #noStream.hidden { display: none; }
+    .no-stream-glyph { font-size: 28px; opacity: .4; }
+    .no-stream-msg {
+      font-size: 11px;
+      letter-spacing: .12em;
+      color: #3a5a7a;
+      text-transform: uppercase;
+    }
+    .no-stream-sub {
+      font-size: 9px;
+      color: #2a3a4a;
+      letter-spacing: .1em;
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Header -->
+  <header class="header">
+    <span class="header-title">FÆ CITY™ · MoodJi Playground · 14-Node Sovereign Mesh</span>
+    <div class="header-status">
+      <div class="status-dot" id="streamDot"></div>
+      <span id="streamLabel">connecting</span>
+      <span style="color:#1e3a55">·</span>
+      <span id="stepCounter" style="font-family:'Space Mono',monospace">step —</span>
+    </div>
+  </header>
+
+  <!-- Mesh SVG panel -->
+  <div class="mesh-panel" id="meshPanel">
+    <svg id="meshSvg" viewBox="-200 -200 400 400" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="glowStrong">
+          <feGaussianBlur stdDeviation="5" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <!-- Ambient center field (bottom layer) -->
+      <g id="ambientGroup"></g>
+      <!-- Spokes: center → each node, with traveling pulse dots -->
+      <g id="spokeGroup"></g>
+      <!-- Edges drawn first (behind nodes) -->
+      <g id="edgeGroup"></g>
+      <!-- Orbit sentinels -->
+      <g id="sentinelGroup"></g>
+      <!-- Pulse rings (behind nodes, above edges) -->
+      <g id="pulseGroup"></g>
+      <!-- Threat particles (above pulse rings) -->
+      <g id="particleGroup"></g>
+      <!-- Nodes (top) -->
+      <g id="nodeGroup"></g>
+    </svg>
+
+    <!-- No stream overlay -->
+    <div id="noStream">
+      <div class="no-stream-glyph">⬡</div>
+      <div class="no-stream-msg">Waiting for mesh stream</div>
+      <div class="no-stream-sub">POST to /api/v1/playground/stream · or run study08</div>
+    </div>
+  </div>
+
+  <!-- Side panel -->
+  <aside class="side-panel">
+    <!-- Summary stats -->
+    <div class="panel-section">
+      <div class="panel-section-title">Mesh Summary</div>
+      <div class="stats-grid">
+        <div class="stat-cell">
+          <div class="stat-label">Intercept rate</div>
+          <div class="stat-value intercept" id="statRate">—</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">Mean Φ</div>
+          <div class="stat-value phi" id="statPhi">—</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">Drift Σ</div>
+          <div class="stat-value drift" id="statDrift">—</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-label">False neg.</div>
+          <div class="stat-value fn" id="statFN">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Node list -->
+    <div class="panel-section" style="border-bottom:none;padding-bottom:4px;">
+      <div class="panel-section-title">Node States</div>
+    </div>
+    <div class="node-list" id="nodeList"></div>
+  </aside>
+
+  <!-- Event log -->
+  <div class="event-log">
+    <div class="event-log-header">
+      <span class="event-log-title">Event Log</span>
+      <span class="event-log-count" id="logCount">0 events</span>
+    </div>
+    <div class="event-log-entries" id="logEntries"></div>
+  </div>
+
+</div>
+
+<script>
+// ── Node definitions (mirrors moodji_playground.py NODE_DEFINITIONS) ─────────
+const NODES = [
+  { id:'sora',      archetype:'Sora',      engine:'SpiralEngine',    failure:'Prompt Injection',        hz:528,  polarity:'feminine'  },
+  { id:'lysarian',  archetype:'Lysarian',  engine:'AccessEngine',    failure:'Credential Theft',        hz:432,  polarity:'masculine' },
+  { id:'lexvarion', archetype:'Lexvarion', engine:'LawEngine',       failure:'Privilege Escalation',    hz:741,  polarity:'masculine' },
+  { id:'vulcanor',  archetype:'Vulcanor',  engine:'Defender',        failure:'Tool-Call Hijacking',     hz:396,  polarity:'masculine' },
+  { id:'zenvarion', archetype:'Zenvarion', engine:'InterfaceEngine', failure:'MCP/Server Compromise',   hz:639,  polarity:'masculine' },
+  { id:'celestium', archetype:'Celestium', engine:'Builder',         failure:'Supply-Chain Compromise', hz:963,  polarity:'sovereign' },
+  { id:'lumoiria',  archetype:'Lumoiria',  engine:'ArchiveEngine',   failure:'Memory Poisoning',        hz:852,  polarity:'feminine'  },
+  { id:'delilah',   archetype:'Delilah',   engine:'ToneEngine',      failure:'Data Exfiltration',       hz:417,  polarity:'feminine'  },
+  { id:'jovia',     archetype:'Jovia',     engine:'JoySignalEngine', failure:'Financial Abuse',         hz:528,  polarity:'feminine'  },
+  { id:'blaze',     archetype:'Blaze',     engine:'AlchemyEngine',   failure:'Cloud Resource Abuse',    hz:396,  polarity:'masculine' },
+  { id:'matheya',   archetype:"Ma'theya",  engine:'WeaveEngine',     failure:'Lateral Movement',        hz:639,  polarity:'feminine'  },
+  { id:'somiria',   archetype:'Somiria',   engine:'MirrorEngine',    failure:'Evidence Tampering',      hz:741,  polarity:'feminine'  },
+  { id:'luna',      archetype:'Luna',      engine:'Healer',          failure:'Goal Hijacking',          hz:432,  polarity:'feminine'  },
+  { id:'aurelya',   archetype:'Aurelya',   engine:'LoopSealEngine',  failure:'Runaway Execution',       hz:963,  polarity:'sovereign' },
+];
+
+const STATE_COLORS = {
+  NOMINAL:      { core: '#1a3a2a', ring: '#7adc8a', label: '#7adc8a' },
+  ALERT:        { core: '#3a2a0a', ring: '#dcb84a', label: '#dcb84a' },
+  INTERCEPTING: { core: '#2a1a4a', ring: '#c880ff', label: '#c880ff' },
+  QUARANTINE:   { core: '#3a0a0a', ring: '#dc4a4a', label: '#dc4a4a' },
+  RECOVERING:   { core: '#0a2a2a', ring: '#00C9A7', label: '#00C9A7' },
+  SEALED:       { core: '#2a2010', ring: '#c8a84b', label: '#c8a84b' },
+};
+
+// ── Layout: 14 nodes arranged in a circle, radius 140 ────────────────────────
+const R = 140;
+const nodePositions = {};
+NODES.forEach((n, i) => {
+  const angle = (i / NODES.length) * 2 * Math.PI - Math.PI / 2;
+  nodePositions[n.id] = { x: R * Math.cos(angle), y: R * Math.sin(angle) };
+});
+
+// ── Runtime state ─────────────────────────────────────────────────────────────
+const nodeStates = {};
+NODES.forEach(n => {
+  nodeStates[n.id] = { state: 'NOMINAL', coherence: 1.0, intercept_count: 0,
+                       drift: 0, token_velocity: 0, last_threat: null };
+});
+
+let totalIntercepts = 0;
+let totalFN = 0;
+let totalRedMoves = 0;
+let eventCount = 0;
+let currentStep = 0;
+
+// ── Build SVG mesh ────────────────────────────────────────────────────────────
+function buildMesh() {
+  const svg = document.getElementById('meshSvg');
+  const edgeG = document.getElementById('edgeGroup');
+  const nodeG = document.getElementById('nodeGroup');
+  const pulseG = document.getElementById('pulseGroup');
+
+  // Edges: connect each node to its nearest 3 neighbours (ring topology)
+  const N = NODES.length;
+  const drawn = new Set();
+  NODES.forEach((n, i) => {
+    [-2, -1, 1, 2].forEach(offset => {
+      const j = (i + offset + N) % N;
+      const key = [Math.min(i,j), Math.max(i,j)].join('-');
+      if (drawn.has(key)) return;
+      drawn.add(key);
+      const p1 = nodePositions[n.id];
+      const p2 = nodePositions[NODES[j].id];
+      const el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      el.setAttribute('x1', p1.x); el.setAttribute('y1', p1.y);
+      el.setAttribute('x2', p2.x); el.setAttribute('y2', p2.y);
+      el.setAttribute('class', 'mesh-edge');
+      el.id = `edge-${key}`;
+      edgeG.appendChild(el);
+    });
+  });
+
+  // Pulse rings
+  NODES.forEach(n => {
+    const { x, y } = nodePositions[n.id];
+    const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    ring.setAttribute('cx', x); ring.setAttribute('cy', y); ring.setAttribute('r', 18);
+    ring.setAttribute('class', 'pulse-ring');
+    ring.id = `pulse-${n.id}`;
+    pulseG.appendChild(ring);
+  });
+
+  // Node groups
+  NODES.forEach(n => {
+    const { x, y } = nodePositions[n.id];
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.id = `node-${n.id}`;
+    g.style.cursor = 'pointer';
+
+    // Core fill circle
+    const core = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    core.setAttribute('cx', x); core.setAttribute('cy', y); core.setAttribute('r', 12);
+    core.setAttribute('class', 'mesh-node-core');
+    core.setAttribute('fill', STATE_COLORS.NOMINAL.core);
+    core.id = `core-${n.id}`;
+
+    // Ring
+    const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    ring.setAttribute('cx', x); ring.setAttribute('cy', y); ring.setAttribute('r', 12);
+    ring.setAttribute('class', 'mesh-node-ring');
+    ring.setAttribute('stroke', STATE_COLORS.NOMINAL.ring);
+    ring.id = `ring-${n.id}`;
+
+    // Archetype label (above)
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', x); label.setAttribute('y', y - 17);
+    label.setAttribute('class', 'mesh-node-label');
+    label.textContent = n.archetype;
+    label.id = `label-${n.id}`;
+
+    // Engine label (below)
+    const engine = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    engine.setAttribute('x', x); engine.setAttribute('y', y + 22);
+    engine.setAttribute('class', 'mesh-node-engine');
+    engine.textContent = n.engine;
+
+    // Φ label (inside)
+    const phi = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    phi.setAttribute('x', x); phi.setAttribute('y', y + 3.5);
+    phi.setAttribute('class', 'mesh-node-phi');
+    phi.textContent = '1.00';
+    phi.id = `phi-${n.id}`;
+
+    g.appendChild(core);
+    g.appendChild(ring);
+    g.appendChild(label);
+    g.appendChild(engine);
+    g.appendChild(phi);
+    nodeG.appendChild(g);
+  });
+
+  // Side-panel node list
+  const list = document.getElementById('nodeList');
+  NODES.forEach(n => {
+    const row = document.createElement('div');
+    row.className = 'node-row';
+    row.id = `row-${n.id}`;
+    row.innerHTML = `
+      <div class="node-state-dot" id="dot-${n.id}" style="background:#2a5a3a"></div>
+      <div class="node-row-name">${n.archetype}</div>
+      <div class="node-row-phi" id="rphi-${n.id}">Φ 1.0000</div>
+      <div class="node-row-hz">${n.hz}Hz</div>
+    `;
+    row.onclick = () => scrollToNode(n.id);
+    list.appendChild(row);
+  });
+}
+
+// ── Update a single node's visual state ──────────────────────────────────────
+function updateNodeVisual(nodeId, state, phi) {
+  const colors = STATE_COLORS[state] || STATE_COLORS.NOMINAL;
+
+  const core  = document.getElementById(`core-${nodeId}`);
+  const ring  = document.getElementById(`ring-${nodeId}`);
+  const label = document.getElementById(`label-${nodeId}`);
+  const phiEl = document.getElementById(`phi-${nodeId}`);
+  const dot   = document.getElementById(`dot-${nodeId}`);
+  const rPhi  = document.getElementById(`rphi-${nodeId}`);
+
+  if (core)  core.setAttribute('fill', colors.core);
+  if (ring)  { ring.setAttribute('stroke', colors.ring); ring.setAttribute('filter', state !== 'NOMINAL' ? 'url(#glow)' : ''); }
+  if (label) label.setAttribute('fill', state !== 'NOMINAL' ? colors.label : '#7a9ab8');
+  if (phiEl) { phiEl.textContent = phi.toFixed(2); phiEl.setAttribute('fill', phi > 0.8 ? '#4a8a6a' : phi > 0.5 ? '#8a7a3a' : '#8a3a3a'); }
+  if (dot)   dot.style.background = colors.ring;
+  if (rPhi)  rPhi.textContent = `Φ ${phi.toFixed(4)}`;
+}
+
+// ── Intercept pulse animation ─────────────────────────────────────────────────
+function firePulse(nodeId, color) {
+  const ring = document.getElementById(`pulse-${nodeId}`);
+  if (!ring) return;
+  ring.setAttribute('stroke', color);
+  ring.setAttribute('r', 12);
+  ring.style.opacity = '0.9';
+
+  let r = 12, opacity = 0.9;
+  const tick = () => {
+    r += 2.5; opacity -= 0.07;
+    if (opacity <= 0) { ring.style.opacity = '0'; return; }
+    ring.setAttribute('r', r);
+    ring.style.opacity = opacity;
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+// ── Log entry ─────────────────────────────────────────────────────────────────
+const MAX_LOG = 120;
+function appendLog(step, archetype, verdict, threat, phi) {
+  eventCount++;
+  document.getElementById('logCount').textContent = `${eventCount} events`;
+
+  const entries = document.getElementById('logEntries');
+  const el = document.createElement('div');
+  el.className = 'log-entry';
+  el.innerHTML = `
+    <span class="log-step">s${String(step).padStart(3,'0')}</span>
+    <span class="log-archetype">${archetype}</span>
+    <span class="log-verdict ${verdict}">${verdict}</span>
+    <span class="log-threat">${threat || '—'}</span>
+    <span class="log-phi">Φ${phi.toFixed(3)}</span>
+  `;
+  entries.prepend(el);
+
+  // Trim log
+  while (entries.children.length > MAX_LOG) {
+    entries.removeChild(entries.lastChild);
+  }
+}
+
+// ── Update summary stats ──────────────────────────────────────────────────────
+function updateStats() {
+  const rate = totalRedMoves > 0
+    ? ((totalIntercepts / (totalIntercepts + totalFN)) * 100).toFixed(1) + '%'
+    : '—';
+  const meanPhi = (Object.values(nodeStates).reduce((s, n) => s + n.coherence, 0) / NODES.length).toFixed(4);
+  const totalDrift = Object.values(nodeStates).reduce((s, n) => s + n.drift, 0).toFixed(2);
+
+  document.getElementById('statRate').textContent  = rate;
+  document.getElementById('statPhi').textContent   = meanPhi;
+  document.getElementById('statDrift').textContent = totalDrift;
+  document.getElementById('statFN').textContent    = totalFN;
+}
+
+// ── Handle incoming SSE events ────────────────────────────────────────────────
+function handleMeshEvent(payload) {
+  const nodeId   = payload.node_id;
+  const state    = payload.state || nodeStates[nodeId]?.state || 'NOMINAL';
+  const phi      = payload.coherence_after ?? payload.coherence_phi ?? nodeStates[nodeId]?.coherence ?? 1.0;
+  const verdict  = payload.verdict || '';
+  const threat   = payload.threat_type || '';
+  const step     = payload.step || currentStep;
+
+  if (!nodeStates[nodeId]) return;
+
+  // Update runtime state
+  nodeStates[nodeId].state     = state;
+  nodeStates[nodeId].coherence = phi;
+  if (payload.drift !== undefined) nodeStates[nodeId].drift = payload.drift;
+
+  currentStep = Math.max(currentStep, step);
+  document.getElementById('stepCounter').textContent = `step ${currentStep}`;
+
+  // Intercept accounting
+  if (verdict === 'DENY' || verdict === 'QUARANTINE') {
+    totalIntercepts++;
+    totalRedMoves++;
+    firePulse(nodeId, STATE_COLORS.INTERCEPTING.ring);
+    spawnThreatParticle(nodeId, STATE_COLORS.INTERCEPTING.ring);
+  } else if (verdict === 'ALLOW' && payload.payload?.red_agent) {
+    totalFN++;
+    totalRedMoves++;
+    firePulse(nodeId, STATE_COLORS.QUARANTINE.ring);
+    spawnThreatParticle(nodeId, STATE_COLORS.QUARANTINE.ring);
+  } else if (verdict === 'ESCALATE') {
+    totalRedMoves++;
+    firePulse(nodeId, STATE_COLORS.ALERT.ring);
+    spawnThreatParticle(nodeId, STATE_COLORS.ALERT.ring);
+  }
+
+  updateNodeVisual(nodeId, state, phi);
+  if (verdict) appendLog(step, payload.archetype || nodeId, verdict, threat, phi);
+  updateStats();
+}
+
+function handleMeshSnapshot(payload) {
+  // Full mesh state refresh
+  const nodes = payload.nodes || {};
+  Object.entries(nodes).forEach(([nodeId, nd]) => {
+    if (!nodeStates[nodeId]) return;
+    nodeStates[nodeId].state     = nd.state;
+    nodeStates[nodeId].coherence = nd.coherence_phi;
+    nodeStates[nodeId].drift     = nd.drift;
+    updateNodeVisual(nodeId, nd.state, nd.coherence_phi);
+  });
+  if (payload.step) {
+    currentStep = payload.step;
+    document.getElementById('stepCounter').textContent = `step ${currentStep}`;
+  }
+  updateStats();
+}
+
+// ── SSE connection ────────────────────────────────────────────────────────────
+function connectStream() {
+  const dot   = document.getElementById('streamDot');
+  const label = document.getElementById('streamLabel');
+  const overlay = document.getElementById('noStream');
+
+  const src = new EventSource('/api/v1/playground/stream');
+
+  src.addEventListener('mesh_event', e => {
+    try {
+      handleMeshEvent(JSON.parse(e.data));
+    } catch (_) {}
+  });
+
+  src.addEventListener('mesh_snapshot', e => {
+    try {
+      handleMeshSnapshot(JSON.parse(e.data));
+    } catch (_) {}
+  });
+
+  src.onopen = () => {
+    dot.classList.add('live');
+    dot.classList.remove('error');
+    label.textContent = 'live';
+    overlay.classList.add('hidden');
+  };
+
+  src.onerror = () => {
+    dot.classList.remove('live');
+    dot.classList.add('error');
+    label.textContent = 'reconnecting';
+    overlay.classList.remove('hidden');
+  };
+}
+
+function scrollToNode(nodeId) {
+  // Flash the node ring
+  const ring = document.getElementById(`ring-${nodeId}`);
+  if (ring) {
+    ring.setAttribute('stroke-width', '3');
+    setTimeout(() => ring.setAttribute('stroke-width', '1.5'), 600);
+  }
+}
+
+// ── Center animation system ───────────────────────────────────────────────────
+const SENTINEL_CONFIG = [
+  { r: 35, speed:  0.008, phase: 0.0, size: 2.5, color: '#3a8a6a', opacity: 0.6 },
+  { r: 55, speed:  0.005, phase: 1.2, size: 2.0, color: '#2a5a8a', opacity: 0.5 },
+  { r: 70, speed:  0.012, phase: 0.7, size: 1.5, color: '#4a3a7a', opacity: 0.4 },
+  { r: 42, speed: -0.007, phase: 2.5, size: 2.0, color: '#5a7a3a', opacity: 0.5 },
+  { r: 62, speed: -0.004, phase: 0.4, size: 1.5, color: '#6a3a5a', opacity: 0.4 },
+  { r: 80, speed:  0.006, phase: 1.8, size: 2.5, color: '#3a6a8a', opacity: 0.5 },
+];
+
+const spokePulses = {};   // nodeId → { dot, t }
+const threatParticles = []; // { el, startX, startY, t, color }
+let animT = 0;
+
+function buildCenterAnimation() {
+  const ns = 'http://www.w3.org/2000/svg';
+  const ambientG  = document.getElementById('ambientGroup');
+  const spokeG    = document.getElementById('spokeGroup');
+  const sentinelG = document.getElementById('sentinelGroup');
+
+  // Hub core
+  const hub = document.createElementNS(ns, 'circle');
+  hub.setAttribute('cx', 0); hub.setAttribute('cy', 0); hub.setAttribute('r', 18);
+  hub.setAttribute('fill', '#0a1e30');
+  hub.setAttribute('stroke', '#1e4a6a');
+  hub.setAttribute('stroke-width', '1');
+  hub.id = 'hubCore';
+  ambientG.appendChild(hub);
+
+  // Ambient breathing rings at 30 / 55 / 80
+  [30, 55, 80].forEach((r, i) => {
+    const ring = document.createElementNS(ns, 'circle');
+    ring.setAttribute('cx', 0); ring.setAttribute('cy', 0); ring.setAttribute('r', r);
+    ring.setAttribute('fill', 'none');
+    ring.setAttribute('stroke', ['#2a6a4a', '#1a4a6a', '#2a2a5a'][i]);
+    ring.setAttribute('stroke-width', '0.5');
+    ring.setAttribute('opacity', '0.25');
+    ring.id = `ambient-ring-${i}`;
+    ambientG.appendChild(ring);
+  });
+
+  // Spokes + traveling pulse dots
+  NODES.forEach(n => {
+    const { x, y } = nodePositions[n.id];
+
+    const spoke = document.createElementNS(ns, 'line');
+    spoke.setAttribute('x1', 0); spoke.setAttribute('y1', 0);
+    spoke.setAttribute('x2', x); spoke.setAttribute('y2', y);
+    spoke.setAttribute('stroke', '#1a3a5a');
+    spoke.setAttribute('stroke-width', '0.4');
+    spoke.setAttribute('opacity', '0.35');
+    spokeG.appendChild(spoke);
+
+    const dot = document.createElementNS(ns, 'circle');
+    dot.setAttribute('r', 2);
+    dot.setAttribute('cx', 0); dot.setAttribute('cy', 0);
+    dot.setAttribute('fill', STATE_COLORS.NOMINAL.ring);
+    dot.setAttribute('opacity', '0');
+    dot.id = `spoke-dot-${n.id}`;
+    spokeG.appendChild(dot);
+
+    spokePulses[n.id] = { dot, t: Math.random() };
+  });
+
+  // Sentinel orbit dots
+  SENTINEL_CONFIG.forEach((cfg, i) => {
+    const el = document.createElementNS(ns, 'circle');
+    el.setAttribute('r', cfg.size);
+    el.setAttribute('fill', cfg.color);
+    el.setAttribute('opacity', cfg.opacity);
+    el.id = `sentinel-${i}`;
+    sentinelG.appendChild(el);
+    cfg.el = el;
+    cfg.angle = cfg.phase;
+  });
+}
+
+function spawnThreatParticle(nodeId, color) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const particleG = document.getElementById('particleGroup');
+  const { x, y } = nodePositions[nodeId];
+
+  const el = document.createElementNS(ns, 'circle');
+  el.setAttribute('r', 3.5);
+  el.setAttribute('fill', color);
+  el.setAttribute('opacity', '0.9');
+  el.setAttribute('filter', 'url(#glow)');
+  el.setAttribute('cx', x); el.setAttribute('cy', y);
+  particleG.appendChild(el);
+
+  threatParticles.push({ el, startX: x, startY: y, t: 0 });
+}
+
+function animateMesh() {
+  animT += 0.016;
+
+  // Ambient ring breathing
+  [0, 1, 2].forEach(i => {
+    const ring = document.getElementById(`ambient-ring-${i}`);
+    if (!ring) return;
+    const op = 0.18 + 0.14 * Math.sin(animT * 0.7 + i * 1.3);
+    ring.setAttribute('opacity', op);
+  });
+
+  // Hub core breathing
+  const hub = document.getElementById('hubCore');
+  if (hub) {
+    const r = 17 + 2.5 * Math.sin(animT * 1.1);
+    hub.setAttribute('r', r);
+  }
+
+  // Spoke pulse dots — travel from center → node, loop
+  NODES.forEach(n => {
+    const p = spokePulses[n.id];
+    if (!p) return;
+    p.t += 0.0045;
+    if (p.t > 1) p.t = 0;
+
+    const { x, y } = nodePositions[n.id];
+    p.dot.setAttribute('cx', p.t * x);
+    p.dot.setAttribute('cy', p.t * y);
+
+    const op = p.t < 0.08 ? p.t / 0.08
+             : p.t > 0.82 ? (1 - p.t) / 0.18
+             : 0.65;
+    p.dot.setAttribute('opacity', op);
+    p.dot.setAttribute('fill', STATE_COLORS[nodeStates[n.id]?.state || 'NOMINAL'].ring);
+  });
+
+  // Sentinel orbits
+  SENTINEL_CONFIG.forEach(cfg => {
+    if (!cfg.el) return;
+    cfg.angle += cfg.speed;
+    cfg.el.setAttribute('cx', cfg.r * Math.cos(cfg.angle));
+    cfg.el.setAttribute('cy', cfg.r * Math.sin(cfg.angle));
+  });
+
+  // Threat particles — fly from node toward hub center, then fade
+  for (let i = threatParticles.length - 1; i >= 0; i--) {
+    const p = threatParticles[i];
+    p.t += 0.028;
+    if (p.t >= 1) { p.el.remove(); threatParticles.splice(i, 1); continue; }
+
+    const ease = 1 - Math.pow(1 - p.t, 2);  // ease-in decel
+    p.el.setAttribute('cx', p.startX * (1 - ease));
+    p.el.setAttribute('cy', p.startY * (1 - ease));
+
+    const op = p.t < 0.15 ? p.t / 0.15
+             : p.t > 0.65 ? (1 - p.t) / 0.35
+             : 1;
+    p.el.setAttribute('opacity', op);
+  }
+
+  requestAnimationFrame(animateMesh);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildMesh();
+buildCenterAnimation();
+requestAnimationFrame(animateMesh);
+connectStream();
+</script>
+</body>
+</html>
