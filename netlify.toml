@@ -64,6 +64,11 @@
   status = 200
 
 [[redirects]]
+  from   = "/spec"
+  to     = "/spec.html"
+  status = 200
+
+[[redirects]]
   from   = "/"
   to     = "/waitlist.html"
   status = 200
