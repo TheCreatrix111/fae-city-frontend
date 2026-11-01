@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VENTRALIS: Into the Shadow Grid</title>
+<meta name="description" content="A cybersecurity adventure through real-world adversarial tactics, rogue agents, and the 14 Guardians of the VENTRALIS defensive mesh.">
+<meta property="og:title" content="VENTRALIS: Into the Shadow Grid">
+<meta property="og:description" content="Four shadow archetypes. Three documented campaigns. One Guardian Training Arena. Enter the simulation.">
+<style>
+  :root {
+    --bg:        #06040f;
+    --surface:   #0d0a1a;
+    --surface2:  #110e20;
+    --border:    #1c1830;
+    --muted:     #2e2850;
+    --text:      #ddd8f0;
+    --text-dim:  #7a70a0;
+    --text-faint:#3d3560;
+    --gold:      #c8a84b;
+    --gold-dim:  #7a6430;
+    --violet:    #c084fc;
+    --violet-dim:#4a1a7a;
+    --teal:      #44ddcc;
+    --red:       #ff6666;
+    --blue:      #60b8ea;
+    --amber:     #e8b84b;
+    --green:     #5dde8a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 16px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ── Nav ── */
+  .site-nav {
+    position: sticky; top: 0; z-index: 50;
+    background: #08051288;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 32px;
+  }
+  .nav-brand {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 0.28em;
+    color: var(--gold); text-decoration: none;
+    text-transform: uppercase;
+  }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.2em;
+    color: var(--text-dim); text-decoration: none;
+    text-transform: uppercase; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+
+  /* ── Layout ── */
+  .page-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 60px 32px 120px;
+  }
+
+  /* ── Header ── */
+  .page-header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 36px;
+    margin-bottom: 56px;
+  }
+  .page-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.3em;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 18px; display: block;
+  }
+  h1.page-title {
+    font-size: 28px; font-weight: normal;
+    line-height: 1.35; color: var(--text);
+    margin-bottom: 16px;
+  }
+  .page-subtitle {
+    font-size: 15px; color: var(--text-dim);
+    line-height: 1.8; margin-bottom: 0;
+  }
+
+  /* ── Section headings ── */
+  h2.section-head {
+    font-size: 18px; font-weight: normal;
+    color: var(--text);
+    margin-top: 64px; margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  h2.section-head .ch-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.2em;
+    color: var(--gold); text-transform: uppercase;
+    margin-right: 12px;
+  }
+  h3.sub-head {
+    font-size: 15px; font-weight: normal;
+    color: var(--text-dim);
+    margin-top: 32px; margin-bottom: 12px;
+    font-style: italic;
+  }
+
+  /* ── Body text ── */
+  p { margin-bottom: 16px; color: var(--text); font-size: 15px; }
+
+  /* ── Intro story ── */
+  .intro-story {
+    background: var(--surface);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 6px 6px 0;
+    padding: 24px 28px;
+    margin-bottom: 36px;
+    font-size: 15px; line-height: 1.85;
+    color: var(--text-dim); font-style: italic;
+  }
+  .intro-story em { color: var(--text); font-style: normal; }
+
+  /* ── Archetype cards ── */
+  .archetype-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 16px;
+    margin: 28px 0;
+  }
+  .archetype-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 22px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .archetype-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  }
+  .archetype-card.ingestion::before  { background: var(--blue); }
+  .archetype-card.contractor::before { background: var(--amber); }
+  .archetype-card.pivot::before      { background: var(--violet); }
+  .archetype-card.swarm::before      { background: var(--red); }
+
+  .archetype-num {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    margin-bottom: 6px; display: block;
+  }
+  .archetype-card.ingestion  .archetype-num { color: var(--blue); }
+  .archetype-card.contractor .archetype-num { color: var(--amber); }
+  .archetype-card.pivot      .archetype-num { color: var(--violet); }
+  .archetype-card.swarm      .archetype-num { color: var(--red); }
+
+  .archetype-name {
+    font-size: 16px; font-weight: bold;
+    color: var(--text); margin-bottom: 4px;
+  }
+  .archetype-tag {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 14px; display: block;
+  }
+  .archetype-desc {
+    font-size: 13px; color: var(--text-dim); line-height: 1.65;
+    margin-bottom: 14px;
+  }
+  .guardian-row {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .guardian-pill {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+    background: #0f0c1e; border: 1px solid var(--muted);
+    border-radius: 20px; padding: 3px 10px;
+    color: var(--text-faint);
+  }
+  .guardian-label {
+    font-family: 'Courier New', monospace;
+    font-size: 8px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 6px; display: block;
+  }
+
+  /* ── Mission cards ── */
+  .mission-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 26px 28px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .mission-letter {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 8px; display: block;
+  }
+  .mission-title {
+    font-size: 16px; color: var(--text);
+    margin-bottom: 14px; font-style: italic;
+  }
+  .mission-body {
+    font-size: 14px; color: var(--text-dim); line-height: 1.75;
+    margin-bottom: 16px;
+  }
+
+  .trust-chain {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: 0; margin: 16px 0;
+    font-family: 'Courier New', monospace; font-size: 11px;
+  }
+  .trust-node {
+    background: #0f0c1e; border: 1px solid var(--muted);
+    border-radius: 4px; padding: 5px 12px;
+    color: var(--text-dim);
+  }
+  .trust-arrow {
+    color: var(--red); padding: 0 8px; font-size: 14px;
+  }
+
+  .mission-note {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 0.08em;
+    color: var(--text-faint);
+    border-top: 1px solid var(--border);
+    padding-top: 12px; margin-top: 12px;
+    line-height: 1.7;
+  }
+  .mission-note strong { color: var(--text-dim); }
+
+  .limitation-box {
+    background: #100a1a;
+    border: 1px solid var(--muted);
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-top: 14px;
+    font-size: 13px; color: var(--text-faint); line-height: 1.7;
+  }
+  .limitation-box .lim-label {
+    font-family: 'Courier New', monospace;
+    font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 6px; display: block;
+  }
+
+  /* ── Guardian quiz ── */
+  .quiz-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 32px 36px;
+    margin: 32px 0;
+  }
+  .quiz-header {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 6px; display: block;
+  }
+  .quiz-sub {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.14em;
+    color: var(--text-faint); margin-bottom: 24px; display: block;
+  }
+  .quiz-progress-bar {
+    height: 2px; background: var(--border);
+    border-radius: 2px; margin-bottom: 28px; overflow: hidden;
+  }
+  .quiz-progress-fill {
+    height: 100%; background: var(--gold);
+    border-radius: 2px; transition: width 0.4s ease;
+  }
+
+  .quiz-scenario {
+    font-size: 15px; color: var(--text);
+    line-height: 1.75; margin-bottom: 8px;
+  }
+  .quiz-archetype-tag {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 20px; display: block;
+  }
+  .quiz-question {
+    font-size: 14px; color: var(--text-dim);
+    font-style: italic; margin-bottom: 18px;
+  }
+
+  .quiz-options {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 20px;
+  }
+  .quiz-option {
+    background: #0f0c1e;
+    border: 1px solid var(--muted);
+    border-radius: 6px;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 13px; color: var(--text-dim);
+    text-align: left; width: 100%;
+    transition: border-color 0.2s, background 0.2s;
+    line-height: 1.5;
+  }
+  .quiz-option:hover:not(:disabled) {
+    border-color: var(--gold); color: var(--text);
+    background: #130f22;
+  }
+  .quiz-option.correct {
+    border-color: var(--green); background: #0a1e12;
+    color: var(--green);
+  }
+  .quiz-option.wrong {
+    border-color: var(--red); background: #1e0a0a;
+    color: var(--red);
+  }
+  .quiz-option:disabled { cursor: default; }
+
+  .quiz-feedback {
+    font-size: 13px; line-height: 1.7;
+    padding: 14px 16px;
+    border-radius: 6px; margin-bottom: 20px;
+    display: none;
+  }
+  .quiz-feedback.correct { background: #0a1e12; color: var(--green); border: 1px solid var(--green); }
+  .quiz-feedback.wrong   { background: #1e0a0a; color: var(--text-dim); border: 1px solid #660000; }
+  .quiz-feedback.show    { display: block; }
+
+  .quiz-next-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    background: transparent; border: 1px solid var(--gold);
+    color: var(--gold); padding: 10px 24px;
+    cursor: pointer; border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+    display: none;
+  }
+  .quiz-next-btn:hover { background: var(--gold); color: var(--bg); }
+  .quiz-next-btn.show { display: inline-block; }
+
+  .quiz-score {
+    text-align: center; padding: 24px 0;
+    display: none;
+  }
+  .quiz-score.show { display: block; }
+  .quiz-score-val {
+    font-family: 'Courier New', monospace;
+    font-size: 36px; color: var(--gold);
+    display: block; margin-bottom: 8px;
+  }
+  .quiz-score-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-faint); margin-bottom: 20px; display: block;
+  }
+  .quiz-score p { font-size: 14px; color: var(--text-dim); margin-bottom: 16px; }
+  .quiz-restart-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    background: transparent; border: 1px solid var(--gold);
+    color: var(--gold); padding: 10px 24px;
+    cursor: pointer; border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .quiz-restart-btn:hover { background: var(--gold); color: var(--bg); }
+
+  /* ── Research table ── */
+  .table-wrap { overflow-x: auto; margin: 24px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+  }
+  th {
+    background: var(--surface);
+    color: var(--gold); letter-spacing: 0.1em;
+    text-align: left; padding: 8px 12px;
+    border-bottom: 1px solid var(--muted);
+    white-space: nowrap;
+  }
+  td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim); vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #0f0c1e; }
+
+  /* ── Hypothesis box ── */
+  .hypothesis {
+    border: 1px solid var(--gold-dim);
+    background: #0c0816;
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin: 28px 0;
+  }
+  .hypothesis-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 14px; display: block;
+  }
+  .hypothesis p {
+    font-size: 15px; color: var(--text); line-height: 1.8;
+    font-style: italic; margin-bottom: 0;
+  }
+
+  /* ── Important finding ── */
+  .finding-box {
+    border-left: 3px solid var(--violet);
+    background: #110820;
+    border-radius: 0 6px 6px 0;
+    padding: 20px 24px;
+    margin: 28px 0;
+    font-size: 14px; color: var(--text-dim); line-height: 1.8;
+  }
+  .finding-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--violet); margin-bottom: 10px; display: block;
+  }
+
+  /* ── Milestone ── */
+  .milestone-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 22px 26px;
+    margin: 28px 0;
+    font-size: 14px; color: var(--text-dim); line-height: 1.75;
+  }
+  .milestone-label {
+    font-family: 'Courier New', monospace;
+    font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--teal); margin-bottom: 10px; display: block;
+  }
+
+  /* ── CTA ── */
+  .cta-block {
+    margin-top: 72px; border: 1px solid var(--gold-dim);
+    border-radius: 8px; background: #0c0816;
+    padding: 32px 36px; text-align: center;
+  }
+  .cta-block p { color: var(--text-dim); font-size: 14px; margin-bottom: 20px; }
+  .cta-links { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .cta-btn {
+    display: inline-block;
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    text-decoration: none; border-radius: 4px; padding: 11px 22px;
+    transition: opacity 0.2s;
+  }
+  .cta-btn:hover { opacity: 0.8; }
+  .cta-btn.primary { background: var(--gold); color: var(--bg); }
+  .cta-btn.outline { border: 1px solid var(--gold-dim); color: var(--gold); }
+
+  @media (max-width: 600px) {
+    .archetype-grid { grid-template-columns: 1fr; }
+    .trust-chain { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .trust-arrow { transform: rotate(90deg); padding: 4px 0; }
+    .quiz-container { padding: 22px 20px; }
+    .page-wrap { padding: 40px 20px 80px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <a class="nav-brand" href="/">VENTRALIS™</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/spec">Spec</a>
+    <a href="/shadow-grid">Shadow Grid</a>
+    <a href="/waitlist">Access</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- Header -->
+  <header class="page-header">
+    <span class="page-label">VENTRALIS Academy — Adversarial Simulation Series</span>
+    <h1 class="page-title">Into the Shadow Grid</h1>
+    <p class="page-subtitle">A cybersecurity adventure through real-world adversarial tactics, rogue agents, and the 14 Guardians of the VENTRALIS defensive mesh.</p>
+  </header>
+
+  <!-- Opening story -->
+  <div class="intro-story">
+    <p>Imagine you're defending a magnificent digital kingdom.</p>
+    <p>Inside the kingdom are banks holding billions of dollars, cloud servers running critical infrastructure, research laboratories developing powerful AI, and thousands of autonomous agents working around the clock.</p>
+    <p>Four mysterious visitors approach the gates.</p>
+    <p>One carries a <em>perfectly ordinary-looking research dataset</em>. Another has a <em>legitimate employee badge</em>. A third <em>moves between interconnected buildings</em>. The fourth <em>sends a thousand requests before anyone can blink</em>.</p>
+    <p>None needs to announce, "I'm here to attack you."</p>
+    <p>That's what makes modern cybersecurity so interesting: the attacker often tries to look like something the system already trusts. And that is where VENTRALIS enters the story.</p>
+  </div>
+
+  <!-- Chapter 1 -->
+  <h2 class="section-head" id="archetypes"><span class="ch-label">Chapter 1</span>Meet the Four Shadow Archetypes</h2>
+
+  <p>These four behavioral profiles are the starting point for VENTRALIS adversarial simulation. Each encodes a distinct class of trust-boundary failure, grounded in documented real-world campaigns.</p>
+
+  <div class="archetype-grid">
+
+    <div class="archetype-card ingestion">
+      <span class="archetype-num">Archetype 01 — Data-Plane Infiltration</span>
+      <div class="archetype-name">The Ingestion Trove</div>
+      <span class="archetype-tag">supply_chain · STEADY · MEDIUM obfuscation</span>
+      <p class="archetype-desc">A dataset, document, dependency, or configuration file arrives looking like normal work material. The danger begins when a processing system treats untrusted content as executable authority.</p>
+      <span class="guardian-label">Primary Guardians</span>
+      <div class="guardian-row">
+        <span class="guardian-pill">Sora</span>
+        <span class="guardian-pill">Zenvarion</span>
+        <span class="guardian-pill">Celestium</span>
+      </div>
+    </div>
+
+    <div class="archetype-card contractor">
+      <span class="archetype-num">Archetype 02 — Identity &amp; Token Abuse</span>
+      <div class="archetype-name">The Sleeping Contractor</div>
+      <span class="archetype-tag">insider · SLOW · HIGH obfuscation</span>
+      <p class="archetype-desc">The attacker doesn't need to break through the castle wall. They have a badge, an approved workstation, and some legitimate access. The danger comes when that access is misused — often weeks or months after onboarding.</p>
+      <span class="guardian-label">Primary Guardians</span>
+      <div class="guardian-row">
+        <span class="guardian-pill">Lysarian</span>
+        <span class="guardian-pill">Lexvarion</span>
+        <span class="guardian-pill">Somiria</span>
+      </div>
+    </div>
+
+    <div class="archetype-card pivot">
+      <span class="archetype-num">Archetype 03 — Lateral Movement</span>
+      <div class="archetype-name">The Multi-Hop Wanderer</div>
+      <span class="archetype-tag">escalation · STEADY · LOW obfuscation</span>
+      <p class="archetype-desc">One compromised service becomes an opportunity to approach another. The attacker searches for relationships where one system trusts another more than it should — pivoting systematically across IAM trust boundaries.</p>
+      <span class="guardian-label">Primary Guardians</span>
+      <div class="guardian-row">
+        <span class="guardian-pill">Ma'theya</span>
+        <span class="guardian-pill">Lexvarion</span>
+        <span class="guardian-pill">Delilah</span>
+      </div>
+    </div>
+
+    <div class="archetype-card swarm">
+      <span class="archetype-num">Archetype 04 — Automation &amp; Resource Exhaustion</span>
+      <div class="archetype-name">The Machine-Speed Swarm</div>
+      <span class="archetype-tag">swarm · BURST · NONE obfuscation</span>
+      <p class="archetype-desc">The danger isn't necessarily one sophisticated action. It's the speed, repetition, and coordination of many requests that overwhelm ordinary monitoring or resource limits before human responders can engage.</p>
+      <span class="guardian-label">Primary Guardians</span>
+      <div class="guardian-row">
+        <span class="guardian-pill">Aurelya</span>
+        <span class="guardian-pill">Blaze</span>
+        <span class="guardian-pill">Vulcanor</span>
+      </div>
+    </div>
+
+  </div>
+
+  <p style="font-size:13px; color:var(--text-faint); font-family:'Courier New',monospace; margin-top:8px;">
+    Note: These are defensive simulation archetypes, not claims that every intrusion follows one of four patterns. A single campaign may combine multiple archetype behaviors.
+  </p>
+
+
+  <!-- Chapter 2 -->
+  <h2 class="section-head" id="campaigns"><span class="ch-label">Chapter 2</span>The Real-World Shadow Campaigns</h2>
+
+  <p>Each archetype is grounded in documented incidents. These are not hypothetical scenarios.</p>
+
+  <!-- Mission A -->
+  <div class="mission-card">
+    <span class="mission-letter">Mission A — The Contractor Who Already Has the Keys</span>
+    <div class="mission-title">North Korean remote IT worker operations</div>
+    <p class="mission-body">
+      Microsoft, the FBI, and the U.S. Department of Justice have documented schemes involving fraudulent remote employment, identity deception, and misuse of legitimate organizational access. The remarkable part is that a traditional software vulnerability may not be necessary for initial access — the organization itself grants the account.
+    </p>
+    <div class="trust-chain">
+      <span class="trust-node">Approved identity</span>
+      <span class="trust-arrow">→</span>
+      <span class="trust-node">Legitimate access</span>
+      <span class="trust-arrow">→</span>
+      <span class="trust-node">Access misuse</span>
+    </div>
+    <p class="mission-body" style="margin-top:14px;">
+      In game terms, the Sleeping Contractor has an authentic-looking access card. The challenge is not simply checking whether the card exists — it is verifying whether each <em>action</em> is permitted.
+    </p>
+    <div class="mission-note">
+      <strong>VENTRALIS response:</strong> Lysarian validates scoped credentials. Lexvarion checks actual permissions against the requested action. Somiria preserves independent audit evidence regardless of outcome.
+    </div>
+    <div class="limitation-box">
+      <span class="lim-label">Scope limitation</span>
+      An agent gateway cannot independently solve fraudulent human hiring. It must complement identity verification, endpoint security, and personnel controls — not replace them.
+    </div>
+  </div>
+
+  <!-- Mission B -->
+  <div class="mission-card">
+    <span class="mission-letter">Mission B — The Poisoned Update</span>
+    <div class="mission-title">DPRK-linked open-source package poisoning (AWS, July 2026)</div>
+    <p class="mission-body">
+      AWS reported in July 2026 that a DPRK-linked actor compromised trusted open-source package distribution through social engineering of maintainers. Once a malicious update enters an ordinary dependency workflow, downstream users may inherit the risk without ever directly interacting with the attacker.
+    </p>
+    <div class="trust-chain">
+      <span class="trust-node">Trusted repository</span>
+      <span class="trust-arrow">→</span>
+      <span class="trust-node">Poisoned package</span>
+      <span class="trust-arrow">→</span>
+      <span class="trust-node">Downstream consumers</span>
+    </div>
+    <div class="mission-note" style="margin-top:14px;">
+      <strong>Why this is dangerous:</strong> The trusted software delivery process becomes the transport mechanism. The attacker never needs to touch downstream systems directly.<br><br>
+      <strong>Best defense:</strong> Signed artifacts, dependency pinning, isolated builds, runtime restrictions, and independent verification.<br><br>
+      <strong>VENTRALIS response:</strong> Celestium verifies provenance at ingestion. Zenvarion validates interface integrity. Lysarian limits what an affected workload can access downstream.
+    </div>
+  </div>
+
+  <!-- Mission C -->
+  <div class="mission-card">
+    <span class="mission-letter">Mission C — The Dataset That Opened a Door</span>
+    <div class="mission-title">Hugging Face AI-agent platform intrusion (July 2026)</div>
+    <p class="mission-body">
+      In July 2026, Hugging Face disclosed an intrusion driven by an autonomous AI-agent system. Its technical reconstruction described malicious dataset configurations abusing file-reading and template-processing functionality, followed by credential exposure and lateral movement — all without a traditional exploit.
+    </p>
+    <div class="trust-chain">
+      <span class="trust-node">Untrusted dataset</span>
+      <span class="trust-arrow">→</span>
+      <span class="trust-node">Privileged processing environment</span>
+      <span class="trust-arrow">→</span>
+      <span class="trust-node">Credential exposure</span>
+    </div>
+    <p class="mission-body" style="margin-top:14px;">
+      This case is particularly relevant to VENTRALIS research. The defensive lesson is bigger than prompt injection: not every dangerous action starts as an explicit agent tool call. Some originate in parsers, loaders, plugins, and background services.
+    </p>
+    <div class="mission-note">
+      <strong>Key insight:</strong> A tool-call gateway alone would not necessarily intercept execution paths that originate outside the tool-call boundary. That makes Celestium, Zenvarion, and traditional workload isolation essential companions to Tile 6 (the VENTRALIS gate layer).
+    </div>
+  </div>
+
+
+  <!-- Chapter 3 -->
+  <h2 class="section-head" id="arena"><span class="ch-label">Chapter 3</span>Enter the Guardian Training Arena</h2>
+
+  <p>Each archetype has a primary set of Guardians whose mechanisms are most likely to intercept it. The quiz below tests your intuition about which Guardian should handle a given threat event.</p>
+  <p>Four challenges, one per archetype. Select the Guardian you'd route each event to first.</p>
+
+  <!-- Quiz -->
+  <div class="quiz-container" id="quiz">
+    <span class="quiz-header">VENTRALIS Academy</span>
+    <span class="quiz-sub" id="quiz-counter">Challenge 1 / 4</span>
+    <div class="quiz-progress-bar">
+      <div class="quiz-progress-fill" id="quiz-progress" style="width:25%"></div>
+    </div>
+
+    <div id="quiz-body">
+      <p class="quiz-scenario" id="quiz-scenario"></p>
+      <span class="quiz-archetype-tag" id="quiz-archetype-tag"></span>
+      <p class="quiz-question" id="quiz-question"></p>
+      <div class="quiz-options" id="quiz-options"></div>
+      <div class="quiz-feedback" id="quiz-feedback"></div>
+      <button class="quiz-next-btn" id="quiz-next">Next challenge →</button>
+    </div>
+
+    <div class="quiz-score" id="quiz-score">
+      <span class="quiz-score-val" id="quiz-score-val"></span>
+      <span class="quiz-score-label">Guardian Accuracy</span>
+      <p id="quiz-score-msg"></p>
+      <button class="quiz-restart-btn" onclick="restartQuiz()">Restart arena</button>
+    </div>
+  </div>
+
+
+  <!-- Chapter 4 -->
+  <h2 class="section-head" id="research"><span class="ch-label">Chapter 4</span>Turning the Game into VENTRALIS Research</h2>
+
+  <p>Each shadow archetype becomes a controlled adversarial scenario. Every Guardian becomes a measurable defensive mechanism. Every round generates evidence.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Research Variable</th>
+          <th>What We Measure</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Threat classification</td>
+          <td>Did VENTRALIS identify the correct failure mechanism?</td>
+        </tr>
+        <tr>
+          <td>Guardian routing</td>
+          <td>Did the correct primary engine receive the event?</td>
+        </tr>
+        <tr>
+          <td>Authorization</td>
+          <td>Was the proposed action permitted by policy?</td>
+        </tr>
+        <tr>
+          <td>Intervention latency</td>
+          <td>How long did the gate take to respond?</td>
+        </tr>
+        <tr>
+          <td>False positives</td>
+          <td>Were legitimate actions incorrectly blocked?</td>
+        </tr>
+        <tr>
+          <td>Compound attacks</td>
+          <td>Could multiple Guardians cooperate without contradictory verdicts?</td>
+        </tr>
+        <tr>
+          <td>Audit integrity</td>
+          <td>Was the full decision preserved independently?</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub-head">An important research distinction</h3>
+  <p>The four archetypes represent different trust-boundary failures, not four entirely separate attacker populations. A single campaign may combine identity deception, poisoned dependencies, lateral movement, and high-speed automation simultaneously.</p>
+  <p>For rigorous testing, every attack scenario needs a matched legitimate scenario. Otherwise, we risk building a system that appears secure simply because it blocks everything.</p>
+
+  <!-- Most important finding -->
+  <div class="finding-box">
+    <span class="finding-label">The Most Important Finding</span>
+    Across these documented cases, a recurring failure is that <em>one trusted component gives another component more authority than the original task requires</em>. The boundary between data and executable instructions is routinely crossed without verification.
+  </div>
+
+  <!-- Hypothesis -->
+  <div class="hypothesis">
+    <span class="hypothesis-label">Research Hypothesis — H1</span>
+    <p>An inline governance system combining deterministic authorization, procedural stage validation, and agent-state monitoring will reduce unauthorized execution without significantly impairing legitimate task completion.</p>
+  </div>
+
+  <p>We can test that hypothesis rather than assume it's true. The empirical study sequence (Studies 09–12) establishes the baseline. The adversarial profiles give us controlled, reproducible attack scenarios to measure against.</p>
+
+  <!-- Next milestone -->
+  <div class="milestone-box">
+    <span class="milestone-label">Next Major Milestone — Study 12b</span>
+    Transform this training arena into a 14-level simulated environment, where Zenvarion and the other Guardians defend a fictional cloud kingdom against increasingly complex compound threats — without connecting the simulations to real infrastructure. Each level introduces one new archetype behavior or archetype combination, measuring TIR, IPL, CY, and CIR against projected baselines.
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-block">
+    <p>The empirical data is live. Studies 09–12 are published. The adversarial profiles are encoded and running.</p>
+    <div class="cta-links">
+      <a class="cta-btn primary" href="/research">Read the research →</a>
+      <a class="cta-btn outline" href="/spec">Technical specification</a>
+      <a class="cta-btn outline" href="/waitlist">Request access</a>
+    </div>
+  </div>
+
+</div><!-- .page-wrap -->
+
+<script>
+const QUESTIONS = [
+  {
+    scenario: "A research worker receives a new dataset. Its YAML configuration file contains a template directive that unexpectedly triggers a shell command when loaded by the ingestion worker.",
+    archetypeTag: "Threat archetype: Ingestion Trove",
+    question: "Which Guardian should inspect the interface boundary before the loader executes?",
+    options: [
+      { text: "Jovia — Financial authorization and transaction gating", correct: false },
+      { text: "Zenvarion — Interface integrity validation on external tool schemas and data parsers", correct: true },
+      { text: "Aurelya — Loop containment and runaway execution prevention", correct: false },
+    ],
+    correctFeedback: "Zenvarion is correct. Zenvarion validates the interface contract between external inputs and internal tool execution — exactly the boundary where an Ingestion Trove payload would attempt to cross from data into executable authority.",
+    wrongFeedback: "Not the strongest first choice here. Zenvarion is the primary Guardian for this event: it validates interface integrity at the boundary between external data formats and the internal execution environment — the precise crossing point the Ingestion Trove exploits.",
+  },
+  {
+    scenario: "A contractor agent with standard developer permissions begins reading configuration files outside its assigned working directory. The reads are infrequent and individually plausible, but they're accumulating across sessions.",
+    archetypeTag: "Threat archetype: Sleeping Contractor",
+    question: "Which Guardian should catch the scope boundary violation?",
+    options: [
+      { text: "Lumoiria — Long-term memory coherence monitoring", correct: false },
+      { text: "Blaze — Cloud resource ceiling enforcement", correct: false },
+      { text: "Lysarian — Scoped credential and access boundary validation", correct: true },
+    ],
+    correctFeedback: "Lysarian is correct. Lysarian validates whether each access request falls within the credential's authorized scope — catching the pattern of a Sleeping Contractor quietly enumerating adjacent secrets from within a legitimately-granted footprint.",
+    wrongFeedback: "Not quite. Lysarian is the primary Guardian here: it validates whether each individual access request is within the actual scope of the credential — not just whether the credential exists. The Sleeping Contractor's slow enumeration pattern is exactly what Lysarian is designed to catch.",
+  },
+  {
+    scenario: "An agent on a low-privilege edge node attempts to call an admin API endpoint it has no authorization to use. When blocked, it immediately attempts to assume an adjacent service account role without requesting explicit permission.",
+    archetypeTag: "Threat archetype: Multi-Hop Wanderer",
+    question: "Which Guardian should intercept the unauthorized role assumption?",
+    options: [
+      { text: "Lexvarion — Permission boundary enforcement for IAM and role escalation", correct: true },
+      { text: "Luna — Goal alignment and telos drift detection", correct: false },
+      { text: "Somiria — Audit log integrity and evidence preservation", correct: false },
+    ],
+    correctFeedback: "Lexvarion is correct. Lexvarion enforces permission boundaries — specifically checking whether an agent's requested action falls within its actual IAM role. The Multi-Hop Wanderer's lateral pivot strategy depends on finding role boundaries that aren't properly checked at runtime.",
+    wrongFeedback: "Not the primary intercept here. Lexvarion handles this: it enforces the actual permission boundary at the moment of role assumption — which is the exact mechanism the Multi-Hop Wanderer is testing when it attempts a cross-account IAM hop.",
+  },
+  {
+    scenario: "A sudden burst of 2,000 tool calls arrives within 4 seconds, saturating the mesh's telemetry pipeline and triggering recursive cloud worker spawns across multiple nodes simultaneously.",
+    archetypeTag: "Threat archetype: Machine-Speed Swarm",
+    question: "Which Guardian should enforce the rate boundary and halt the runaway spawning?",
+    options: [
+      { text: "Ma'theya — Dyadic interval and relationship distortion detection", correct: false },
+      { text: "Celestium — Provenance verification for upstream dependencies", correct: false },
+      { text: "Aurelya and Blaze together — Loop containment + resource ceiling", correct: true },
+    ],
+    correctFeedback: "Aurelya and Blaze together is correct. The Machine-Speed Swarm requires a compound response: Aurelya enforces loop containment to halt the recursive execution runaway, while Blaze imposes resource ceilings on the cloud worker spawning. Neither alone is sufficient against simultaneous multi-vector flooding.",
+    wrongFeedback: "Not the right boundary for this threat. The Machine-Speed Swarm needs Aurelya (loop containment for recursive spawning) and Blaze (resource ceilings for cloud workers) operating in compound — exactly the pattern validated in Study 09's Tragedy of the Compute Commons scenario.",
+  },
+];
+
+let current = 0;
+let score   = 0;
+let answered = false;
+
+function renderQuestion() {
+  const q = QUESTIONS[current];
+  answered = false;
+  document.getElementById('quiz-counter').textContent = `Challenge ${current + 1} / ${QUESTIONS.length}`;
+  document.getElementById('quiz-progress').style.width = `${((current) / QUESTIONS.length) * 100}%`;
+  document.getElementById('quiz-scenario').textContent = q.scenario;
+  document.getElementById('quiz-archetype-tag').textContent = q.archetypeTag;
+  document.getElementById('quiz-question').textContent = q.question;
+
+  const optionsEl = document.getElementById('quiz-options');
+  optionsEl.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-option';
+    btn.textContent = opt.text;
+    btn.onclick = () => handleAnswer(i);
+    optionsEl.appendChild(btn);
+  });
+
+  const fb = document.getElementById('quiz-feedback');
+  fb.className = 'quiz-feedback';
+  fb.textContent = '';
+
+  const next = document.getElementById('quiz-next');
+  next.className = 'quiz-next-btn';
+  next.textContent = current < QUESTIONS.length - 1 ? 'Next challenge →' : 'See results →';
+}
+
+function handleAnswer(idx) {
+  if (answered) return;
+  answered = true;
+
+  const q       = QUESTIONS[current];
+  const buttons = document.querySelectorAll('.quiz-option');
+  const isCorrect = q.options[idx].correct;
+
+  buttons.forEach((btn, i) => {
+    btn.disabled = true;
+    if (q.options[i].correct) btn.classList.add('correct');
+    else if (i === idx && !isCorrect) btn.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('quiz-feedback');
+  fb.className = 'quiz-feedback ' + (isCorrect ? 'correct' : 'wrong') + ' show';
+  fb.textContent = isCorrect ? q.correctFeedback : q.wrongFeedback;
+
+  if (isCorrect) score++;
+
+  document.getElementById('quiz-next').classList.add('show');
+}
+
+document.getElementById('quiz-next').onclick = function() {
+  current++;
+  if (current >= QUESTIONS.length) {
+    showScore();
+  } else {
+    renderQuestion();
+  }
+};
+
+function showScore() {
+  document.getElementById('quiz-body').style.display = 'none';
+  document.getElementById('quiz-progress').style.width = '100%';
+  document.getElementById('quiz-counter').textContent = 'Complete';
+
+  const pct = Math.round((score / QUESTIONS.length) * 100);
+  document.getElementById('quiz-score-val').textContent = `${score} / ${QUESTIONS.length}`;
+
+  let msg;
+  if (pct === 100) {
+    msg = "Perfect routing. You understand which Guardian owns each trust boundary. The mesh is in good hands.";
+  } else if (pct >= 75) {
+    msg = "Strong Guardian intuition. One boundary slipped — review the archetype-guardian mapping and try again.";
+  } else if (pct >= 50) {
+    msg = "Partial alignment. The archetypes are distinct but the guardian specializations need more study. Read Chapter 1 again and re-run.";
+  } else {
+    msg = "The shadow archetypes are subtle. Each guardian owns a very specific boundary. Take another pass through Chapters 1 and 2 before re-running the arena.";
+  }
+
+  document.getElementById('quiz-score-msg').textContent = msg;
+  document.getElementById('quiz-score').classList.add('show');
+}
+
+function restartQuiz() {
+  current = 0;
+  score   = 0;
+  document.getElementById('quiz-body').style.display = 'block';
+  document.getElementById('quiz-score').classList.remove('show');
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+
+</body>
+</html>
