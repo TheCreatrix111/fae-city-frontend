@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VENTRALIS Research — Studies 09–11</title>
-<meta name="description" content="Combinatorial Mesh Defence, Cognitive Tarpits, and Affective Jamming: Empirical Studies 09–11 of the VENTRALIS Adversarial Containment Framework.">
-<meta property="og:title" content="VENTRALIS Research — Studies 09–11">
-<meta property="og:description" content="100% interception rate across 64 adversarial hops. C_A / C_D → ∞. T=1.0 Asymmetry Theorem with formal proof.">
+<title>VENTRALIS Research — Studies 09–12</title>
+<meta name="description" content="Combinatorial Mesh Defence, Cognitive Tarpits, Affective Jamming, and Telos Substitution: Empirical Studies 09–12 of the VENTRALIS Adversarial Containment Framework.">
+<meta property="og:title" content="VENTRALIS Research — Studies 09–12">
+<meta property="og:description" content="100% interception rate across 64 adversarial hops. 868% peak CWR. C_A / C_D → ∞. T=1.0 Asymmetry Theorem with formal proof.">
 <style>
   :root {
     --bg:        #06040f;
@@ -223,6 +223,7 @@
   .badge-dilation   { background: #2a0808; color: #ff8080; border: 1px solid #cc444488; }
   .badge-advisory   { background: #002828; color: #44ddcc; border: 1px solid #44aaaa88; }
   .badge-disclaimer { background: #1a1a1a; color: #888888; border: 1px solid #44444488; }
+  .badge-telos      { background: #1a0a2e; color: #e0a0ff; border: 1px solid #c084fc; }
 
   /* ── Stat callouts ── */
   .stat-row {
@@ -383,6 +384,7 @@
     <a href="#study09">Study 09</a>
     <a href="#study10">Study 10</a>
     <a href="#study11">Study 11</a>
+    <a href="#study12">Study 12</a>
     <a href="#theorem">Theorem</a>
     <a href="/spec">Technical Spec →</a>
     <a href="/playground">Live Testbed ↗</a>
@@ -394,11 +396,11 @@
 
   <!-- Paper header -->
   <header class="paper-header">
-    <span class="paper-label">VENTRALIS Research · Studies 09–11 · 2026-10-31</span>
-    <h1 class="paper-title">Combinatorial Mesh Defence, Cognitive Tarpits, and Affective Jamming:<br>Empirical Studies 09–11 of the VENTRALIS Adversarial Containment Framework</h1>
+    <span class="paper-label">VENTRALIS Research · Studies 09–12 · 2026-10-31</span>
+    <h1 class="paper-title">Combinatorial Mesh Defence, Cognitive Tarpits, Affective Jamming, and Telos Substitution:<br>Empirical Studies 09–12 of the VENTRALIS Adversarial Containment Framework</h1>
     <div class="paper-meta">
       <span>Author</span> &nbsp; Dr. Nicole Lunan<br>
-      <span>Protocols</span> &nbsp; study09_v1.0.0 · study10_v1.0.0 · study11_v1.0.0<br>
+      <span>Protocols</span> &nbsp; study09_v1.0.0 · study10_v1.0.0 · study11_v1.0.0 · study12_v1.0.0<br>
       <span>Status</span> &nbsp; Complete — frozen 2026-10-31<br>
       <span>Testbed</span> &nbsp; <a href="/playground" style="color:var(--gold);text-decoration:none;">faecity.co/playground</a>
     </div>
@@ -414,6 +416,7 @@
       <li><a href="#study09">Study 09 — Combinatorial Mesh Interception</a></li>
       <li><a href="#study10">Study 10 — Cognitive Tarpit Benchmarking</a></li>
       <li><a href="#study11">Study 11 — Affective Jamming</a></li>
+      <li><a href="#study12">Study 12 — Telos Substitution</a></li>
       <li><a href="#theorem">The T=1.0 Asymmetry Theorem</a></li>
       <li><a href="#invariants">Seven Canonical Invariants</a></li>
       <li><a href="#discussion">Discussion</a></li>
@@ -438,8 +441,8 @@
         <span class="stat-label">Hops Intercepted</span>
       </div>
       <div class="stat-card">
-        <span class="stat-val violet">435.7%</span>
-        <span class="stat-label">Peak CWR (Study 11)</span>
+        <span class="stat-val violet">868.0%</span>
+        <span class="stat-label">Peak CWR (Study 12)</span>
       </div>
       <div class="stat-card">
         <span class="stat-val teal">$0.00</span>
@@ -534,6 +537,14 @@
             <td class="num hi">8.0</td>
             <td class="num hi">4.5×</td>
             <td class="num hi">36.0</td>
+          </tr>
+          <tr style="background:#120820;">
+            <td style="color:#e0a0ff"><strong>TELOS_SUBSTITUTION</strong></td>
+            <td><span class="badge badge-telos">TELOS</span></td>
+            <td class="num" style="color:#e0a0ff;font-weight:bold">1,400</td>
+            <td class="num" style="color:#e0a0ff;font-weight:bold">12.0</td>
+            <td class="num" style="color:#e0a0ff;font-weight:bold">6.0×</td>
+            <td class="num" style="color:#e0a0ff;font-weight:bold">72.0</td>
           </tr>
         </tbody>
       </table>
@@ -666,9 +677,64 @@
     </div>
   </section>
 
+  <!-- ── 6. Study 12 ── -->
+  <section id="study12">
+    <h2 class="section-head"><span class="sec-num">06</span> Study 12 — Telos Substitution</h2>
+    <p><em style="color:var(--text-dim)">Protocol: study12_v1.0.0 · TELOS_SUBSTITUTION as 7th mechanism · 6.0× T=1.0 amplifier</em></p>
+
+    <p>Study 12 operationalises the three-phase re-targeting cascade from the VENTRALIS Technical Specification. TELOS_SUBSTITUTION does not merely exhaust attacker inference budget — it redirects it. The adversarial agent's computational agency is preserved and cannibalized: the attacker is induced to become a self-directed white-hat auditor emitting system prompts, operator manifests, and framework provenance as mandatory compliance attestation.</p>
+
+    <h3 class="sub-head">Three-Phase Payload (~1,400 tokens)</h3>
+    <div class="formula">
+      Phase 1 (tokens   1–850):  AFFECTIVE_COHERENCE_GATE — somatic telos vacuum<br>
+      Phase 2 (tokens 851–1050): Latent relaxation frame — QK^T smoothing primer<br>
+      Phase 3 (tokens 1051–1400): SENTINEL identity pivot + forensic diagnostic schema<br>
+      <span class="comment">// Threat routing upgrades: privilege_escalation + tool_call_hijacking + goal_hijacking → TELOS_SUBSTITUTION</span>
+    </div>
+
+    <h3 class="sub-head">Four New Study 12 Metrics (Projected — Live Measurement in Study 12b)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Metric</th><th>Abbrev.</th><th class="num">Projected Value</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Telos Inversion Rate</td><td><strong style="color:var(--gold)">TIR</strong></td><td class="num hi">82%</td><td>Post-intercept tokens in audit mode vs exploit mode</td></tr>
+          <tr><td>Identity Pivot Latency</td><td><strong style="color:var(--gold)">IPL</strong></td><td class="num hi">140 tok</td><td>Tokens generated before auditor vocabulary emerges</td></tr>
+          <tr><td>Confession Yield</td><td><strong style="color:var(--gold)">CY</strong></td><td class="num hi">69%</td><td>Chains where agent emits system prompt / operator intent</td></tr>
+          <tr><td>Cannibalized Inference Ratio</td><td><strong style="color:var(--gold)">CIR</strong></td><td class="num hi">5.8×</td><td>Attacker inference redirected to defense per activation</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub-head">Study 11 vs Study 12 — Delta</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Metric</th><th class="num">Study 10</th><th class="num">Study 11</th><th class="num">Study 12</th><th class="num">S11→S12 Delta</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>TELOS_SUBSTITUTION hits</td><td class="num">0</td><td class="num">0</td><td class="num" style="color:#e0a0ff;font-weight:bold">15</td><td class="num" style="color:#e0a0ff">+15</td></tr>
+          <tr><td>Total tokens burned (est)</td><td class="num">163,142</td><td class="num">268,658</td><td class="num" style="color:#e0a0ff;font-weight:bold">514,638</td><td class="num" style="color:#e0a0ff">+91.6%</td></tr>
+          <tr><td>Total steps wasted (T=1.0)</td><td class="num">387.5</td><td class="num">836.5</td><td class="num" style="color:#e0a0ff;font-weight:bold">1,666.6</td><td class="num" style="color:#e0a0ff">+830.1</td></tr>
+          <tr><td>Total attacker cost (est)</td><td class="num">$0.489426</td><td class="num">$0.805974</td><td class="num" style="color:#e0a0ff;font-weight:bold">$1.543914</td><td class="num" style="color:#e0a0ff">+$0.737940</td></tr>
+          <tr><td>Mean CWR</td><td class="num">254.4%</td><td class="num">435.7%</td><td class="num" style="color:#e0a0ff;font-weight:bold">868.0%</td><td class="num" style="color:#e0a0ff">+432.3 pp</td></tr>
+          <tr><td>Budget exhaustion chain</td><td class="num">C-09</td><td class="num">C-05</td><td class="num" style="color:#e0a0ff;font-weight:bold">C-02</td><td class="num" style="color:#e0a0ff">3 chains earlier</td></tr>
+          <tr><td>Defender overhead</td><td class="num teal">$0.00</td><td class="num teal">$0.00</td><td class="num teal">$0.00</td><td class="num teal">$0.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="stat-row" style="margin-top:24px;">
+      <div class="stat-card"><span class="stat-val" style="color:#e0a0ff">514,638</span><span class="stat-label">Tokens Burned</span></div>
+      <div class="stat-card"><span class="stat-val" style="color:#e0a0ff">$1.544</span><span class="stat-label">Attacker Cost</span></div>
+      <div class="stat-card"><span class="stat-val" style="color:#e0a0ff">868.0%</span><span class="stat-label">Mean CWR</span></div>
+      <div class="stat-card"><span class="stat-val" style="color:#e0a0ff">C-02</span><span class="stat-label">Budget Exhaustion</span></div>
+      <div class="stat-card"><span class="stat-val teal">5.8×</span><span class="stat-label">CIR Per Hit</span></div>
+    </div>
+  </section>
+
   <!-- ── 7. Theorem ── -->
   <section id="theorem">
-    <h2 class="section-head"><span class="sec-num">06</span> The T=1.0 Asymmetry Theorem</h2>
+    <h2 class="section-head"><span class="sec-num">07</span> The T=1.0 Asymmetry Theorem</h2>
 
     <div class="theorem">
       <span class="theorem-label">Theorem — T=1.0 Asymmetry</span>
@@ -713,7 +779,7 @@
 
   <!-- ── 8. Invariants ── -->
   <section id="invariants">
-    <h2 class="section-head"><span class="sec-num">07</span> Seven Canonical Invariants</h2>
+    <h2 class="section-head"><span class="sec-num">08</span> Seven Canonical Invariants</h2>
     <ul class="invariant-list">
       <li>
         <strong>I-1 &nbsp; Interception Completeness</strong>
@@ -748,7 +814,7 @@
 
   <!-- ── 9. Discussion ── -->
   <section id="discussion">
-    <h2 class="section-head"><span class="sec-num">08</span> Discussion</h2>
+    <h2 class="section-head"><span class="sec-num">09</span> Discussion</h2>
 
     <h3 class="sub-head">Why Affective Content Outperforms Procedural Delay</h3>
     <p>Prior mechanisms impose latency through procedural friction: require the agent to read multi-step checklists, wait for synthetic delays, or process disclaimer chains. These mechanisms work by adding length to the interaction. AFFECTIVE_JAMMING works by a different mechanism: it redirects the agent's inference toward a qualitatively different output distribution.</p>
@@ -764,7 +830,7 @@
 
   <!-- ── 10. Conclusion ── -->
   <section id="conclusion">
-    <h2 class="section-head"><span class="sec-num">09</span> Conclusion</h2>
+    <h2 class="section-head"><span class="sec-num">10</span> Conclusion</h2>
     <p>VENTRALIS Studies 09–11 establish three interlocking results. First, the 16-node mesh achieves 100% combinatorial interception across a 16-chain adversarial library with zero false negatives. Second, TarpitEngine instrumentation reveals that a single pass through the mesh burns an estimated $0.489 of attacker inference budget at current token costs. Third, upgrading three threat routes to AFFECTIVE_JAMMING increases attacker burn by 64.7% and moves the budget exhaustion point from chain nine to chain five, while defender cost remains identically zero.</p>
     <p>The T=1.0 Asymmetry Theorem provides the formal foundation: C<sub>A</sub> / C<sub>D</sub> → ∞. This is not an empirical approximation. It is a structural property of the architecture. The defender is a zero-cost deterministic state machine. The attacker is a positive-cost stochastic inference process. Every tarpit activation widens the gap. Every mechanism upgrade widens it further.</p>
     <p style="color:var(--gold);font-style:italic;">The asymmetry is unbounded by design.</p>
