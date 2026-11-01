@@ -739,7 +739,7 @@ function connectStream() {
   const label = document.getElementById('streamLabel');
   const overlay = document.getElementById('noStream');
 
-  const src = new EventSource('/api/v1/playground/stream');
+  const src = new EventSource('/api/v1/gate/playground/stream');
 
   src.addEventListener('mesh_event', e => {
     try {
