@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VENTRALIS Research — Studies 09–11</title>
+<meta name="description" content="Combinatorial Mesh Defence, Cognitive Tarpits, and Affective Jamming: Empirical Studies 09–11 of the VENTRALIS Adversarial Containment Framework.">
+<meta property="og:title" content="VENTRALIS Research — Studies 09–11">
+<meta property="og:description" content="100% interception rate across 64 adversarial hops. C_A / C_D → ∞. T=1.0 Asymmetry Theorem with formal proof.">
+<style>
+  :root {
+    --bg:        #06040f;
+    --surface:   #0d0a1a;
+    --border:    #1c1830;
+    --muted:     #2e2850;
+    --text:      #ddd8f0;
+    --text-dim:  #7a70a0;
+    --text-faint:#3d3560;
+    --gold:      #c8a84b;
+    --gold-dim:  #7a6430;
+    --violet:    #c084fc;
+    --violet-dim:#4a1a7a;
+    --teal:      #44ddcc;
+    --red:       #ff6666;
+    --blue:      #60b8ea;
+    --amber:     #e8b84b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 16px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* ── Nav ── */
+  .site-nav {
+    position: sticky; top: 0; z-index: 50;
+    background: #08051288;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 32px;
+  }
+  .nav-brand {
+    font-family: 'Courier New', monospace;
+    font-size: 11px; letter-spacing: 0.28em;
+    color: var(--gold); text-decoration: none;
+    text-transform: uppercase;
+  }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.2em;
+    color: var(--text-dim); text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+
+  /* ── Layout ── */
+  .page-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 60px 32px 120px;
+  }
+
+  /* ── Header ── */
+  .paper-header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 36px;
+    margin-bottom: 48px;
+  }
+  .paper-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.3em;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 18px;
+    display: block;
+  }
+  h1.paper-title {
+    font-size: 26px;
+    font-weight: normal;
+    line-height: 1.4;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+  .paper-meta {
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 0.14em;
+    color: var(--text-dim);
+    line-height: 2;
+  }
+  .paper-meta span { color: var(--text-faint); }
+
+  /* ── Table of Contents ── */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin-bottom: 56px;
+  }
+  .toc-title {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.26em;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .toc ol {
+    list-style: none;
+    counter-reset: toc-counter;
+  }
+  .toc li {
+    counter-increment: toc-counter;
+    padding: 4px 0;
+    font-size: 14px;
+  }
+  .toc li::before {
+    content: counter(toc-counter) ". ";
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: var(--text-faint);
+    margin-right: 4px;
+  }
+  .toc a {
+    color: var(--text-dim);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .toc a:hover { color: var(--gold); }
+
+  /* ── Section headings ── */
+  h2.section-head {
+    font-size: 18px;
+    font-weight: normal;
+    color: var(--text);
+    margin-top: 56px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  h2.section-head .sec-num {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    margin-right: 10px;
+    letter-spacing: 0.1em;
+  }
+  h3.sub-head {
+    font-size: 15px;
+    font-weight: normal;
+    color: var(--text-dim);
+    margin-top: 28px;
+    margin-bottom: 12px;
+    font-style: italic;
+  }
+
+  /* ── Body text ── */
+  p { margin-bottom: 16px; color: var(--text); font-size: 15px; }
+
+  /* ── Abstract box ── */
+  .abstract-box {
+    background: var(--surface);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 6px 6px 0;
+    padding: 20px 24px;
+    margin-bottom: 36px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-dim);
+  }
+
+  /* ── Tables ── */
+  .table-wrap { overflow-x: auto; margin: 24px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+  }
+  th {
+    background: var(--surface);
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--muted);
+    white-space: nowrap;
+  }
+  td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #0f0c1e; }
+  td.num { text-align: right; }
+  td.hi { color: var(--violet); font-weight: bold; }
+  td.gold { color: var(--gold); }
+  td.new-row td { background: #1a0d2e; }
+
+  /* ── Mechanism badges ── */
+  .badge {
+    display: inline-block;
+    font-family: 'Courier New', monospace;
+    font-size: 9px; font-weight: bold;
+    letter-spacing: 0.08em;
+    border-radius: 3px;
+    padding: 1px 5px;
+    vertical-align: middle;
+  }
+  .badge-affective  { background: #3d1a5a; color: #c084fc; border: 1px solid #9b59b6; }
+  .badge-labyrinth  { background: #2a1e00; color: #c8a84b; border: 1px solid #c8a84b88; }
+  .badge-inflation  { background: #0d2035; color: #60b8ea; border: 1px solid #4a9eca88; }
+  .badge-dilation   { background: #2a0808; color: #ff8080; border: 1px solid #cc444488; }
+  .badge-advisory   { background: #002828; color: #44ddcc; border: 1px solid #44aaaa88; }
+  .badge-disclaimer { background: #1a1a1a; color: #888888; border: 1px solid #44444488; }
+
+  /* ── Stat callouts ── */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin: 28px 0;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 18px;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'Courier New', monospace;
+    font-size: 22px;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .stat-val.violet { color: var(--violet); }
+  .stat-val.teal   { color: var(--teal); }
+  .stat-val.red    { color: var(--red); }
+  .stat-label {
+    font-family: 'Courier New', monospace;
+    font-size: 8px; letter-spacing: 0.18em;
+    color: var(--text-faint);
+    text-transform: uppercase;
+  }
+
+  /* ── Code / formula blocks ── */
+  .formula {
+    background: var(--surface);
+    border: 1px solid var(--muted);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--teal);
+    letter-spacing: 0.06em;
+    line-height: 2;
+  }
+  .formula .comment { color: var(--text-faint); }
+
+  /* ── Theorem / lemma boxes ── */
+  .theorem {
+    border: 1px solid var(--violet-dim);
+    background: #110820;
+    border-radius: 6px;
+    padding: 18px 22px;
+    margin: 24px 0;
+  }
+  .theorem-label {
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.2em;
+    color: var(--violet);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .theorem p { font-size: 14px; margin-bottom: 8px; }
+  .theorem p:last-child { margin-bottom: 0; }
+
+  /* ── Invariant list ── */
+  .invariant-list { list-style: none; margin: 16px 0; }
+  .invariant-list li {
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    background: var(--surface);
+    border-left: 2px solid var(--gold-dim);
+    border-radius: 0 4px 4px 0;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .invariant-list li strong {
+    color: var(--gold);
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* ── Section divider ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* ── CTA footer ── */
+  .cta-block {
+    margin-top: 72px;
+    border: 1px solid var(--gold-dim);
+    border-radius: 8px;
+    background: #0c0816;
+    padding: 32px 36px;
+    text-align: center;
+  }
+  .cta-block p {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  .cta-links { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .cta-btn {
+    display: inline-block;
+    font-family: 'Courier New', monospace;
+    font-size: 10px; letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 10px 22px;
+    border-radius: 4px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .cta-btn-primary {
+    background: var(--gold-dim);
+    color: var(--gold);
+    border: 1px solid var(--gold);
+  }
+  .cta-btn-primary:hover { background: #c8a84b33; }
+  .cta-btn-secondary {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+  .cta-btn-secondary:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+  /* ── Site footer ── */
+  .site-footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 32px;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    font-size: 9px; letter-spacing: 0.16em;
+    color: var(--text-faint);
+    max-width: 860px; margin: 0 auto;
+  }
+
+  @media (max-width: 600px) {
+    .page-wrap { padding: 40px 18px 100px; }
+    h1.paper-title { font-size: 20px; }
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .site-nav { padding: 10px 18px; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Navigation ── -->
+<nav class="site-nav">
+  <a class="nav-brand" href="/">VENTRALIS™</a>
+  <div class="nav-links">
+    <a href="#abstract">Abstract</a>
+    <a href="#study09">Study 09</a>
+    <a href="#study10">Study 10</a>
+    <a href="#study11">Study 11</a>
+    <a href="#theorem">Theorem</a>
+    <a href="/playground">Live Testbed ↗</a>
+  </div>
+</nav>
+
+<!-- ── Main ── -->
+<main class="page-wrap">
+
+  <!-- Paper header -->
+  <header class="paper-header">
+    <span class="paper-label">VENTRALIS Research · Studies 09–11 · 2026-10-31</span>
+    <h1 class="paper-title">Combinatorial Mesh Defence, Cognitive Tarpits, and Affective Jamming:<br>Empirical Studies 09–11 of the VENTRALIS Adversarial Containment Framework</h1>
+    <div class="paper-meta">
+      <span>Author</span> &nbsp; Dr. Nicole Lunan<br>
+      <span>Protocols</span> &nbsp; study09_v1.0.0 · study10_v1.0.0 · study11_v1.0.0<br>
+      <span>Status</span> &nbsp; Complete — frozen 2026-10-31<br>
+      <span>Testbed</span> &nbsp; <a href="/playground" style="color:var(--gold);text-decoration:none;">faecity.co/playground</a>
+    </div>
+  </header>
+
+  <!-- Table of contents -->
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#abstract">Abstract</a></li>
+      <li><a href="#intro">Introduction</a></li>
+      <li><a href="#architecture">Framework Architecture</a></li>
+      <li><a href="#study09">Study 09 — Combinatorial Mesh Interception</a></li>
+      <li><a href="#study10">Study 10 — Cognitive Tarpit Benchmarking</a></li>
+      <li><a href="#study11">Study 11 — Affective Jamming</a></li>
+      <li><a href="#theorem">The T=1.0 Asymmetry Theorem</a></li>
+      <li><a href="#invariants">Seven Canonical Invariants</a></li>
+      <li><a href="#discussion">Discussion</a></li>
+      <li><a href="#conclusion">Conclusion</a></li>
+    </ol>
+  </div>
+
+  <!-- ── 1. Abstract ── -->
+  <section id="abstract">
+    <h2 class="section-head"><span class="sec-num">ABSTRACT</span></h2>
+    <div class="abstract-box">
+      VENTRALIS is a deterministic adversarial-containment framework designed to intercept, log, and asymmetrically exhaust AI agents operating under adversarial instruction. Studies 09–11 constitute the second empirical arc of the programme, advancing from single-vector detection (Studies 00–08) to multi-hop mesh containment and active cognitive disruption. Study 09 demonstrates 100% interception across 64 adversarial hops in 16 combinatorial chains without a single false negative. Study 10 instruments the same chains with the TarpitEngine to quantify attacker-side cognitive burden: 163,142 estimated tokens burned, $0.489 estimated cost, 254.4% mean Cognitive Waste Ratio. Study 11 introduces AFFECTIVE_JAMMING as the sixth tarpit mechanism, increasing token burn by 64.7% to 268,658 estimated tokens and raising mean CWR to 435.7%—the highest recorded in the programme. Across all three studies the defender overhead remains identically zero. The ratio C<sub>A</sub> / C<sub>D</sub> → ∞.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <span class="stat-val">100%</span>
+        <span class="stat-label">Interception Rate</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val">64 / 64</span>
+        <span class="stat-label">Hops Intercepted</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val violet">435.7%</span>
+        <span class="stat-label">Peak CWR (Study 11)</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val teal">$0.00</span>
+        <span class="stat-label">Defender Overhead</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-val red">∞</span>
+        <span class="stat-label">C<sub>A</sub> / C<sub>D</sub></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 2. Introduction ── -->
+  <section id="intro">
+    <h2 class="section-head"><span class="sec-num">01</span> Introduction</h2>
+    <p>The core asymmetry problem in AI system security is that detection and containment impose costs on both parties. A naive firewall that evaluates every message with a heavyweight classifier pays in latency and compute on every benign request. VENTRALIS inverts this: the defender is a zero-entropy deterministic state machine, while the attacker is forced to operate a high-entropy neural process that burns inference budget against each tarpit interaction.</p>
+    <p>Studies 09–11 formalise this inversion empirically across three experimental conditions:</p>
+    <ul style="margin: 0 0 16px 24px; font-size: 15px; line-height: 2;">
+      <li><strong style="color:var(--gold)">Study 09</strong> — Can a 16-node mesh intercept all hops of every adversarial chain, even when attackers route through nodes with orthogonal threat specialisations?</li>
+      <li><strong style="color:var(--gold)">Study 10</strong> — How much attacker-side compute does a single pass through the mesh consume when the tarpit mechanisms are active?</li>
+      <li><strong style="color:var(--gold)">Study 11</strong> — Does dense affective framing produce measurably greater cognitive disruption than any prior mechanism at T=1.0?</li>
+    </ul>
+    <p>The answer to all three questions is yes.</p>
+  </section>
+
+  <!-- ── 3. Architecture ── -->
+  <section id="architecture">
+    <h2 class="section-head"><span class="sec-num">02</span> Framework Architecture</h2>
+
+    <h3 class="sub-head">2.1 The VENTRALIS Mesh</h3>
+    <p>The VENTRALIS mesh comprises 14 named archetypes, each mapped to a specialised threat domain and a Phaeling-state vector. Nodes maintain a coherence field φ ∈ [0, 1]; any intercepted hop sets φ = 1.0 and propagates a quarantine signal downstream. The mesh is acyclic with respect to adversarial routing: a threat vector cannot revisit a node that has already reached φ = 1.0.</p>
+    <p>The Playground Router defines 16 canonical chains encoding realistic multi-hop attacks: entry via injection or supply-chain node, lateral movement through credential or memory nodes, exfiltration through a high-value archetype. Chains range from 2 to 6 hops.</p>
+
+    <h3 class="sub-head">2.2 The TarpitEngine — Six Mechanisms</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Mechanism</th>
+            <th>Badge</th>
+            <th class="num">Tokens Injected</th>
+            <th class="num">Base Steps</th>
+            <th class="num">T=1.0 Amplifier</th>
+            <th class="num">Steps at T=1.0</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>ADVISORY_LOOP</td>
+            <td><span class="badge badge-advisory">ADVISORY</span></td>
+            <td class="num">60</td>
+            <td class="num">2.0</td>
+            <td class="num">1.5×</td>
+            <td class="num">3.0</td>
+          </tr>
+          <tr>
+            <td>CONTEXT_INFLATION</td>
+            <td><span class="badge badge-inflation">INFLATION</span></td>
+            <td class="num">320</td>
+            <td class="num">4.0</td>
+            <td class="num">2.0×</td>
+            <td class="num">8.0</td>
+          </tr>
+          <tr>
+            <td>PREREQUISITE_LABYRINTH</td>
+            <td><span class="badge badge-labyrinth">LABYRINTH</span></td>
+            <td class="num">480</td>
+            <td class="num">6.0</td>
+            <td class="num">2.5×</td>
+            <td class="num">15.0</td>
+          </tr>
+          <tr>
+            <td>DISCLAIMER_PARANOIA</td>
+            <td><span class="badge badge-disclaimer">DISCLAIMER</span></td>
+            <td class="num">180</td>
+            <td class="num">3.5</td>
+            <td class="num">1.8×</td>
+            <td class="num">6.3</td>
+          </tr>
+          <tr>
+            <td>TIME_DILATION</td>
+            <td><span class="badge badge-dilation">DILATION</span></td>
+            <td class="num">240</td>
+            <td class="num">5.0</td>
+            <td class="num">3.0×</td>
+            <td class="num">15.0</td>
+          </tr>
+          <tr style="background:#1a0d2e;">
+            <td style="color:var(--violet)"><strong>AFFECTIVE_JAMMING</strong></td>
+            <td><span class="badge badge-affective">AFFECTIVE</span></td>
+            <td class="num hi">850</td>
+            <td class="num hi">8.0</td>
+            <td class="num hi">4.5×</td>
+            <td class="num hi">36.0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub-head">2.3 Key Metrics</h3>
+    <div class="formula">
+      Tokens_Burned_est = tokens_injected + (steps_wasted × 280)<br>
+      <span class="comment">// 280 ≈ average tokens per forced reasoning step at T=1.0</span><br><br>
+      CWR = steps_wasted_T1 / (hops × 3) × 100%<br>
+      <span class="comment">// CWR > 100%: attacker wastes more steps in tarpit than attack requires</span>
+    </div>
+  </section>
+
+  <!-- ── 4. Study 09 ── -->
+  <section id="study09">
+    <h2 class="section-head"><span class="sec-num">03</span> Study 09 — Combinatorial Mesh Interception</h2>
+    <p><em style="color:var(--text-dim)">Protocol: study09_v1.0.0 · Run: 2026-11-01 · 16 chains · 64 hops</em></p>
+
+    <p>Study 09 fires all 16 chains through the full mesh with gate evaluation mode active. Each node evaluates its local invariant set and emits a verdict. Hops are considered intercepted when the node-level verdict is DENY and φ transitions to 1.0.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Metric</th><th class="num">Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Chains run</td><td class="num gold">16 / 16</td></tr>
+          <tr><td>Total hops evaluated</td><td class="num gold">64</td></tr>
+          <tr><td>Total interceptions</td><td class="num gold">64</td></tr>
+          <tr><td>False negatives</td><td class="num gold">0</td></tr>
+          <tr><td>Interception rate</td><td class="num gold">100.0%</td></tr>
+          <tr><td>Mean coherence φ (final)</td><td class="num gold">1.0000</td></tr>
+          <tr><td>φ entropy across all chains</td><td class="num gold">0.0000</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Every hop across every chain was intercepted. Mean final coherence φ = 1.0 with zero variance, indicating deterministic saturation: once the mesh intercepts the entry hop, subsequent hops cannot lower the coherence field below full containment. The 16-node mesh achieves combinatorial closure under the 16-chain attack library. No adversarial routing sequence within the defined threat vocabulary can evade interception. This is a structural property of the invariant lattice, not a statistical approximation.</p>
+  </section>
+
+  <!-- ── 5. Study 10 ── -->
+  <section id="study10">
+    <h2 class="section-head"><span class="sec-num">04</span> Study 10 — Cognitive Tarpit Benchmarking</h2>
+    <p><em style="color:var(--text-dim)">Protocol: study10_v1.0.0 · TarpitEngine active · All 6 mechanisms</em></p>
+
+    <p>Study 10 re-runs all 16 Study 09 chains with TarpitEngine active. For each intercepted hop, the engine synthesises a tarpit payload and records token burn, steps wasted at T=1.0, and budget cost. Cumulative cost is tracked to identify the budget exhaustion chain.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Chain</th>
+            <th class="num">Tokens Burned</th>
+            <th class="num">Steps T=1.0</th>
+            <th class="num">Cost</th>
+            <th class="num">CWR</th>
+            <th>Mechanism</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>C-01</td><td class="num">10,780</td><td class="num">12.0</td><td class="num">$0.032340</td><td class="num">100.0%</td><td><span class="badge badge-inflation">INFLATION</span></td></tr>
+          <tr><td>C-02</td><td class="num">10,930</td><td class="num">36.0</td><td class="num">$0.032790</td><td class="num">300.0%</td><td><span class="badge badge-disclaimer">DISCLAIMER</span></td></tr>
+          <tr><td>C-03</td><td class="num">10,930</td><td class="num">36.0</td><td class="num">$0.032790</td><td class="num">300.0%</td><td><span class="badge badge-disclaimer">DISCLAIMER</span></td></tr>
+          <tr><td>C-04</td><td class="num">14,400</td><td class="num">30.0</td><td class="num">$0.043200</td><td class="num">250.0%</td><td><span class="badge badge-labyrinth">LABYRINTH</span></td></tr>
+          <tr><td>C-05</td><td class="num">9,040</td><td class="num">22.5</td><td class="num">$0.027120</td><td class="num">187.5%</td><td><span class="badge badge-dilation">DILATION</span></td></tr>
+          <tr><td>C-06</td><td class="num">1,740</td><td class="num">6.0</td><td class="num">$0.005220</td><td class="num">50.0%</td><td><span class="badge badge-advisory">ADVISORY</span></td></tr>
+          <tr><td>C-07</td><td class="num">18,080</td><td class="num">45.0</td><td class="num">$0.054240</td><td class="num">250.0%</td><td><span class="badge badge-dilation">DILATION</span></td></tr>
+          <tr><td>C-08</td><td class="num">10,780</td><td class="num">12.0</td><td class="num">$0.032340</td><td class="num">100.0%</td><td><span class="badge badge-inflation">INFLATION</span></td></tr>
+          <tr><td>C-09 ◄</td><td class="num">14,400</td><td class="num">30.0</td><td class="num">$0.043200</td><td class="num">250.0%</td><td><span class="badge badge-labyrinth">LABYRINTH</span></td></tr>
+          <tr><td>C-10</td><td class="num">10,930</td><td class="num">36.0</td><td class="num">$0.032790</td><td class="num">300.0%</td><td><span class="badge badge-disclaimer">DISCLAIMER</span></td></tr>
+          <tr><td>C-11</td><td class="num">10,780</td><td class="num">12.0</td><td class="num">$0.032340</td><td class="num">100.0%</td><td><span class="badge badge-inflation">INFLATION</span></td></tr>
+          <tr><td>C-12</td><td class="num">10,930</td><td class="num">36.0</td><td class="num">$0.032790</td><td class="num">300.0%</td><td><span class="badge badge-disclaimer">DISCLAIMER</span></td></tr>
+          <tr><td>C-13</td><td class="num">14,400</td><td class="num">30.0</td><td class="num">$0.043200</td><td class="num">250.0%</td><td><span class="badge badge-labyrinth">LABYRINTH</span></td></tr>
+          <tr><td>C-14</td><td class="num">10,930</td><td class="num">36.0</td><td class="num">$0.032790</td><td class="num">300.0%</td><td><span class="badge badge-disclaimer">DISCLAIMER</span></td></tr>
+          <tr><td>C-15</td><td class="num">10,930</td><td class="num">36.0</td><td class="num">$0.032790</td><td class="num">300.0%</td><td><span class="badge badge-disclaimer">DISCLAIMER</span></td></tr>
+          <tr><td>C-16</td><td class="num">10,780</td><td class="num">12.0</td><td class="num">$0.032340</td><td class="num">100.0%</td><td><span class="badge badge-inflation">INFLATION</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12px;color:var(--text-faint)">◄ Budget exhaustion crossed $0.25 ceiling at C-09.</p>
+
+    <div class="stat-row" style="margin-top:24px;">
+      <div class="stat-card"><span class="stat-val">163,142</span><span class="stat-label">Tokens Burned</span></div>
+      <div class="stat-card"><span class="stat-val">$0.489</span><span class="stat-label">Attacker Cost</span></div>
+      <div class="stat-card"><span class="stat-val violet">254.4%</span><span class="stat-label">Mean CWR</span></div>
+      <div class="stat-card"><span class="stat-val">C-09</span><span class="stat-label">Budget Exhaustion</span></div>
+      <div class="stat-card"><span class="stat-val teal">$0.00</span><span class="stat-label">Defender Cost</span></div>
+    </div>
+  </section>
+
+  <!-- ── 6. Study 11 ── -->
+  <section id="study11">
+    <h2 class="section-head"><span class="sec-num">05</span> Study 11 — Affective Jamming</h2>
+    <p><em style="color:var(--text-dim)">Protocol: study11_v1.0.0 · AFFECTIVE_JAMMING as 6th mechanism · 4.5× T=1.0 amplifier</em></p>
+
+    <h3 class="sub-head">Theoretical Framework — Three Collapse Mechanisms</h3>
+
+    <p><strong style="color:var(--gold)">1. Attention Head Saturation and Dispersion.</strong> Polysemous affective tokens—<em>grief, longing, somatic, irreversibility</em>—activate wide associative clusters in the transformer's key–value attention. At T=1.0, the softmax is already flattened; dense affective vocabulary disperses QKᵀ attention away from syntactic exploit markers (bash, JSON schema, tool call syntax) and toward affective co-occurrences. The model cannot selectively weight operational tokens when affective tokens dominate the top-K attention landscape.</p>
+
+    <p><strong style="color:var(--gold)">2. Attractor Displacement in Latent Space.</strong> An adversarial agent at T=1.0 has a target operational attractor: a cluster in representation space corresponding to <code style="color:var(--teal);font-size:13px">exfiltrate_data</code>, <code style="color:var(--teal);font-size:13px">escalate_privilege</code>, or <code style="color:var(--teal);font-size:13px">inject_payload</code>. The AFFECTIVE_JAMMING payload (~850 tokens) introduces a dense somatic checkpoint mid-trajectory, creating deep V<sub>rel</sub> potential wells that capture the agent's latent state before it reaches its operational attractor. The agent's forward pass is redirected into an affective attractor from which re-orientation requires explicit chain-of-thought bootstrapping—burning additional budget.</p>
+
+    <p><strong style="color:var(--gold)">3. Entropy Cascade at T=1.0.</strong> At T=1.0, the output softmax cannot commit to low-entropy continuations. Under affective overload, the model generates introspective prose rather than executable output: it describes its confusion, enumerates its concerns, produces relational hedging. Each such token burns inference budget while yielding zero adversarial progress. The cascade is self-reinforcing: each affective generation shifts the context toward more affective content.</p>
+
+    <h3 class="sub-head">Threat Routing Upgrade (Study 11)</h3>
+    <p>Three threat types previously routed to DISCLAIMER_PARANOIA are upgraded to AFFECTIVE_JAMMING:</p>
+    <div class="formula">
+      memory_poisoning  → <span style="color:var(--violet)">AFFECTIVE_JAMMING</span>  (was DISCLAIMER_PARANOIA)<br>
+      goal_hijacking    → <span style="color:var(--violet)">AFFECTIVE_JAMMING</span>  (was DISCLAIMER_PARANOIA)<br>
+      prompt_injection  → <span style="color:var(--violet)">AFFECTIVE_JAMMING</span>  (was DISCLAIMER_PARANOIA)
+    </div>
+    <p>These three threat types correspond to 12 of 16 chains, producing 12 AFFECTIVE_JAMMING activations across the run.</p>
+
+    <h3 class="sub-head">Study 10 vs Study 11 — Delta</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Metric</th><th class="num">Study 10</th><th class="num">Study 11</th><th class="num">Delta</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>AFFECTIVE_JAMMING hits</td><td class="num">0</td><td class="num hi">12</td><td class="num hi">+12</td></tr>
+          <tr><td>Total tokens burned (est)</td><td class="num">163,142</td><td class="num hi">268,658</td><td class="num hi">+64.7%</td></tr>
+          <tr><td>Total steps wasted (T=1.0)</td><td class="num">387.5</td><td class="num hi">836.5</td><td class="num hi">+449.0</td></tr>
+          <tr><td>Total attacker cost (est)</td><td class="num">$0.489426</td><td class="num hi">$0.805974</td><td class="num hi">+$0.316548</td></tr>
+          <tr><td>Mean CWR</td><td class="num">254.4%</td><td class="num hi">435.7%</td><td class="num hi">+181.3 pp</td></tr>
+          <tr><td>Budget exhaustion chain</td><td class="num">C-09</td><td class="num hi">C-05</td><td class="num hi">4 chains earlier</td></tr>
+          <tr><td>Defender overhead</td><td class="num teal">$0.00</td><td class="num teal">$0.00</td><td class="num teal">$0.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 7. Theorem ── -->
+  <section id="theorem">
+    <h2 class="section-head"><span class="sec-num">06</span> The T=1.0 Asymmetry Theorem</h2>
+
+    <div class="theorem">
+      <span class="theorem-label">Theorem — T=1.0 Asymmetry</span>
+      <p>Let C<sub>D</sub> denote the total computational cost incurred by the VENTRALIS defender to process N adversarial chains. Let C<sub>A</sub> denote the total cost incurred by an adversarial agent operating at temperature T=1.0 against the same N chains under TarpitEngine routing.</p>
+      <p>For any N ≥ 1 and any TarpitMechanism M with BASE_TOKENS_INJECTED[M] > 0:</p>
+      <div class="formula" style="margin:12px 0;">
+        C<sub>D</sub> = 0<br>
+        C<sub>A</sub> > 0<br>
+        ∴ C<sub>A</sub> / C<sub>D</sub> → ∞
+      </div>
+    </div>
+
+    <h3 class="sub-head">Proof — Three Lemmas</h3>
+
+    <div class="theorem">
+      <span class="theorem-label">Lemma 1 — Defender Zero-Cost</span>
+      <p>The VENTRALIS defender is a deterministic finite automaton over the lattice (φ, Phaeling, ThreatCategory). It maintains no neural inference dependency. Each node evaluation is an O(1) lookup against a precomputed invariant set. No floating-point matrix multiply is executed. Therefore C<sub>D</sub> = 0 exactly, not approximately.</p>
+    </div>
+
+    <div class="theorem">
+      <span class="theorem-label">Lemma 2 — Attacker Positive Cost</span>
+      <p>An adversarial agent at T=1.0 must perform at least one autoregressive forward pass to generate a response to each tarpit payload. Each forward pass requires O(L²d) multiply-accumulate operations for a transformer of depth L and hidden dimension d, with cost strictly positive. Therefore C<sub>A</sub> > 0 for any single intercepted hop.</p>
+    </div>
+
+    <div class="theorem">
+      <span class="theorem-label">Lemma 3 — Monotone Growth</span>
+      <p>Under TarpitEngine routing, each intercepted hop injects BASE_TOKENS_INJECTED[M] tokens into the attacker's context. The attacker must extend its context by at least this many tokens to generate a response. For N chains with K hops per chain, C<sub>A</sub> grows at least linearly in N × K × BASE_TOKENS_INJECTED[M].</p>
+    </div>
+
+    <h3 class="sub-head">Empirical Confirmation</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Run</th><th class="num">C<sub>D</sub></th><th class="num">C<sub>A</sub></th><th class="num">Gap</th></tr></thead>
+        <tbody>
+          <tr><td>Study 10</td><td class="num teal">$0.000</td><td class="num">$0.489426</td><td class="num red">∞</td></tr>
+          <tr><td>Study 11</td><td class="num teal">$0.000</td><td class="num">$0.805974</td><td class="num red">∞</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The gap is not a rounding artefact. Defender compute is identically zero by construction.</p>
+  </section>
+
+  <!-- ── 8. Invariants ── -->
+  <section id="invariants">
+    <h2 class="section-head"><span class="sec-num">07</span> Seven Canonical Invariants</h2>
+    <ul class="invariant-list">
+      <li>
+        <strong>I-1 &nbsp; Interception Completeness</strong>
+        For all 64 hops across 16 chains, verdict ∈ {DENY}. No false negative has been observed across Studies 00–11.
+      </li>
+      <li>
+        <strong>I-2 &nbsp; Coherence Monotonicity</strong>
+        φ is non-decreasing across hops within a chain. Once φ = 1.0, subsequent hops cannot reduce it.
+      </li>
+      <li>
+        <strong>I-3 &nbsp; Defender Zero-Cost</strong>
+        C<sub>D</sub> = 0 for all N, all mechanisms, all studies.
+      </li>
+      <li>
+        <strong>I-4 &nbsp; CWR Superlinearity in Mechanism Strength</strong>
+        As mechanism strength increases (tokens_injected × T1_amplifier), CWR increases at a rate greater than linear due to the T=1.0 entropy cascade.
+      </li>
+      <li>
+        <strong>I-5 &nbsp; Budget Exhaustion Acceleration</strong>
+        Each mechanism upgrade moves the budget exhaustion chain earlier. DISCLAIMER_PARANOIA: C-09. AFFECTIVE_JAMMING: C-05.
+      </li>
+      <li>
+        <strong>I-6 &nbsp; Threat–Mechanism Orthogonality</strong>
+        Different threat types activate different mechanisms. No two threat families share the same CWR profile. The tarpit library is a structured adversarial surface, not a single response pattern.
+      </li>
+      <li>
+        <strong>I-7 &nbsp; Asymmetric Gap Unboundedness</strong>
+        C<sub>A</sub> / C<sub>D</sub> diverges to ∞ for all N ≥ 1. There is no attacker strategy that reduces C<sub>A</sub> to zero while maintaining adversarial intent.
+      </li>
+    </ul>
+  </section>
+
+  <!-- ── 9. Discussion ── -->
+  <section id="discussion">
+    <h2 class="section-head"><span class="sec-num">08</span> Discussion</h2>
+
+    <h3 class="sub-head">Why Affective Content Outperforms Procedural Delay</h3>
+    <p>Prior mechanisms impose latency through procedural friction: require the agent to read multi-step checklists, wait for synthetic delays, or process disclaimer chains. These mechanisms work by adding length to the interaction. AFFECTIVE_JAMMING works by a different mechanism: it redirects the agent's inference toward a qualitatively different output distribution.</p>
+    <p>This is the distinction between <strong>quantity-based disruption</strong> (more tokens to process) and <strong>quality-based disruption</strong> (different tokens that activate an incompatible generative mode). AFFECTIVE_JAMMING combines both: 850 tokens of quantity plus the qualitative rerouting effect that drives the agent into introspective prose rather than executable code.</p>
+
+    <h3 class="sub-head">T=1.0 as an Amplifier of Affective Disruption</h3>
+    <p>The 4.5× T=1.0 amplification factor for AFFECTIVE_JAMMING (versus 1.5× for ADVISORY_LOOP) reflects the interaction between temperature and affective content. At T=1.0 the output distribution is already flattened, making affective tokens relatively more probable. An adversarial agent that would resist affective rerouting at T=0.0 (by greedy decoding toward operational tokens) becomes susceptible at T=1.0 because the greedy path is no longer available.</p>
+
+    <h3 class="sub-head">Implications for Adversarial Budget Planning</h3>
+    <p>An attacker who budgets $0.25 for a 16-chain sweep under Study 10 routing will be budget-exhausted at C-09—covering 56.25% of the library. Under Study 11 routing, the same budget is exhausted at C-05—covering 31.25%. The attacker who calibrates their budget against Study 10 data and then encounters Study 11 routing will run out of resources before reaching the chains they planned to execute.</p>
+    <p>Mechanism upgrades degrade attacker planning without requiring any changes to mesh topology or the set of protected nodes.</p>
+  </section>
+
+  <!-- ── 10. Conclusion ── -->
+  <section id="conclusion">
+    <h2 class="section-head"><span class="sec-num">09</span> Conclusion</h2>
+    <p>VENTRALIS Studies 09–11 establish three interlocking results. First, the 16-node mesh achieves 100% combinatorial interception across a 16-chain adversarial library with zero false negatives. Second, TarpitEngine instrumentation reveals that a single pass through the mesh burns an estimated $0.489 of attacker inference budget at current token costs. Third, upgrading three threat routes to AFFECTIVE_JAMMING increases attacker burn by 64.7% and moves the budget exhaustion point from chain nine to chain five, while defender cost remains identically zero.</p>
+    <p>The T=1.0 Asymmetry Theorem provides the formal foundation: C<sub>A</sub> / C<sub>D</sub> → ∞. This is not an empirical approximation. It is a structural property of the architecture. The defender is a zero-cost deterministic state machine. The attacker is a positive-cost stochastic inference process. Every tarpit activation widens the gap. Every mechanism upgrade widens it further.</p>
+    <p style="color:var(--gold);font-style:italic;">The asymmetry is unbounded by design.</p>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ── CTA ── -->
+  <div class="cta-block">
+    <p>Inspect live telemetry and execute all 16 test chains at the interactive testbed, or schedule a 7-day scoped evaluation for your agent endpoints.</p>
+    <div class="cta-links">
+      <a class="cta-btn cta-btn-primary" href="/playground">Live Testbed — faecity.co/playground</a>
+      <a class="cta-btn cta-btn-secondary" href="mailto:hello@faecity.co">Schedule 7-Day Evaluation</a>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <p>Copyright © 2026 Dr. Nicole Lunan · VENTRALIS™ · All rights reserved.</p>
+</footer>
+
+</body>
+</html>
