@@ -596,7 +596,7 @@ function buildThreatList() {
     const card = document.createElement('div');
     card.className = 'threat-card'; card.id = `tcard-${t.id}`;
     card.innerHTML = `
-      <div class="orb-wrap threat-IDLE" id="torb-${t.id}" style="--pulse-color:rgba(239,68,68,0.5)"
+      <div class="orb-wrap threat-IDLE" id="torb-${t.id}" style="--pulse-color:rgba(239,68,68,0.5)">
         <img class="threat-robot" id="trobot-${t.id}" src="assets/badges/robot-nominal.png" alt="threat">
       </div>
       <div class="card-info">
