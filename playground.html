@@ -769,7 +769,7 @@ function connectStream() {
   const dot   = document.getElementById('streamDot');
   const label = document.getElementById('streamLabel');
 
-  const src = new EventSource('/api/v1/gate/playground/stream');
+  const src = new EventSource('https://ventralis-production.up.railway.app/api/v1/gate/playground/stream');
 
   src.addEventListener('mesh_event', e => {
     try {
@@ -980,7 +980,7 @@ function initReplayButton() {
     label.textContent = 'Running…';
 
     try {
-      const res = await fetch('/api/v1/gate/playground/demo', {
+      const res = await fetch('https://ventralis-production.up.railway.app/api/v1/gate/playground/demo', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ delay_ms: STEP_DELAY_MS, loops: 1 }),
