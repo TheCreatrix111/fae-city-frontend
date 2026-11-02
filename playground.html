@@ -433,12 +433,6 @@
       <span id="replayLabel">Run Demo</span>
     </button>
 
-    <!-- No stream overlay -->
-    <div id="noStream">
-      <div class="no-stream-glyph">⬡</div>
-      <div class="no-stream-msg">Waiting for mesh stream</div>
-      <div class="no-stream-sub">POST to /api/v1/playground/stream · or run study08</div>
-    </div>
   </div>
 
   <!-- Side panel -->
@@ -774,7 +768,6 @@ function handleMeshSnapshot(payload) {
 function connectStream() {
   const dot   = document.getElementById('streamDot');
   const label = document.getElementById('streamLabel');
-  const overlay = document.getElementById('noStream');
 
   const src = new EventSource('/api/v1/gate/playground/stream');
 
@@ -794,14 +787,12 @@ function connectStream() {
     dot.classList.add('live');
     dot.classList.remove('error');
     label.textContent = 'live';
-    overlay.classList.add('hidden');
   };
 
   src.onerror = () => {
     dot.classList.remove('live');
     dot.classList.add('error');
     label.textContent = 'reconnecting';
-    overlay.classList.remove('hidden');
   };
 }
 
