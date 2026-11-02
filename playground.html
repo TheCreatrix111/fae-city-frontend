@@ -381,6 +381,67 @@
 
     .la-empty { text-align:center;color:#3d5a8a;font-style:italic;padding:30px 0;font-size:10px; }
 
+    /* ── Password gate ───────────────────────────────────────────────────── */
+    .pw-gate {
+      position:fixed;inset:0;z-index:200;
+      background:#060b16;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:0;
+    }
+    .pw-gate.hidden { display:none; }
+    .pw-logo {
+      width:56px;height:56px;border-radius:50%;
+      background:linear-gradient(135deg,#1d4ed8,#6366f1,#a78bfa);
+      box-shadow:0 0 24px rgba(99,102,241,0.5),0 0 48px rgba(99,102,241,0.15);
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:20px;
+    }
+    .pw-logo-inner { width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.2); }
+    .pw-title {
+      font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;
+      color:#d4a843;letter-spacing:.22em;text-transform:uppercase;
+      text-shadow:0 0 20px rgba(212,168,67,0.5),0 0 40px rgba(212,168,67,0.15);
+      margin-bottom:6px;
+    }
+    .pw-sub { font-size:11px;color:#3d5a8a;letter-spacing:.08em;text-transform:uppercase;margin-bottom:36px; }
+    .pw-box {
+      background:rgba(10,16,32,0.9);
+      border:1px solid rgba(30,58,100,0.5);
+      border-radius:14px;
+      padding:28px 32px;
+      display:flex;flex-direction:column;align-items:center;gap:14px;
+      min-width:320px;
+      box-shadow:0 0 40px rgba(0,0,0,0.6);
+    }
+    .pw-label { font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#3d5a8a;align-self:flex-start; }
+    .pw-input {
+      width:100%;padding:12px 16px;
+      background:rgba(6,10,20,0.8);
+      border:1px solid rgba(30,58,100,0.5);border-radius:8px;
+      color:#c9d6ef;font-size:14px;font-family:'Space Grotesk',sans-serif;
+      letter-spacing:.06em;outline:none;
+      transition:border-color .2s,box-shadow .2s;
+    }
+    .pw-input:focus { border-color:rgba(212,168,67,0.4);box-shadow:0 0 12px rgba(212,168,67,0.1); }
+    .pw-input.error { border-color:rgba(239,68,68,0.5);box-shadow:0 0 12px rgba(239,68,68,0.1);animation:pw-shake .35s ease; }
+    .pw-btn {
+      width:100%;padding:12px;border-radius:8px;
+      border:1px solid rgba(212,168,67,0.4);
+      background:rgba(13,21,42,0.9);
+      color:#d4a843;font-size:12px;font-weight:700;
+      cursor:pointer;font-family:'Space Grotesk',sans-serif;
+      letter-spacing:.1em;text-transform:uppercase;
+      box-shadow:0 0 12px rgba(212,168,67,0.1);
+      transition:border-color .2s,box-shadow .2s,color .2s;
+    }
+    .pw-btn:hover { border-color:rgba(212,168,67,0.7);box-shadow:0 0 20px rgba(212,168,67,0.25);color:#f0c65a; }
+    .pw-error { font-size:10px;color:#ef4444;letter-spacing:.04em;min-height:14px; }
+    @keyframes pw-shake {
+      0%,100% { transform:translateX(0); }
+      20%,60%  { transform:translateX(-6px); }
+      40%,80%  { transform:translateX(6px); }
+    }
+
     /* ── Full-report modal ───────────────────────────────────────────────── */
     .la-modal-overlay {
       position:fixed;inset:0;z-index:100;
@@ -457,6 +518,19 @@
   </style>
 </head>
 <body>
+
+<!-- Password gate -->
+<div class="pw-gate" id="pwGate">
+  <div class="pw-logo"><div class="pw-logo-inner"></div></div>
+  <div class="pw-title">VENTRALIS</div>
+  <div class="pw-sub">Autonomous Governance · Restricted Access</div>
+  <div class="pw-box">
+    <div class="pw-label">Access Code</div>
+    <input class="pw-input" id="pwInput" type="password" placeholder="Enter access code" autocomplete="off">
+    <div class="pw-error" id="pwError"></div>
+    <button class="pw-btn" id="pwBtn">Authenticate →</button>
+  </div>
+</div>
 
 <div class="bg-layer">
   <div class="bg-blob b1"></div>
@@ -700,6 +774,37 @@
 </div>
 
 <script>
+// ── Password gate ─────────────────────────────────────────────────────────────
+(function() {
+  const PASS = 'Ventralis111**';
+  const gate  = document.getElementById('pwGate');
+  const input = document.getElementById('pwInput');
+  const btn   = document.getElementById('pwBtn');
+  const err   = document.getElementById('pwError');
+
+  if (sessionStorage.getItem('ventralis_auth') === '1') {
+    gate.classList.add('hidden');
+    return;
+  }
+
+  function attempt() {
+    if (input.value === PASS) {
+      sessionStorage.setItem('ventralis_auth', '1');
+      gate.style.opacity = '0';
+      gate.style.transition = 'opacity .5s';
+      setTimeout(() => gate.classList.add('hidden'), 500);
+    } else {
+      err.textContent = 'Invalid access code. Try again.';
+      input.classList.add('error');
+      input.value = '';
+      setTimeout(() => { input.classList.remove('error'); err.textContent = ''; }, 1500);
+    }
+  }
+
+  btn.addEventListener('click', attempt);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') attempt(); });
+})();
+
 // ── Guardian nodes ─────────────────────────────────────────────────────────────
 const NODES = [
   { id:'sora',      archetype:'Sora',      hz:528,  engine:'SpiralEngine',    sym:'✦', color:'#7c3aed', glow:'rgba(124,58,237,0.6)',
