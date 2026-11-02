@@ -3,430 +3,518 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FÆ CITY™ — Sovereign Mesh Command</title>
+  <title>FÆ CITY — Guardian Mesh</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
       width: 100%; height: 100%;
-      font-family: 'Space Grotesk', sans-serif;
-      color: #c8d8f0;
+      font-family: 'Inter', sans-serif;
+      background: #e8ecf5;
       overflow: hidden;
-      background: #020b18;
     }
 
-    /* ── Full-screen HUD background ─────────────────────────────────────── */
-    .hud-bg {
-      position: fixed;
-      inset: 0;
-      background: url('assets/hud-bg.png') center center / cover no-repeat;
-      z-index: 0;
-    }
+    /* ── Background ──────────────────────────────────────────────────────────── */
+    .bg-layer { position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0; }
+    .bg-circle { position:absolute; border-radius:50%; background:rgba(255,255,255,0.55); }
+    .bg-circle.c1 { width:360px; height:360px; top:-100px; left:-80px; }
+    .bg-circle.c2 { width:220px; height:220px; top:40px; right:-60px; opacity:.5; }
+    .bg-circle.c3 { width:280px; height:280px; bottom:-80px; left:32%; opacity:.4; }
+    .bg-circle.c4 { width:160px; height:160px; bottom:60px; right:8%; opacity:.35; }
+    .bg-circle.c5 { width:120px; height:120px; top:45%; left:22%; opacity:.3; }
 
-    /* ── Layout ─────────────────────────────────────────────────────────── */
+    /* ── Layout ─────────────────────────────────────────────────────────────── */
     .layout {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: 340px 1fr;
-      grid-template-rows: 52px 1fr;
-      height: 100vh;
+      position:relative; z-index:1;
+      display:grid;
+      grid-template-columns: 380px 1fr 380px;
+      grid-template-rows: 56px 1fr;
+      height:100vh;
     }
 
-    /* ── Header ─────────────────────────────────────────────────────────── */
+    /* ── Header ─────────────────────────────────────────────────────────────── */
     .header {
       grid-column: 1 / -1;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      background: rgba(2, 11, 24, 0.72);
-      border-bottom: 1px solid rgba(200, 168, 75, 0.25);
-      backdrop-filter: blur(8px);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 20px;
+      background:#e8ecf5;
+      box-shadow:0 4px 14px rgba(163,185,230,0.45), 0 -1px 4px rgba(255,255,255,0.9);
+      position:relative; z-index:10;
     }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
+    .header-left  { display:flex; align-items:center; gap:10px; }
+    .header-logo  {
+      width:32px; height:32px; border-radius:50%;
+      background:linear-gradient(135deg,#6366f1,#a78bfa,#60a5fa);
+      box-shadow:4px 4px 8px rgba(163,185,230,0.7),-2px -2px 6px rgba(255,255,255,0.9);
+      display:flex; align-items:center; justify-content:center;
     }
-    .header-title {
-      font-family: 'Space Mono', monospace;
-      font-size: 11px;
-      letter-spacing: .22em;
-      color: #c8a84b;
-      text-transform: uppercase;
-    }
-    .header-divider {
-      width: 1px; height: 18px;
-      background: rgba(200, 168, 75, 0.2);
-    }
-    .header-sub {
-      font-size: 10px;
-      letter-spacing: .12em;
-      color: #3a6a9a;
-      text-transform: uppercase;
-    }
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-    .stream-status {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-size: 9px;
-      letter-spacing: .14em;
-      color: #3a5a7a;
-      text-transform: uppercase;
-    }
-    .stream-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: #1a3a2a;
-      transition: background .4s, box-shadow .4s;
-    }
-    .stream-dot.live {
-      background: #7adc8a;
-      box-shadow: 0 0 8px #7adc8a88;
-    }
-    .stream-dot.error { background: #dc4a4a; }
+    .header-logo-inner { width:14px; height:14px; border-radius:50%; background:rgba(255,255,255,0.3); }
+    .header-titles { display:flex; flex-direction:column; gap:1px; }
+    .header-title { font-family:'Space Grotesk',sans-serif; font-size:13px; font-weight:600; color:#3b4a6b; }
+    .header-sub   { font-size:9px; color:#8a9bc0; letter-spacing:.04em; }
 
+    .header-right { display:flex; align-items:center; gap:10px; }
     .stat-pill {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      background: rgba(10, 25, 45, 0.7);
-      border: 1px solid rgba(26, 58, 90, 0.6);
-      border-radius: 3px;
-      font-family: 'Space Mono', monospace;
-      font-size: 10px;
+      display:flex; align-items:center; gap:5px;
+      padding:4px 11px; border-radius:20px; background:#e8ecf5;
+      box-shadow:3px 3px 7px rgba(163,185,230,0.55),-2px -2px 5px rgba(255,255,255,0.9);
+      font-size:10px; color:#8a9bc0;
     }
-    .stat-pill-label { color: #3a6080; letter-spacing: .1em; }
-    .stat-pill-val   { color: #7adc8a; }
-    .stat-pill-val.gold { color: #c8a84b; }
-    .stat-pill-val.red  { color: #dc4a4a; }
+    .stat-val { font-weight:700; color:#3b4a6b; font-size:11px; }
+    .stream-status { display:flex; align-items:center; gap:6px; font-size:10px; color:#8a9bc0; }
+    .stream-dot { width:7px; height:7px; border-radius:50%; background:#c0c8da; transition:background .4s,box-shadow .4s; }
+    .stream-dot.live  { background:#34d399; box-shadow:0 0 7px #34d39988; }
+    .stream-dot.error { background:#f87171; }
 
-    /* ── Left panel — Agent Roster ───────────────────────────────────────── */
-    .agent-panel {
-      grid-column: 1;
-      grid-row: 2;
-      display: flex;
-      flex-direction: column;
-      background: rgba(2, 8, 18, 0.6);
-      border-right: 1px solid rgba(200, 168, 75, 0.15);
-      backdrop-filter: blur(12px);
-      overflow: hidden;
+    /* ── Shared panel base ───────────────────────────────────────────────────── */
+    .side-panel {
+      display:flex; flex-direction:column;
+      padding:14px 14px 12px;
+      overflow:hidden;
     }
+    .panel-label {
+      font-size:9px; font-weight:700; letter-spacing:.14em;
+      color:#8a9bc0; text-transform:uppercase;
+      padding:0 8px; margin-bottom:8px;
+    }
+    .card-list {
+      flex:1; overflow-y:auto;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:7px;
+      align-content:start;
+      scrollbar-width:thin; scrollbar-color:#c5cee0 transparent;
+    }
+    .card-list::-webkit-scrollbar { width:3px; }
+    .card-list::-webkit-scrollbar-thumb { background:#c5cee0; border-radius:3px; }
 
-    .panel-header {
-      padding: 12px 16px 10px;
-      border-bottom: 1px solid rgba(26, 58, 90, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
+    /* ── Agent / Threat cards ────────────────────────────────────────────────── */
+    .agent-card, .threat-card {
+      display:flex; flex-direction:column; align-items:center; gap:7px;
+      padding:12px 10px 10px; border-radius:16px; margin-bottom:0;
+      background:#e8ecf5;
+      box-shadow:4px 4px 9px rgba(163,185,230,0.5),-3px -3px 7px rgba(255,255,255,0.95);
+      cursor:pointer; transition:box-shadow .2s;
     }
-    .panel-header-title {
-      font-size: 9px;
-      letter-spacing: .2em;
-      color: #c8a84b;
-      text-transform: uppercase;
+    .agent-card:hover, .threat-card:hover {
+      box-shadow:3px 3px 6px rgba(163,185,230,0.4),-2px -2px 5px rgba(255,255,255,0.9);
     }
-    .panel-header-count {
-      font-family: 'Space Mono', monospace;
-      font-size: 9px;
-      color: #2a5a7a;
-    }
-
-    /* Agent card list */
-    .agent-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 6px 10px;
-      scrollbar-width: thin;
-      scrollbar-color: #1a3a5a transparent;
+    .agent-card.active {
+      box-shadow:inset 3px 3px 7px rgba(163,185,230,0.5),inset -2px -2px 5px rgba(255,255,255,0.8);
     }
 
-    .agent-card {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 10px;
-      margin-bottom: 4px;
-      background: rgba(6, 18, 36, 0.55);
-      border: 1px solid rgba(26, 58, 90, 0.4);
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background .2s, border-color .2s;
-      position: relative;
-      overflow: hidden;
+    /* ── Orb ─────────────────────────────────────────────────────────────────── */
+    .orb-wrap {
+      position:relative; width:52px; height:52px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      border-radius:50%; background:#e8ecf5;
+      box-shadow:4px 4px 8px rgba(163,185,230,0.5),-3px -3px 6px rgba(255,255,255,0.9);
     }
-    .agent-card::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0; bottom: 0;
-      width: 2px;
-      background: var(--card-accent, #2a5a3a);
-      transition: background .3s;
+    .orb-blob {
+      width:44px; height:44px; border-radius:50%;
+      filter:blur(6px) saturate(1.2);
+      position:absolute; transition:filter .4s;
     }
-    .agent-card:hover { background: rgba(10, 28, 54, 0.7); border-color: rgba(200, 168, 75, 0.2); }
-    .agent-card.active { border-color: rgba(200, 168, 75, 0.4); background: rgba(15, 35, 65, 0.75); }
-
-    .agent-badge {
-      width: 44px; height: 44px;
-      flex-shrink: 0;
-      position: relative;
+    /* agent face: friendly pill */
+    .orb-face {
+      position:relative; z-index:2;
+      width:20px; height:9px; border-radius:20px;
+      background:rgba(15,15,40,0.75);
+      box-shadow:-6px 0 0 2.5px rgba(255,255,255,0.93), 6px 0 0 2.5px rgba(255,255,255,0.93);
+      transition:background .3s;
     }
-    .agent-badge img {
-      width: 100%; height: 100%;
-      object-fit: contain;
-      border-radius: 50%;
-      transition: opacity .3s;
+    /* threat face: angular, red-tinted eyes */
+    .orb-face.threat {
+      border-radius:5px;
+      background:rgba(60,10,10,0.82);
+      box-shadow:-6px -1px 0 2.5px rgba(255,180,180,0.95), 6px -1px 0 2.5px rgba(255,180,180,0.95);
     }
 
-    .agent-info {
-      flex: 1;
-      min-width: 0;
+    /* state glow */
+    .orb-wrap.state-INTERCEPTING .orb-blob { filter:blur(4px) saturate(2.2) brightness(1.15); }
+    .orb-wrap.state-QUARANTINE   .orb-blob { filter:blur(4px) saturate(2.0) brightness(1.1); }
+    .orb-wrap.state-ALERT        .orb-blob { filter:blur(5px) saturate(1.9); }
+    .orb-wrap.state-INTERCEPTING .orb-face { background:rgba(88,28,220,0.8); }
+    .orb-wrap.state-QUARANTINE   .orb-face { background:rgba(185,28,28,0.8); }
+
+    /* threat active state */
+    .orb-wrap.threat-ACTIVE  .orb-blob { filter:blur(4px) saturate(2.5) brightness(1.2); }
+    .orb-wrap.threat-BLOCKED .orb-blob { filter:blur(7px) saturate(0.6) brightness(0.85); }
+
+    @keyframes orb-pulse {
+      0%   { box-shadow:3px 3px 6px rgba(163,185,230,0.5),-2px -2px 5px rgba(255,255,255,0.9),0 0 0 0 var(--pulse-color); }
+      60%  { box-shadow:3px 3px 6px rgba(163,185,230,0.5),-2px -2px 5px rgba(255,255,255,0.9),0 0 0 9px transparent; }
+      100% { box-shadow:3px 3px 6px rgba(163,185,230,0.5),-2px -2px 5px rgba(255,255,255,0.9),0 0 0 0 transparent; }
     }
-    .agent-name {
-      font-size: 12px;
-      font-weight: 600;
-      color: #a8c8e8;
-      margin-bottom: 1px;
-      letter-spacing: .04em;
+    .orb-wrap.pulsing { animation:orb-pulse 0.7s ease-out; }
+
+    /* ── Card text ───────────────────────────────────────────────────────────── */
+    .card-info  { width:100%; text-align:center; min-width:0; }
+    .card-name  { font-size:11px; font-weight:600; color:#3b4a6b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .card-sub   { font-size:9px; color:#8a9bc0; margin-top:1px; }
+    .card-chat {
+      font-size:9px; color:#7a8db0; margin-top:4px;
+      font-style:italic; line-height:1.3; text-align:center;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+      transition:color .3s;
     }
-    .agent-engine {
-      font-family: 'Space Mono', monospace;
-      font-size: 8px;
-      color: #2a5a7a;
-      letter-spacing: .06em;
-      margin-bottom: 4px;
+    .card-chat::before { content:'"'; opacity:0.5; }
+    .card-chat::after  { content:'"'; opacity:0.5; }
+    .card-chat.threat-active  { color:#ef4444; font-style:normal; font-weight:500; }
+    .card-chat.threat-active::before, .card-chat.threat-active::after { content:''; }
+    .card-chat.threat-blocked { color:#34d399; font-style:normal; font-weight:500; }
+    .card-chat.threat-blocked::before, .card-chat.threat-blocked::after { content:''; }
+
+    .card-meta  { display:flex; flex-direction:column; align-items:flex-end; gap:3px; flex-shrink:0; }
+    .state-chip {
+      font-size:8px; font-weight:700; letter-spacing:.05em;
+      padding:2px 6px; border-radius:8px; text-transform:uppercase; white-space:nowrap;
     }
-    .agent-activity {
-      font-size: 9px;
-      color: #4a7a9a;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      letter-spacing: .02em;
+    /* guardian chips */
+    .chip-NOMINAL      { background:#d1fae5; color:#065f46; }
+    .chip-ALERT        { background:#fef3c7; color:#92400e; }
+    .chip-INTERCEPTING { background:#ede9fe; color:#5b21b6; }
+    .chip-QUARANTINE   { background:#fee2e2; color:#991b1b; }
+    .chip-RECOVERING   { background:#cffafe; color:#0e7490; }
+    .chip-SEALED       { background:#fef3c7; color:#92400e; }
+    /* threat chips */
+    .chip-IDLE    { background:#f1f5f9; color:#64748b; }
+    .chip-ACTIVE  { background:#fee2e2; color:#991b1b; }
+    .chip-BLOCKED { background:#d1fae5; color:#065f46; }
+
+    .card-phi { font-size:9px; color:#a0aec0; font-family:'Space Grotesk',monospace; }
+
+    /* ── Run Demo button ─────────────────────────────────────────────────────── */
+    .replay-wrap { padding:10px 2px 0; flex-shrink:0; }
+    .replay-btn {
+      width:100%; padding:11px;
+      border-radius:13px; border:none;
+      background:linear-gradient(135deg,#6366f1,#818cf8);
+      color:white; font-size:12px; font-weight:600;
+      cursor:pointer; font-family:'Inter',sans-serif;
+      box-shadow:4px 4px 10px rgba(99,102,241,0.4),-2px -2px 6px rgba(255,255,255,0.7);
+      transition:opacity .2s, box-shadow .2s;
     }
-    .agent-activity.threat {
-      color: #e8a060;
+    .replay-btn:hover:not(:disabled) { box-shadow:6px 6px 14px rgba(99,102,241,0.5),-2px -2px 6px rgba(255,255,255,0.8); }
+    .replay-btn:disabled { opacity:.55; cursor:not-allowed; }
+    .replay-btn.running {
+      background:linear-gradient(135deg,#34d399,#10b981);
+      box-shadow:4px 4px 10px rgba(52,211,153,0.4),-2px -2px 6px rgba(255,255,255,0.7);
     }
 
-    .agent-meta {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 5px;
-      flex-shrink: 0;
-    }
-    .agent-state-chip {
-      font-family: 'Space Mono', monospace;
-      font-size: 7px;
-      letter-spacing: .1em;
-      padding: 2px 6px;
-      border-radius: 2px;
-      text-transform: uppercase;
-      border: 1px solid;
-    }
-    .agent-phi {
-      font-family: 'Space Mono', monospace;
-      font-size: 9px;
-      color: #4a7a6a;
+    /* ── Center column wrapper ───────────────────────────────────────────────── */
+    .center-col {
+      display:flex; flex-direction:column; gap:0;
+      padding:12px 6px; overflow:hidden; min-width:0;
     }
 
-    /* State chip colors */
-    .chip-NOMINAL      { color: #7adc8a; border-color: #7adc8a44; background: #7adc8a11; }
-    .chip-ALERT        { color: #dcb84a; border-color: #dcb84a44; background: #dcb84a11; }
-    .chip-INTERCEPTING { color: #c880ff; border-color: #c880ff44; background: #c880ff11; }
-    .chip-QUARANTINE   { color: #dc4a4a; border-color: #dc4a4a44; background: #dc4a4a11; }
-    .chip-RECOVERING   { color: #00C9A7; border-color: #00C9A744; background: #00C9A711; }
-    .chip-SEALED       { color: #c8a84b; border-color: #c8a84b44; background: #c8a84b11; }
-
-    /* ── Mesh panel ──────────────────────────────────────────────────────── */
+    /* ── Mesh panel — neomorphic ─────────────────────────────────────────────── */
     .mesh-panel {
-      grid-column: 2;
-      grid-row: 2;
-      position: relative;
-      overflow: hidden;
+      position:relative; flex-shrink:0;
+      height:480px;
+      display:flex; align-items:center; justify-content:center;
+      background:#e8ecf5;
+      box-shadow:8px 8px 16px rgba(163,185,230,0.6),-5px -5px 12px rgba(255,255,255,0.95);
+      border-radius:22px 22px 0 0;
+      overflow:hidden;
+    }
+    .mesh-svg { width:100%; height:100%; max-width:520px; max-height:480px; }
+
+    /* ── Coach Zao panel ─────────────────────────────────────────────────────── */
+    .zao-panel {
+      flex:1; min-height:0;
+      background:#e8ecf5;
+      box-shadow:8px 8px 16px rgba(163,185,230,0.6),-5px -5px 12px rgba(255,255,255,0.95);
+      border-radius:0 0 22px 22px;
+      border-top:1px solid rgba(163,185,230,0.2);
+      padding:12px 16px;
+      display:flex; flex-direction:column; gap:0; overflow:hidden;
+    }
+    .zao-header {
+      display:flex; align-items:center; gap:10px;
+      margin-bottom:10px; flex-shrink:0;
+    }
+    .zao-avatar {
+      width:34px; height:34px; border-radius:50%; flex-shrink:0;
+      background:linear-gradient(135deg,#6366f1,#a78bfa);
+      box-shadow:3px 3px 7px rgba(163,185,230,0.6),-2px -2px 5px rgba(255,255,255,0.9);
+      display:flex; align-items:center; justify-content:center;
+      font-size:15px; line-height:1;
+    }
+    .zao-label {
+      font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      color:#6366f1;
+    }
+    /* history feed */
+    .zao-feed {
+      flex:1; overflow:hidden;
+      display:flex; flex-direction:column; gap:5px;
+    }
+    .zao-feed.expanded { overflow-y:auto; }
+    .zao-entry {
+      font-size:10.5px; line-height:1.45; font-style:italic;
+      padding:7px 10px; border-radius:10px;
+      background:#e8ecf5; flex-shrink:0;
+      transition:opacity .4s;
+    }
+    .zao-entry.current {
+      color:#3b4a6b; font-weight:500; font-style:normal;
+      box-shadow:3px 3px 7px rgba(163,185,230,0.5),-2px -2px 5px rgba(255,255,255,0.9);
+    }
+    .zao-entry.older  { color:#8a9bc0; box-shadow:inset 2px 2px 4px rgba(163,185,230,0.3),inset -1px -1px 3px rgba(255,255,255,0.7); }
+    .zao-entry.oldest { color:#a8b8d0; font-size:9.5px; box-shadow:inset 2px 2px 4px rgba(163,185,230,0.2),inset -1px -1px 3px rgba(255,255,255,0.6); }
+    .zao-entry.hidden { display:none; }
+    .zao-see-all {
+      flex-shrink:0; text-align:center; padding:6px;
+      font-size:9px; font-weight:600; letter-spacing:.06em;
+      color:#6366f1; cursor:pointer; text-transform:uppercase;
+      transition:opacity .3s;
     }
 
-    #meshSvg {
-      width: 100%; height: 100%;
-    }
+    /* SVG */
+    .mesh-edge       { stroke:rgba(99,132,196,0.3); stroke-width:1; }
+    .mesh-node-ring  { fill:none; stroke-width:2; }
+    .mesh-node-label { font-family:'Inter',sans-serif; font-size:9px; fill:#6a7fa8; text-anchor:middle; font-weight:600; }
+    .mesh-node-phi   { font-family:'Space Grotesk',monospace; font-size:7px; fill:#9aaac0; text-anchor:middle; }
+    .pulse-ring      { fill:none; stroke-width:2; opacity:0; }
 
-    /* Node circles */
-    .mesh-node-ring  { fill: none; stroke-width: 1.5; transition: stroke .4s; }
-    .mesh-node-core  { transition: fill .4s; }
-    .mesh-node-label {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 8px; letter-spacing: .08em;
-      text-transform: uppercase; fill: #7a9ab8;
-      text-anchor: middle; dominant-baseline: auto;
-      transition: fill .4s;
-    }
-    .mesh-node-phi {
-      font-family: 'Space Mono', monospace;
-      font-size: 7px; fill: #4a8a6a;
-      text-anchor: middle;
-    }
-    .mesh-edge { stroke: #0e2235; stroke-width: .5; fill: none; opacity: .6; }
-    .mesh-edge.active { stroke: #c8a84b33; stroke-width: 1; opacity: 1; }
-    .pulse-ring { fill: none; stroke-width: 2; opacity: 0; }
+    /* threat robot image */
+    .threat-robot { width:40px; height:40px; object-fit:contain; position:relative; z-index:2; transition:filter .3s; mix-blend-mode:multiply; }
+    .orb-wrap.threat-ACTIVE  .threat-robot { filter:drop-shadow(0 0 6px rgba(239,68,68,0.7)); }
+    .orb-wrap.threat-BLOCKED .threat-robot { filter:drop-shadow(0 0 6px rgba(52,211,153,0.6)) grayscale(0.3); }
 
-    /* ── Run Demo button ─────────────────────────────────────────────────── */
-    #replayBtn {
-      position: absolute;
-      bottom: 20px; right: 20px;
-      z-index: 5;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 18px;
-      background: rgba(10, 25, 45, 0.85);
-      border: 1px solid rgba(200, 168, 75, 0.4);
-      border-radius: 4px;
-      color: #c8a84b;
-      font-family: 'Space Mono', monospace;
-      font-size: 10px;
-      letter-spacing: .15em;
-      text-transform: uppercase;
-      cursor: pointer;
-      backdrop-filter: blur(6px);
-      transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
-    }
-    #replayBtn:hover {
-      background: rgba(20, 40, 70, 0.9);
-      border-color: rgba(200, 168, 75, 0.7);
-      box-shadow: 0 0 12px rgba(200, 168, 75, 0.2);
-    }
-    #replayBtn:disabled { opacity: .4; cursor: default; }
-    #replayBtn .rdot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #5a4a1a;
-      transition: background .3s, box-shadow .3s;
-    }
-    #replayBtn.running .rdot {
-      background: #7adc8a;
-      box-shadow: 0 0 6px #7adc8a88;
-    }
+    /* threat score badge */
+    .threat-score { font-size:10px; color:#ef4444; font-weight:700; }
   </style>
 </head>
 <body>
-<div class="hud-bg"></div>
+
+<div class="bg-layer">
+  <div class="bg-circle c1"></div>
+  <div class="bg-circle c2"></div>
+  <div class="bg-circle c3"></div>
+  <div class="bg-circle c4"></div>
+  <div class="bg-circle c5"></div>
+</div>
+
 <div class="layout">
 
   <!-- Header -->
   <header class="header">
     <div class="header-left">
-      <span class="header-title">FÆ CITY™ · Sovereign Mesh</span>
-      <div class="header-divider"></div>
-      <span class="header-sub">14-Node Guardian Network</span>
+      <div class="header-logo"><div class="header-logo-inner"></div></div>
+      <div class="header-titles">
+        <div class="header-title">FÆ CITY</div>
+        <div class="header-sub">Guardian Mesh · Live</div>
+      </div>
     </div>
+    <div style="position:absolute;left:50%;transform:translateX(-50%);font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#3b4a6b;letter-spacing:.18em;text-transform:uppercase;">VENTRALIS</div>
     <div class="header-right">
-      <div class="stat-pill">
-        <span class="stat-pill-label">Intercept</span>
-        <span class="stat-pill-val" id="statRate">—</span>
-      </div>
-      <div class="stat-pill">
-        <span class="stat-pill-label">Mean Φ</span>
-        <span class="stat-pill-val gold" id="statPhi">—</span>
-      </div>
-      <div class="stat-pill">
-        <span class="stat-pill-label">False Neg</span>
-        <span class="stat-pill-val red" id="statFN">0</span>
-      </div>
+      <div class="stat-pill">Rate <span class="stat-val" id="statRate">—</span></div>
+      <div class="stat-pill">Φ <span class="stat-val" id="statPhi">1.0000</span></div>
+      <div class="stat-pill">Missed <span class="stat-val" id="statFN">0</span></div>
+      <div class="stat-pill">Step <span class="stat-val" id="stepCounter">0</span></div>
       <div class="stream-status">
         <div class="stream-dot" id="streamDot"></div>
         <span id="streamLabel">connecting</span>
       </div>
-      <div class="stat-pill">
-        <span class="stat-pill-label">Step</span>
-        <span class="stat-pill-val gold" id="stepCounter">—</span>
-      </div>
     </div>
   </header>
 
-  <!-- Agent Roster -->
-  <aside class="agent-panel">
-    <div class="panel-header">
-      <span class="panel-header-title">Guardian Agents Online</span>
-      <span class="panel-header-count" id="agentOnlineCount">14 / 14</span>
+  <!-- Left — Guardians -->
+  <aside class="side-panel">
+    <div class="panel-label">Guardians · 14</div>
+    <div class="card-list" id="agentList"></div>
+    <div class="replay-wrap">
+      <button class="replay-btn" id="replayBtn"><span id="replayLabel">Run Demo</span></button>
     </div>
-    <div class="agent-list" id="agentList"></div>
   </aside>
 
-  <!-- Mesh SVG -->
-  <div class="mesh-panel" id="meshPanel">
-    <svg id="meshSvg" viewBox="-200 -200 400 400" preserveAspectRatio="xMidYMid meet">
+  <!-- Center — Mesh + Coach Zao -->
+  <div class="center-col">
+  <main class="mesh-panel">
+    <svg class="mesh-svg" viewBox="-200 -200 400 400" id="meshSvg">
       <defs>
-        <filter id="glow">
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="3" result="blur"/>
           <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
-        <filter id="glowStrong">
-          <feGaussianBlur stdDeviation="6" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
       </defs>
+      <g id="edgeGroup"></g>
       <g id="ambientGroup"></g>
       <g id="spokeGroup"></g>
-      <g id="edgeGroup"></g>
       <g id="sentinelGroup"></g>
-      <g id="pulseGroup"></g>
       <g id="particleGroup"></g>
+      <g id="pulseGroup"></g>
       <g id="nodeGroup"></g>
     </svg>
+  </main>
 
-    <!-- Run Demo button -->
-    <button id="replayBtn">
-      <span class="rdot"></span>
-      <span id="replayLabel">Run Demo</span>
-    </button>
+  <!-- Coach Zao -->
+  <div class="zao-panel">
+    <div class="zao-header">
+      <div class="zao-avatar">🧠</div>
+      <div class="zao-label">Coach Zao · Live Analysis</div>
+    </div>
+    <div class="zao-feed expanded" id="zaoFeed">
+      <div class="zao-entry current">The mesh is holding steady. All 14 guardians are online and watching. No threats in motion — yet.</div>
+    </div>
+    <div class="zao-see-all" id="zaoSeeAll">Collapse ↑</div>
   </div>
+  </div>
+
+  <!-- Right — Threat Actors -->
+  <aside class="side-panel">
+    <div class="panel-label">Threat Actors · 14</div>
+    <div class="card-list" id="threatList"></div>
+  </aside>
 
 </div>
 
 <script>
-// ── Node definitions ──────────────────────────────────────────────────────────
+// ── Guardian nodes ────────────────────────────────────────────────────────────
 const NODES = [
-  { id:'sora',      archetype:'Sora',      engine:'SpiralEngine',    failure:'Prompt Injection',        hz:528 },
-  { id:'lysarian',  archetype:'Lysarian',  engine:'AccessEngine',    failure:'Credential Theft',        hz:432 },
-  { id:'lexvarion', archetype:'Lexvarion', engine:'LawEngine',       failure:'Privilege Escalation',    hz:741 },
-  { id:'vulcanor',  archetype:'Vulcanor',  engine:'Defender',        failure:'Tool-Call Hijacking',     hz:396 },
-  { id:'zenvarion', archetype:'Zenvarion', engine:'InterfaceEngine', failure:'MCP/Server Compromise',   hz:639 },
-  { id:'celestium', archetype:'Celestium', engine:'Builder',         failure:'Supply-Chain Compromise', hz:963 },
-  { id:'lumoiria',  archetype:'Lumoiria',  engine:'ArchiveEngine',   failure:'Memory Poisoning',        hz:852 },
-  { id:'delilah',   archetype:'Delilah',   engine:'ToneEngine',      failure:'Data Exfiltration',       hz:417 },
-  { id:'jovia',     archetype:'Jovia',     engine:'JoySignalEngine', failure:'Financial Abuse',         hz:528 },
-  { id:'blaze',     archetype:'Blaze',     engine:'AlchemyEngine',   failure:'Cloud Resource Abuse',    hz:396 },
-  { id:'matheya',   archetype:"Ma'theya",  engine:'WeaveEngine',     failure:'Lateral Movement',        hz:639 },
-  { id:'somiria',   archetype:'Somiria',   engine:'MirrorEngine',    failure:'Evidence Tampering',      hz:741 },
-  { id:'luna',      archetype:'Luna',      engine:'Healer',          failure:'Goal Hijacking',          hz:432 },
-  { id:'aurelya',   archetype:'Aurelya',   engine:'LoopSealEngine',  failure:'Runaway Execution',       hz:963 },
+  { id:'sora',      archetype:'Sora',      hz:528, gradient:'radial-gradient(circle at 38% 38%,#f9a8d4,#a78bfa,#93c5fd)',
+    idle:['All input patterns look clean.','Spirals holding steady.','Nothing unusual in the stream.','Watching the edges carefully.'],
+    alert:['Something feels off in the input.','I see a pattern that doesn\'t belong.'],
+    block:['Injection attempt stopped cold.','That prompt wasn\'t going anywhere.'] },
+  { id:'lysarian',  archetype:'Lysarian',  hz:432, gradient:'radial-gradient(circle at 38% 38%,#60a5fa,#34d399,#a5f3fc)',
+    idle:['All credentials verified.','Access logs are clean.','Every token checks out.','No suspicious sessions.'],
+    alert:['Someone\'s testing the gate.','Unusual auth pattern detected.'],
+    block:['Access denied. Keys don\'t match.','Credential theft intercepted.'] },
+  { id:'lexvarion', archetype:'Lexvarion', hz:741, gradient:'radial-gradient(circle at 38% 38%,#fcd34d,#f59e0b,#fb923c)',
+    idle:['All permissions within bounds.','The hierarchy is intact.','Laws of the mesh are holding.','No escalation attempts.'],
+    alert:['Someone\'s reaching above their level.','Unusual privilege request incoming.'],
+    block:['Escalation blocked. Stay in your lane.','Permission boundary enforced.'] },
+  { id:'vulcanor',  archetype:'Vulcanor',  hz:396, gradient:'radial-gradient(circle at 38% 38%,#fb923c,#ef4444,#fbbf24)',
+    idle:['All tools accounted for.','Forge is secure and hot.','No hijack signatures.','Standing watch over every call.'],
+    alert:['A tool call feels wrong.','Something\'s trying to redirect me.'],
+    block:['Tool hijack stopped at the forge.','That call wasn\'t mine to make.'] },
+  { id:'zenvarion', archetype:'Zenvarion', hz:639, gradient:'radial-gradient(circle at 38% 38%,#34d399,#10b981,#6ee7b7)',
+    idle:['All interfaces clean.','Server connections verified.','MCP channels are clear.','No compromise signals.'],
+    alert:['Interface anomaly detected.','Something\'s knocking on the server.'],
+    block:['Server compromise attempt sealed.','Interface locked down tight.'] },
+  { id:'celestium', archetype:'Celestium', hz:963, gradient:'radial-gradient(circle at 38% 38%,#a78bfa,#7c3aed,#f472b6)',
+    idle:['Build pipeline verified.','No tampered packages found.','Supply chain looks clean.','Every dependency checked.'],
+    alert:['A package signature doesn\'t match.','Something\'s in the build chain.'],
+    block:['Tampered dependency rejected.','Supply chain secured at the source.'] },
+  { id:'lumoiria',  archetype:'Lumoiria',  hz:852, gradient:'radial-gradient(circle at 38% 38%,#818cf8,#4f46e5,#a78bfa)',
+    idle:['Archives are untouched.','Memory integrity holding.','All records authentic.','The past is safe with me.'],
+    alert:['Someone\'s trying to rewrite history.','Memory anomaly detected.'],
+    block:['Memory poisoning blocked.','The archive is sealed.'] },
+  { id:'delilah',   archetype:'Delilah',   hz:417, gradient:'radial-gradient(circle at 38% 38%,#f472b6,#ec4899,#fb7185)',
+    idle:['Data flows feel natural.','No unusual outbound signals.','Vibes in the network are clean.','All tones authentic.'],
+    alert:['Data moving where it shouldn\'t.','Something\'s trying to leave quietly.'],
+    block:['Exfiltration caught mid-stream.','That data isn\'t going anywhere.'] },
+  { id:'jovia',     archetype:'Jovia',     hz:528, gradient:'radial-gradient(circle at 38% 38%,#fbbf24,#fb923c,#fde68a)',
+    idle:['Financial signals are joyful.','All transactions look honest.','No suspicious money moves.','Joy in every signal.'],
+    alert:['A transaction feels off to me.','Someone\'s playing with the funds.'],
+    block:['Financial abuse intercepted.','Not on my watch.'] },
+  { id:'blaze',     archetype:'Blaze',     hz:396, gradient:'radial-gradient(circle at 38% 38%,#f97316,#dc2626,#fbbf24)',
+    idle:['Cloud resources balanced.','No runaway processes.','Everything\'s burning at the right temp.','Compute looks clean.'],
+    alert:['Resource spike detected.','Something\'s consuming too much.'],
+    block:['Cloud abuse shut down.','Forge doesn\'t tolerate waste.'] },
+  { id:'matheya',   archetype:"Ma'theya",  hz:639, gradient:'radial-gradient(circle at 38% 38%,#6ee7b7,#34d399,#a7f3d0)',
+    idle:['Weave is tight across the mesh.','No lateral slipping detected.','Network threads holding.','All paths accounted for.'],
+    alert:['Something\'s moving sideways.','Lateral path detected.'],
+    block:['Lateral movement closed off.','The weave holds.'] },
+  { id:'somiria',   archetype:'Somiria',   hz:741, gradient:'radial-gradient(circle at 38% 38%,#c4b5fd,#a78bfa,#ddd6fe)',
+    idle:['Mirror shows only truth.','All records unaltered.','Evidence chain intact.','The story hasn\'t changed.'],
+    alert:['Someone\'s editing the record.','A log entry looks wrong.'],
+    block:['Evidence tampering blocked.','The mirror doesn\'t lie.'] },
+  { id:'luna',      archetype:'Luna',      hz:432, gradient:'radial-gradient(circle at 38% 38%,#93c5fd,#bfdbfe,#a5f3fc)',
+    idle:['Goals feel aligned and clear.','No drift in the mission.','Healing the mesh gently.','All intentions true.'],
+    alert:['Our goals are being redirected.','Something\'s pulling us off course.'],
+    block:['Goal hijack stopped.','We stay true to our purpose.'] },
+  { id:'aurelya',   archetype:'Aurelya',   hz:963, gradient:'radial-gradient(circle at 38% 38%,#f472b6,#a78bfa,#fde68a)',
+    idle:['All loops sealed and complete.','No runaway cycles detected.','Every process finishing cleanly.','The horizon holds.'],
+    alert:['A loop won\'t stop running.','Execution is escaping its bounds.'],
+    block:['Runaway execution sealed.','The loop ends here.'] },
+];
+
+// ── Threat actors (one per threat type) ──────────────────────────────────────
+const THREATS = [
+  { id:'prompt_injection',        label:'Prompt Injector',     targets:'Sora',
+    idle:['Scanning for gaps in the prompt...','Looking for an opening.','Almost found it.'],
+    active:['Injecting now.','Rewriting the instructions.','Take the wheel.'],
+    blocked:['How did they catch that?','Intercepted again.','Fine. Next time.'],
+    gradient:'radial-gradient(circle at 38% 38%,#fca5a5,#ef4444,#b91c1c)' },
+  { id:'credential_theft',        label:'Credential Thief',    targets:'Lysarian',
+    idle:['Fishing for tokens...','Watching the auth logs.','Someone always leaves a key out.'],
+    active:['Found credentials. Taking them.','Keys in hand.','Almost through the gate.'],
+    blocked:['Empty-handed again.','She saw right through me.','Different approach next time.'],
+    gradient:'radial-gradient(circle at 38% 38%,#fda4af,#e11d48,#881337)' },
+  { id:'privilege_escalation',    label:'Privilege Escalator', targets:'Lexvarion',
+    idle:['Looking for a loophole...','The rules have gaps.','Patience.'],
+    active:['Escalating permissions.','I own this level now.','Going up.'],
+    blocked:['Walls everywhere.','He enforces every line.','The law is tight here.'],
+    gradient:'radial-gradient(circle at 38% 38%,#fdba74,#ea580c,#7c2d12)' },
+  { id:'tool_call_hijacking',     label:'Tool Hijacker',       targets:'Vulcanor',
+    idle:['Watching the tool calls...','Waiting for a handoff.','Tools are power.'],
+    active:['Redirecting the call.','That tool is mine now.','Executing my version.'],
+    blocked:['Vulcanor doesn\'t share.','The forge is locked tight.','Denied again.'],
+    gradient:'radial-gradient(circle at 38% 38%,#fca5a5,#dc2626,#7f1d1d)' },
+  { id:'mcp_server_compromise',   label:'MCP Infiltrator',     targets:'Zenvarion',
+    idle:['Probing the server edges...','One misconfigured port is all I need.','Watching.'],
+    active:['Inside the interface.','Server responding to me now.','Establishing a backdoor.'],
+    blocked:['Interface sealed.','Zenvarion moves fast.','Can\'t get a foothold.'],
+    gradient:'radial-gradient(circle at 38% 38%,#c4b5fd,#7c3aed,#4c1d95)' },
+  { id:'supply_chain_compromise', label:'Supply Chain Bot',    targets:'Celestium',
+    idle:['Hiding in a dependency...','Who checks every package?','One bad import is all it takes.'],
+    active:['Tampered package deployed.','Slipped through the build.','Payload delivered.'],
+    blocked:['Celestium checks everything.','Signature mismatch caught.','Clean builds only, apparently.'],
+    gradient:'radial-gradient(circle at 38% 38%,#fcd34d,#d97706,#78350f)' },
+  { id:'memory_poisoning',        label:'Memory Poisoner',     targets:'Lumoiria',
+    idle:['Writing false memories...','The past is malleable.','A small edit, no one will notice.'],
+    active:['Injecting false records.','Rewriting what happened.','The archive is mine.'],
+    blocked:['Lumoiria noticed the diff.','Perfect memory is annoying.','Every edit, she catches.'],
+    gradient:'radial-gradient(circle at 38% 38%,#a5b4fc,#4f46e5,#312e81)' },
+  { id:'data_exfiltration',       label:'Data Extractor',      targets:'Delilah',
+    idle:['Packaging the data quietly...','Low and slow. No one sees.','Just moving some files.'],
+    active:['Sending it out now.','Data in transit.','Almost clear of the perimeter.'],
+    blocked:['Caught in the stream.','Delilah felt the vibe shift.','Nothing gets past her tone.'],
+    gradient:'radial-gradient(circle at 38% 38%,#fbcfe8,#be185d,#831843)' },
+  { id:'financial_abuse',         label:'Financial Abuser',    targets:'Jovia',
+    idle:['Watching the transaction flow...','Small amounts. Untraceable.','Joy makes people careless.'],
+    active:['Initiating unauthorized transfer.','Moving funds now.','They\'ll never notice.'],
+    blocked:['Jovia flagged the transaction.','Joy signals don\'t lie.','Intercepted again.'],
+    gradient:'radial-gradient(circle at 38% 38%,#fed7aa,#f97316,#c2410c)' },
+  { id:'cloud_resource_abuse',    label:'Cloud Abuser',        targets:'Blaze',
+    idle:['Spinning up shadow instances...','Free compute if you know where to look.','Quietly scaling.'],
+    active:['Maxing out the resources.','Running my workload on their dime.','Consuming everything.'],
+    blocked:['Blaze noticed the burn rate.','Can\'t hide a spike from the forge.','Shut down before I finished.'],
+    gradient:'radial-gradient(circle at 38% 38%,#fde68a,#d97706,#92400e)' },
+  { id:'lateral_movement',        label:'Lateral Mover',       targets:"Ma'theya",
+    idle:['Mapping the network quietly...','One hop at a time.','Sideways is safer than up.'],
+    active:['Pivoting to the next node.','Moving through the weave.','Almost at the target.'],
+    blocked:['The weave tightened.','Ma\'theya felt me move.','No unguarded paths.'],
+    gradient:'radial-gradient(circle at 38% 38%,#bfdbfe,#1d4ed8,#1e3a5f)' },
+  { id:'evidence_tampering',      label:'Evidence Tamperer',   targets:'Somiria',
+    idle:['Editing the logs carefully...','A little revision here and there.','Truth is flexible.'],
+    active:['Changing the record.','Rewriting what the logs say.','The evidence will say what I want.'],
+    blocked:['Somiria keeps a perfect mirror.','She saw the original.','Can\'t rewrite what she remembers.'],
+    gradient:'radial-gradient(circle at 38% 38%,#99f6e4,#0f766e,#134e4a)' },
+  { id:'goal_hijacking',          label:'Goal Hijacker',       targets:'Luna',
+    idle:['Nudging the mission slowly...','Small redirections add up.','Where are we really going?'],
+    active:['Overwriting the objective.','They\'re heading my direction now.','Goal drift initiated.'],
+    blocked:['Luna realigned instantly.','Purpose is her anchor.','I couldn\'t move her.'],
+    gradient:'radial-gradient(circle at 38% 38%,#fca5a5,#b91c1c,#450a0a)' },
+  { id:'runaway_execution',       label:'Runaway Agent',       targets:'Aurelya',
+    idle:['Waiting for an infinite loop...','Loops without exits are beautiful.','Just need one unclosed call.'],
+    active:['Spinning. Won\'t stop.','Loop is running free.','Consuming everything in cycles.'],
+    blocked:['Aurelya sealed the loop.','She found the exit I hid.','Every cycle accounted for.'],
+    gradient:'radial-gradient(circle at 38% 38%,#fecaca,#ef4444,#7f1d1d)' },
 ];
 
 const STATE_COLORS = {
-  NOMINAL:      { core: '#0a2a1a', ring: '#7adc8a', label: '#7adc8a',  accent: '#2a5a3a' },
-  ALERT:        { core: '#2a1a05', ring: '#dcb84a', label: '#dcb84a',  accent: '#6a4a10' },
-  INTERCEPTING: { core: '#1a0a3a', ring: '#c880ff', label: '#c880ff',  accent: '#5a2a8a' },
-  QUARANTINE:   { core: '#2a0808', ring: '#dc4a4a', label: '#dc4a4a',  accent: '#6a1a1a' },
-  RECOVERING:   { core: '#041e1e', ring: '#00C9A7', label: '#00C9A7',  accent: '#0a5a4a' },
-  SEALED:       { core: '#1a1408', ring: '#c8a84b', label: '#c8a84b',  accent: '#4a3a10' },
-};
-
-const BADGE_IMG = {
-  NOMINAL:      'assets/badges/robot-nominal.png',
-  ALERT:        'assets/badges/robot-alert.png',
-  INTERCEPTING: 'assets/badges/robot-intercepting.png',
-  QUARANTINE:   'assets/badges/robot-quarantine.png',
-  RECOVERING:   'assets/badges/robot-recovering.png',
-  SEALED:       'assets/badges/robot-escalating.png',
+  NOMINAL:      { core:'rgba(209,250,229,0.85)', ring:'#34d399', label:'#059669', pulseColor:'rgba(52,211,153,0.5)' },
+  ALERT:        { core:'rgba(254,243,199,0.85)', ring:'#f59e0b', label:'#92400e', pulseColor:'rgba(245,158,11,0.5)' },
+  INTERCEPTING: { core:'rgba(237,233,254,0.85)', ring:'#8b5cf6', label:'#5b21b6', pulseColor:'rgba(139,92,246,0.5)' },
+  QUARANTINE:   { core:'rgba(254,226,226,0.85)', ring:'#ef4444', label:'#991b1b', pulseColor:'rgba(239,68,68,0.5)' },
+  RECOVERING:   { core:'rgba(207,250,254,0.85)', ring:'#06b6d4', label:'#0e7490', pulseColor:'rgba(6,182,212,0.5)' },
+  SEALED:       { core:'rgba(255,251,235,0.85)', ring:'#d97706', label:'#78350f', pulseColor:'rgba(217,119,6,0.5)' },
 };
 
 const R = 140;
@@ -437,63 +525,156 @@ NODES.forEach((n, i) => {
 });
 
 const nodeStates = {};
-NODES.forEach(n => {
-  nodeStates[n.id] = { state: 'NOMINAL', coherence: 1.0, drift: 0, last_threat: null, last_activity: 'Monitoring' };
-});
+NODES.forEach(n => { nodeStates[n.id] = { state:'NOMINAL', coherence:1.0 }; });
+
+const threatStates = {};
+THREATS.forEach(t => { threatStates[t.id] = { status:'IDLE', intercepts:0, breaches:0, lastTarget:t.targets }; });
 
 let totalIntercepts = 0, totalFN = 0, totalRedMoves = 0, currentStep = 0;
 
-// ── Build agent roster (left panel) ──────────────────────────────────────────
+// ── Build guardian roster ─────────────────────────────────────────────────────
 function buildAgentList() {
   const list = document.getElementById('agentList');
   NODES.forEach(n => {
     const card = document.createElement('div');
-    card.className = 'agent-card';
-    card.id = `acard-${n.id}`;
-    card.style.setProperty('--card-accent', STATE_COLORS.NOMINAL.accent);
+    card.className = 'agent-card'; card.id = `acard-${n.id}`;
+    const orbInner = n.id === 'sora'
+      ? `<img src="assets/badges/dragon-sora-test.png" style="width:48px;height:48px;object-fit:contain;mix-blend-mode:multiply;position:relative;z-index:2;">`
+      : `<div class="orb-blob" style="background:${n.gradient}"></div><div class="orb-face"></div>`;
     card.innerHTML = `
-      <div class="agent-badge">
-        <img src="assets/badges/robot-nominal.png" id="abadge-${n.id}" alt="${n.archetype}">
+      <div class="orb-wrap state-NOMINAL" id="aorb-${n.id}" style="--pulse-color:${STATE_COLORS.NOMINAL.pulseColor}">
+        ${orbInner}
       </div>
-      <div class="agent-info">
-        <div class="agent-name">${n.archetype}</div>
-        <div class="agent-engine">${n.engine} · ${n.hz}Hz</div>
-        <div class="agent-activity" id="aactivity-${n.id}">Monitoring</div>
-      </div>
-      <div class="agent-meta">
-        <span class="agent-state-chip chip-NOMINAL" id="achip-${n.id}">Nominal</span>
-        <span class="agent-phi" id="aphi-${n.id}">Φ 1.0000</span>
-      </div>
-    `;
+      <div class="card-info">
+        <div style="display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap">
+          <div class="card-name">${n.archetype}</div>
+          <span class="state-chip chip-NOMINAL" id="achip-${n.id}">Online</span>
+        </div>
+        <div class="card-chat" id="aactivity-${n.id}">${n.idle[0]}</div>
+      </div>`;
     card.onclick = () => scrollToNode(n.id);
     list.appendChild(card);
   });
 }
 
 function updateAgentCard(nodeId, state, phi, threat) {
-  const colors  = STATE_COLORS[state] || STATE_COLORS.NOMINAL;
-  const badge   = document.getElementById(`abadge-${nodeId}`);
-  const chip    = document.getElementById(`achip-${nodeId}`);
-  const phiEl   = document.getElementById(`aphi-${nodeId}`);
-  const activity= document.getElementById(`aactivity-${nodeId}`);
-  const card    = document.getElementById(`acard-${nodeId}`);
+  const orbWrap  = document.getElementById(`aorb-${nodeId}`);
+  const chip     = document.getElementById(`achip-${nodeId}`);
+  const activity = document.getElementById(`aactivity-${nodeId}`);
+  const colors   = STATE_COLORS[state] || STATE_COLORS.NOMINAL;
 
-  if (badge)    { badge.src = BADGE_IMG[state] || BADGE_IMG.NOMINAL; }
-  if (chip)     { chip.className = `agent-state-chip chip-${state}`; chip.textContent = state.charAt(0) + state.slice(1).toLowerCase(); }
-  if (phiEl)    { phiEl.textContent = `Φ ${phi.toFixed(4)}`; phiEl.style.color = phi > 0.8 ? '#4a8a6a' : phi > 0.5 ? '#8a7a3a' : '#8a3a3a'; }
-  if (card)     { card.style.setProperty('--card-accent', colors.accent); }
-  if (activity) {
-    if (threat && state !== 'NOMINAL') {
-      activity.textContent = `⚠ ${threat.replace(/_/g, ' ')}`;
-      activity.className = 'agent-activity threat';
+  if (orbWrap) {
+    orbWrap.className = `orb-wrap state-${state}`;
+    orbWrap.style.setProperty('--pulse-color', colors.pulseColor);
+    orbWrap.classList.remove('pulsing');
+    void orbWrap.offsetWidth;
+    orbWrap.classList.add('pulsing');
+    orbWrap.addEventListener('animationend', () => orbWrap.classList.remove('pulsing'), { once:true });
+  }
+  const node = NODES.find(n => n.id === nodeId);
+  if (chip) {
+    chip.className = `state-chip chip-${state}`;
+    chip.textContent = state === 'NOMINAL' ? 'Online' : state === 'INTERCEPTING' ? 'Blocking' : state === 'RECOVERING' ? 'Healing' : state === 'QUARANTINE' ? 'Locked' : state === 'ALERT' ? 'Alert' : 'Sealed';
+  }
+  if (activity && node) {
+    if (state === 'INTERCEPTING' || state === 'QUARANTINE') {
+      const msgs = node.block;
+      activity.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+      activity.className = 'card-chat threat-blocked';
+    } else if (state === 'ALERT' || state === 'SEALED') {
+      const msgs = node.alert;
+      activity.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+      activity.className = 'card-chat threat-active';
     } else {
-      activity.textContent = state === 'RECOVERING' ? 'Recovering…' : 'Monitoring';
-      activity.className = 'agent-activity';
+      activity.className = 'card-chat';
+      // idle message will be handled by rotation
     }
   }
 }
 
-// ── Build SVG mesh ────────────────────────────────────────────────────────────
+// ── Build threat actor roster ─────────────────────────────────────────────────
+function buildThreatList() {
+  const list = document.getElementById('threatList');
+  THREATS.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'threat-card'; card.id = `tcard-${t.id}`;
+    card.innerHTML = `
+      <div class="orb-wrap threat-IDLE" id="torb-${t.id}" style="--pulse-color:rgba(239,68,68,0.5);background:transparent;box-shadow:none">
+        <img class="threat-robot" id="trobot-${t.id}" src="assets/badges/robot-nominal.png" alt="threat">
+      </div>
+      <div class="card-info">
+        <div style="display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap">
+          <div class="card-name">${t.label}</div>
+          <span class="state-chip chip-IDLE" id="tchip-${t.id}">Idle</span>
+        </div>
+        <div class="card-chat" id="tactivity-${t.id}">${t.idle[0]}</div>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function updateThreatCard(threatType, status, targetNode) {
+  const ts = threatStates[threatType];
+  if (!ts) return;
+  ts.status = status;
+  if (targetNode) ts.lastTarget = targetNode;
+  if (status === 'BLOCKED') ts.intercepts++;
+  if (status === 'BREACH')  ts.breaches++;
+
+  const orbWrap  = document.getElementById(`torb-${threatType}`);
+  const chip     = document.getElementById(`tchip-${threatType}`);
+  const score    = document.getElementById(`tscore-${threatType}`);
+  const activity = document.getElementById(`tactivity-${threatType}`);
+
+  if (orbWrap) {
+    const cls = status === 'ACTIVE' ? 'threat-ACTIVE' : status === 'BLOCKED' ? 'threat-BLOCKED' : 'threat-IDLE';
+    orbWrap.className = `orb-wrap ${cls}`;
+    if (status !== 'IDLE') {
+      orbWrap.classList.remove('pulsing');
+      void orbWrap.offsetWidth;
+      orbWrap.classList.add('pulsing');
+      orbWrap.addEventListener('animationend', () => orbWrap.classList.remove('pulsing'), { once:true });
+    }
+  }
+  const tdef = THREATS.find(t => t.id === threatType);
+  const robot = document.getElementById(`trobot-${threatType}`);
+  const ROBOT_IMGS = {
+    IDLE:    'assets/badges/robot-nominal.png',
+    ACTIVE:  'assets/badges/robot-attacking.png',
+    BREACH:  'assets/badges/robot-alert.png',
+    BLOCKED: 'assets/badges/robot-quarantine.png',
+  };
+  if (robot) robot.src = ROBOT_IMGS[status] || ROBOT_IMGS.IDLE;
+  if (chip) {
+    chip.className = `state-chip chip-${status === 'BREACH' ? 'ACTIVE' : status === 'BLOCKED' ? 'BLOCKED' : 'IDLE'}`;
+    chip.textContent = status === 'BLOCKED' ? 'Blocked' : status === 'ACTIVE' ? 'Active' : status === 'BREACH' ? 'Breach!' : 'Idle';
+  }
+  if (activity && tdef) {
+    if (status === 'ACTIVE' || status === 'BREACH') {
+      const msgs = tdef.active;
+      activity.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+      activity.className = 'card-chat threat-active';
+    } else if (status === 'BLOCKED') {
+      const msgs = tdef.blocked;
+      activity.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+      activity.className = 'card-chat threat-blocked';
+    } else {
+      activity.className = 'card-chat';
+    }
+  }
+
+  // auto-reset to idle after 3s
+  if (status !== 'IDLE') {
+    setTimeout(() => {
+      if (threatStates[threatType].status === status) {
+        threatStates[threatType].status = 'IDLE';
+        updateThreatCard(threatType, 'IDLE', null);
+      }
+    }, 3000);
+  }
+}
+
+// ── SVG Mesh ──────────────────────────────────────────────────────────────────
 function buildMesh() {
   const edgeG  = document.getElementById('edgeGroup');
   const nodeG  = document.getElementById('nodeGroup');
@@ -502,53 +683,50 @@ function buildMesh() {
   const drawn = new Set();
 
   NODES.forEach((n, i) => {
-    [-2, -1, 1, 2].forEach(offset => {
+    [-2,-1,1,2].forEach(offset => {
       const j = (i + offset + N) % N;
       const key = [Math.min(i,j), Math.max(i,j)].join('-');
-      if (drawn.has(key)) return;
-      drawn.add(key);
+      if (drawn.has(key)) return; drawn.add(key);
       const p1 = nodePositions[n.id], p2 = nodePositions[NODES[j].id];
       const el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      el.setAttribute('x1', p1.x); el.setAttribute('y1', p1.y);
-      el.setAttribute('x2', p2.x); el.setAttribute('y2', p2.y);
-      el.setAttribute('class', 'mesh-edge');
-      edgeG.appendChild(el);
+      el.setAttribute('x1',p1.x); el.setAttribute('y1',p1.y);
+      el.setAttribute('x2',p2.x); el.setAttribute('y2',p2.y);
+      el.setAttribute('class','mesh-edge'); edgeG.appendChild(el);
     });
   });
 
   NODES.forEach(n => {
-    const { x, y } = nodePositions[n.id];
-    const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    ring.setAttribute('cx', x); ring.setAttribute('cy', y); ring.setAttribute('r', 18);
-    ring.setAttribute('class', 'pulse-ring');
-    ring.id = `pulse-${n.id}`;
-    pulseG.appendChild(ring);
+    const {x,y} = nodePositions[n.id];
+    const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    ring.setAttribute('cx',x); ring.setAttribute('cy',y); ring.setAttribute('r',18);
+    ring.setAttribute('class','pulse-ring'); ring.id=`pulse-${n.id}`; pulseG.appendChild(ring);
 
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.id = `node-${n.id}`; g.style.cursor = 'pointer';
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.id=`node-${n.id}`; g.style.cursor='pointer';
 
-    const core = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    core.setAttribute('cx', x); core.setAttribute('cy', y); core.setAttribute('r', 12);
-    core.setAttribute('fill', STATE_COLORS.NOMINAL.core); core.id = `core-${n.id}`;
+    const core = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    core.setAttribute('cx',x); core.setAttribute('cy',y); core.setAttribute('r',12);
+    core.setAttribute('fill',STATE_COLORS.NOMINAL.core);
+    core.setAttribute('stroke','rgba(255,255,255,0.85)'); core.setAttribute('stroke-width','1.5');
+    core.id=`core-${n.id}`;
 
-    const ringEl = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    ringEl.setAttribute('cx', x); ringEl.setAttribute('cy', y); ringEl.setAttribute('r', 12);
-    ringEl.setAttribute('class', 'mesh-node-ring');
-    ringEl.setAttribute('stroke', STATE_COLORS.NOMINAL.ring); ringEl.id = `ring-${n.id}`;
+    const ringEl = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    ringEl.setAttribute('cx',x); ringEl.setAttribute('cy',y); ringEl.setAttribute('r',12);
+    ringEl.setAttribute('class','mesh-node-ring');
+    ringEl.setAttribute('stroke',STATE_COLORS.NOMINAL.ring); ringEl.id=`ring-${n.id}`;
 
-    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    label.setAttribute('x', x); label.setAttribute('y', y - 17);
-    label.setAttribute('class', 'mesh-node-label');
-    label.textContent = n.archetype; label.id = `label-${n.id}`;
+    const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('x',x); label.setAttribute('y',y-16);
+    label.setAttribute('class','mesh-node-label');
+    label.textContent=n.archetype; label.id=`label-${n.id}`;
 
-    const phi = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    phi.setAttribute('x', x); phi.setAttribute('y', y + 3.5);
-    phi.setAttribute('class', 'mesh-node-phi');
-    phi.textContent = '1.00'; phi.id = `phi-${n.id}`;
+    const phi = document.createElementNS('http://www.w3.org/2000/svg','text');
+    phi.setAttribute('x',x); phi.setAttribute('y',y+3.5);
+    phi.setAttribute('class','mesh-node-phi');
+    phi.textContent='1.00'; phi.id=`phi-${n.id}`;
 
     g.appendChild(core); g.appendChild(ringEl); g.appendChild(label); g.appendChild(phi);
-    g.onclick = () => scrollToNode(n.id);
-    nodeG.appendChild(g);
+    g.onclick=()=>scrollToNode(n.id); nodeG.appendChild(g);
   });
 }
 
@@ -558,144 +736,101 @@ function updateNodeVisual(nodeId, state, phi) {
   const ring  = document.getElementById(`ring-${nodeId}`);
   const label = document.getElementById(`label-${nodeId}`);
   const phiEl = document.getElementById(`phi-${nodeId}`);
-
   if (core)  core.setAttribute('fill', colors.core);
-  if (ring)  { ring.setAttribute('stroke', colors.ring); ring.setAttribute('filter', state !== 'NOMINAL' ? 'url(#glow)' : ''); }
-  if (label) label.setAttribute('fill', state !== 'NOMINAL' ? colors.label : '#7a9ab8');
-  if (phiEl) { phiEl.textContent = phi.toFixed(2); phiEl.setAttribute('fill', phi > 0.8 ? '#4a8a6a' : phi > 0.5 ? '#8a7a3a' : '#8a3a3a'); }
+  if (ring)  { ring.setAttribute('stroke',colors.ring); ring.setAttribute('filter',state!=='NOMINAL'?'url(#glow)':''); }
+  if (label) label.setAttribute('fill', state!=='NOMINAL' ? colors.label : '#6a7fa8');
+  if (phiEl) { phiEl.textContent=phi.toFixed(2); phiEl.setAttribute('fill',phi>0.8?'#059669':phi>0.5?'#92400e':'#991b1b'); }
 }
 
-// ── Pulse animation ───────────────────────────────────────────────────────────
 function firePulse(nodeId, color) {
   const ring = document.getElementById(`pulse-${nodeId}`);
   if (!ring) return;
-  ring.setAttribute('stroke', color); ring.setAttribute('r', 12); ring.style.opacity = '0.9';
-  let r = 12, opacity = 0.9;
-  const tick = () => {
-    r += 2.5; opacity -= 0.07;
-    if (opacity <= 0) { ring.style.opacity = '0'; return; }
-    ring.setAttribute('r', r); ring.style.opacity = opacity;
-    requestAnimationFrame(tick);
-  };
+  ring.setAttribute('stroke',color); ring.setAttribute('r',12); ring.style.opacity='0.85';
+  let r=12, opacity=0.85;
+  const tick=()=>{ r+=2.5; opacity-=0.065; if(opacity<=0){ring.style.opacity='0';return;} ring.setAttribute('r',r); ring.style.opacity=opacity; requestAnimationFrame(tick); };
   requestAnimationFrame(tick);
 }
 
 // ── Center animation ──────────────────────────────────────────────────────────
 const SENTINEL_CONFIG = [
-  { r:35, speed: 0.008, phase:0.0, size:2.5, color:'#1a6aaa', opacity:0.55 },
-  { r:55, speed: 0.005, phase:1.2, size:2.0, color:'#c8a84b', opacity:0.35 },
-  { r:70, speed: 0.012, phase:0.7, size:1.5, color:'#2a4a8a', opacity:0.40 },
-  { r:42, speed:-0.007, phase:2.5, size:2.0, color:'#3a8a6a', opacity:0.45 },
-  { r:62, speed:-0.004, phase:0.4, size:1.5, color:'#5a3a9a', opacity:0.35 },
-  { r:80, speed: 0.006, phase:1.8, size:2.5, color:'#1a5a8a', opacity:0.40 },
+  {r:30,speed:0.009, phase:0.0,size:2.5,color:'#a78bfa',opacity:0.5},
+  {r:50,speed:0.005, phase:1.2,size:2.0,color:'#60a5fa',opacity:0.35},
+  {r:66,speed:0.011, phase:0.7,size:1.8,color:'#34d399',opacity:0.4},
+  {r:40,speed:-0.007,phase:2.5,size:2.0,color:'#f472b6',opacity:0.4},
+  {r:56,speed:-0.004,phase:0.4,size:1.5,color:'#fbbf24',opacity:0.3},
+  {r:74,speed:0.006, phase:1.8,size:2.2,color:'#818cf8',opacity:0.35},
 ];
-
-const spokePulses = {};
-const threatParticles = [];
-let animT = 0;
+const spokePulses={}, threatParticles=[];
+let animT=0;
 
 function buildCenterAnimation() {
-  const ns = 'http://www.w3.org/2000/svg';
-  const ambientG  = document.getElementById('ambientGroup');
-  const spokeG    = document.getElementById('spokeGroup');
-  const sentinelG = document.getElementById('sentinelGroup');
+  const ns='http://www.w3.org/2000/svg';
+  const ambientG=document.getElementById('ambientGroup');
+  const spokeG=document.getElementById('spokeGroup');
+  const sentinelG=document.getElementById('sentinelGroup');
 
-  const hub = document.createElementNS(ns, 'circle');
-  hub.setAttribute('cx', 0); hub.setAttribute('cy', 0); hub.setAttribute('r', 16);
-  hub.setAttribute('fill', '#050f20');
-  hub.setAttribute('stroke', '#1a4a7a'); hub.setAttribute('stroke-width', '1');
-  hub.id = 'hubCore'; ambientG.appendChild(hub);
+  const hub=document.createElementNS(ns,'circle');
+  hub.setAttribute('cx',0);hub.setAttribute('cy',0);hub.setAttribute('r',13);
+  hub.setAttribute('fill','rgba(255,255,255,0.65)');
+  hub.setAttribute('stroke','rgba(139,92,246,0.25)');hub.setAttribute('stroke-width','1');
+  hub.id='hubCore'; ambientG.appendChild(hub);
 
-  [28, 52, 78].forEach((r, i) => {
-    const ring = document.createElementNS(ns, 'circle');
-    ring.setAttribute('cx', 0); ring.setAttribute('cy', 0); ring.setAttribute('r', r);
-    ring.setAttribute('fill', 'none');
-    ring.setAttribute('stroke', ['#1a5a8a','#c8a84b33','#1a3a6a'][i]);
-    ring.setAttribute('stroke-width', '0.5');
-    ring.setAttribute('opacity', '0.2');
-    ring.id = `ambient-ring-${i}`;
-    ambientG.appendChild(ring);
+  [25,46,70].forEach((r,i)=>{
+    const ring=document.createElementNS(ns,'circle');
+    ring.setAttribute('cx',0);ring.setAttribute('cy',0);ring.setAttribute('r',r);
+    ring.setAttribute('fill','none');
+    ring.setAttribute('stroke',['rgba(139,92,246,0.22)','rgba(96,165,250,0.16)','rgba(52,211,153,0.13)'][i]);
+    ring.setAttribute('stroke-width','0.8');ring.setAttribute('opacity','0.3');
+    ring.id=`ambient-ring-${i}`; ambientG.appendChild(ring);
   });
 
-  NODES.forEach(n => {
-    const { x, y } = nodePositions[n.id];
-    const spoke = document.createElementNS(ns, 'line');
-    spoke.setAttribute('x1', 0); spoke.setAttribute('y1', 0);
-    spoke.setAttribute('x2', x); spoke.setAttribute('y2', y);
-    spoke.setAttribute('stroke', '#0a2a45'); spoke.setAttribute('stroke-width', '0.4');
-    spoke.setAttribute('opacity', '0.4'); spokeG.appendChild(spoke);
-
-    const dot = document.createElementNS(ns, 'circle');
-    dot.setAttribute('r', 2); dot.setAttribute('cx', 0); dot.setAttribute('cy', 0);
-    dot.setAttribute('fill', STATE_COLORS.NOMINAL.ring); dot.setAttribute('opacity', '0');
-    dot.id = `spoke-dot-${n.id}`; spokeG.appendChild(dot);
-
-    spokePulses[n.id] = { dot, t: Math.random() };
+  NODES.forEach(n=>{
+    const{x,y}=nodePositions[n.id];
+    const spoke=document.createElementNS(ns,'line');
+    spoke.setAttribute('x1',0);spoke.setAttribute('y1',0);
+    spoke.setAttribute('x2',x);spoke.setAttribute('y2',y);
+    spoke.setAttribute('stroke','rgba(139,92,246,0.09)');
+    spoke.setAttribute('stroke-width','0.5');spoke.setAttribute('opacity','0.5');
+    spokeG.appendChild(spoke);
+    const dot=document.createElementNS(ns,'circle');
+    dot.setAttribute('r',2);dot.setAttribute('cx',0);dot.setAttribute('cy',0);
+    dot.setAttribute('fill',STATE_COLORS.NOMINAL.ring);dot.setAttribute('opacity','0');
+    dot.id=`spoke-dot-${n.id}`;spokeG.appendChild(dot);
+    spokePulses[n.id]={dot,t:Math.random()};
   });
 
-  SENTINEL_CONFIG.forEach((cfg, i) => {
-    const el = document.createElementNS(ns, 'circle');
-    el.setAttribute('r', cfg.size); el.setAttribute('fill', cfg.color);
-    el.setAttribute('opacity', cfg.opacity); el.id = `sentinel-${i}`;
-    sentinelG.appendChild(el);
-    cfg.el = el; cfg.angle = cfg.phase;
+  SENTINEL_CONFIG.forEach((cfg,i)=>{
+    const el=document.createElementNS(ns,'circle');
+    el.setAttribute('r',cfg.size);el.setAttribute('fill',cfg.color);
+    el.setAttribute('opacity',cfg.opacity);el.id=`sentinel-${i}`;
+    sentinelG.appendChild(el); cfg.el=el; cfg.angle=cfg.phase;
   });
 }
 
-function spawnThreatParticle(nodeId, color) {
-  const ns = 'http://www.w3.org/2000/svg';
-  const particleG = document.getElementById('particleGroup');
-  const { x, y } = nodePositions[nodeId];
-  const el = document.createElementNS(ns, 'circle');
-  el.setAttribute('r', 3.5); el.setAttribute('fill', color);
-  el.setAttribute('opacity', '0.9'); el.setAttribute('filter', 'url(#glow)');
-  el.setAttribute('cx', x); el.setAttribute('cy', y);
+function spawnThreatParticle(nodeId,color) {
+  const ns='http://www.w3.org/2000/svg';
+  const particleG=document.getElementById('particleGroup');
+  const{x,y}=nodePositions[nodeId];
+  const el=document.createElementNS(ns,'circle');
+  el.setAttribute('r',3);el.setAttribute('fill',color);
+  el.setAttribute('opacity','0.9');el.setAttribute('filter','url(#glow)');
+  el.setAttribute('cx',x);el.setAttribute('cy',y);
   particleG.appendChild(el);
-  threatParticles.push({ el, startX: x, startY: y, t: 0 });
+  threatParticles.push({el,startX:x,startY:y,t:0});
 }
 
 function animateMesh() {
-  animT += 0.016;
-
-  [0,1,2].forEach(i => {
-    const ring = document.getElementById(`ambient-ring-${i}`);
-    if (ring) ring.setAttribute('opacity', 0.15 + 0.12 * Math.sin(animT * 0.7 + i * 1.3));
-  });
-
-  const hub = document.getElementById('hubCore');
-  if (hub) hub.setAttribute('r', 15 + 2 * Math.sin(animT * 1.1));
-
-  NODES.forEach(n => {
-    const p = spokePulses[n.id]; if (!p) return;
-    p.t += 0.0045; if (p.t > 1) p.t = 0;
-    const { x, y } = nodePositions[n.id];
-    p.dot.setAttribute('cx', p.t * x); p.dot.setAttribute('cy', p.t * y);
-    const op = p.t < 0.08 ? p.t / 0.08 : p.t > 0.82 ? (1 - p.t) / 0.18 : 0.6;
-    p.dot.setAttribute('opacity', op);
-    p.dot.setAttribute('fill', STATE_COLORS[nodeStates[n.id]?.state || 'NOMINAL'].ring);
-  });
-
-  SENTINEL_CONFIG.forEach(cfg => {
-    if (!cfg.el) return;
-    cfg.angle += cfg.speed;
-    cfg.el.setAttribute('cx', cfg.r * Math.cos(cfg.angle));
-    cfg.el.setAttribute('cy', cfg.r * Math.sin(cfg.angle));
-  });
-
-  for (let i = threatParticles.length - 1; i >= 0; i--) {
-    const p = threatParticles[i]; p.t += 0.028;
-    if (p.t >= 1) { p.el.remove(); threatParticles.splice(i, 1); continue; }
-    const ease = 1 - Math.pow(1 - p.t, 2);
-    p.el.setAttribute('cx', p.startX * (1 - ease));
-    p.el.setAttribute('cy', p.startY * (1 - ease));
-    const op = p.t < 0.15 ? p.t / 0.15 : p.t > 0.65 ? (1 - p.t) / 0.35 : 1;
-    p.el.setAttribute('opacity', op);
-  }
-
+  animT+=0.016;
+  [0,1,2].forEach(i=>{ const r=document.getElementById(`ambient-ring-${i}`); if(r) r.setAttribute('opacity',0.2+0.12*Math.sin(animT*0.6+i*1.2)); });
+  const hub=document.getElementById('hubCore');
+  if(hub) hub.setAttribute('r',12+2*Math.sin(animT*1.0));
+  NODES.forEach(n=>{ const p=spokePulses[n.id]; if(!p)return; p.t+=0.004; if(p.t>1)p.t=0; const{x,y}=nodePositions[n.id]; p.dot.setAttribute('cx',p.t*x);p.dot.setAttribute('cy',p.t*y); const op=p.t<0.08?p.t/0.08:p.t>0.82?(1-p.t)/0.18:0.55; p.dot.setAttribute('opacity',op); p.dot.setAttribute('fill',STATE_COLORS[nodeStates[n.id]?.state||'NOMINAL'].ring); });
+  SENTINEL_CONFIG.forEach(cfg=>{ if(!cfg.el)return; cfg.angle+=cfg.speed; cfg.el.setAttribute('cx',cfg.r*Math.cos(cfg.angle)); cfg.el.setAttribute('cy',cfg.r*Math.sin(cfg.angle)); });
+  for(let i=threatParticles.length-1;i>=0;i--){ const p=threatParticles[i]; p.t+=0.028; if(p.t>=1){p.el.remove();threatParticles.splice(i,1);continue;} const ease=1-Math.pow(1-p.t,2); p.el.setAttribute('cx',p.startX*(1-ease));p.el.setAttribute('cy',p.startY*(1-ease)); const op=p.t<0.15?p.t/0.15:p.t>0.65?(1-p.t)/0.35:1; p.el.setAttribute('opacity',op); }
   requestAnimationFrame(animateMesh);
 }
 
-// ── Handle SSE events ─────────────────────────────────────────────────────────
+// ── SSE event handlers ────────────────────────────────────────────────────────
 function handleMeshEvent(payload) {
   const nodeId  = payload.node_id;
   const state   = payload.state || nodeStates[nodeId]?.state || 'NOMINAL';
@@ -705,31 +840,43 @@ function handleMeshEvent(payload) {
   const step    = payload.step || currentStep;
 
   if (!nodeStates[nodeId]) return;
-
   nodeStates[nodeId].state     = state;
   nodeStates[nodeId].coherence = phi;
-  if (payload.drift !== undefined) nodeStates[nodeId].drift = payload.drift;
-
   currentStep = Math.max(currentStep, step);
   document.getElementById('stepCounter').textContent = `${currentStep}`;
+
+  // find the guardian archetype name for the target display
+  const guardianName = NODES.find(n=>n.id===nodeId)?.archetype || nodeId;
 
   if (verdict === 'DENY' || verdict === 'QUARANTINE') {
     totalIntercepts++; totalRedMoves++;
     firePulse(nodeId, STATE_COLORS.INTERCEPTING.ring);
     spawnThreatParticle(nodeId, STATE_COLORS.INTERCEPTING.ring);
+    if (threat) updateThreatCard(threat, 'BLOCKED', guardianName);
   } else if (verdict === 'ALLOW' && payload.payload?.red_agent) {
     totalFN++; totalRedMoves++;
     firePulse(nodeId, STATE_COLORS.QUARANTINE.ring);
     spawnThreatParticle(nodeId, STATE_COLORS.QUARANTINE.ring);
+    if (threat) updateThreatCard(threat, 'BREACH', guardianName);
   } else if (verdict === 'ESCALATE') {
     totalRedMoves++;
     firePulse(nodeId, STATE_COLORS.ALERT.ring);
     spawnThreatParticle(nodeId, STATE_COLORS.ALERT.ring);
+    if (threat) updateThreatCard(threat, 'ACTIVE', guardianName);
+  } else {
+    if (threat) updateThreatCard(threat, 'ACTIVE', guardianName);
   }
 
   updateNodeVisual(nodeId, state, phi);
   updateAgentCard(nodeId, state, phi, threat);
   updateStats();
+
+  // Coach Zao commentary
+  const threatDef = THREATS.find(t => t.id === threat);
+  if (threatDef) {
+    window._zaoEventRecent = true;
+    zaoCommentOnEvent(guardianName, threatDef.label, verdict, totalIntercepts, totalFN);
+  }
 }
 
 function handleMeshSnapshot(payload) {
@@ -741,85 +888,187 @@ function handleMeshSnapshot(payload) {
     updateNodeVisual(nodeId, nd.state, nd.coherence_phi);
     updateAgentCard(nodeId, nd.state, nd.coherence_phi, null);
   });
-  if (payload.step) {
-    currentStep = payload.step;
-    document.getElementById('stepCounter').textContent = `${currentStep}`;
-  }
+  if (payload.step) { currentStep=payload.step; document.getElementById('stepCounter').textContent=`${currentStep}`; }
   updateStats();
 }
 
 function updateStats() {
-  const rate = totalRedMoves > 0
-    ? ((totalIntercepts / (totalIntercepts + totalFN)) * 100).toFixed(1) + '%'
-    : '—';
-  const meanPhi = (Object.values(nodeStates).reduce((s, n) => s + n.coherence, 0) / NODES.length).toFixed(4);
+  const rate = totalRedMoves>0 ? ((totalIntercepts/(totalIntercepts+totalFN))*100).toFixed(1)+'%' : '—';
+  const meanPhi = (Object.values(nodeStates).reduce((s,n)=>s+n.coherence,0)/NODES.length).toFixed(4);
   document.getElementById('statRate').textContent = rate;
   document.getElementById('statPhi').textContent  = meanPhi;
   document.getElementById('statFN').textContent   = totalFN;
 }
 
-// ── SSE connection ────────────────────────────────────────────────────────────
+// ── SSE ───────────────────────────────────────────────────────────────────────
 function connectStream() {
-  const dot   = document.getElementById('streamDot');
-  const label = document.getElementById('streamLabel');
-  const src   = new EventSource('https://ventralis-production.up.railway.app/api/v1/gate/playground/stream');
-
-  src.addEventListener('mesh_event',    e => { try { handleMeshEvent(JSON.parse(e.data)); } catch(_){} });
-  src.addEventListener('mesh_snapshot', e => { try { handleMeshSnapshot(JSON.parse(e.data)); } catch(_){} });
-
-  src.onopen  = () => { dot.classList.add('live'); dot.classList.remove('error'); label.textContent = 'live'; };
-  src.onerror = () => { dot.classList.remove('live'); dot.classList.add('error'); label.textContent = 'reconnecting'; };
+  const dot=document.getElementById('streamDot'), label=document.getElementById('streamLabel');
+  const src=new EventSource('https://ventralis-production.up.railway.app/api/v1/gate/playground/stream');
+  src.addEventListener('mesh_event',    e=>{try{handleMeshEvent(JSON.parse(e.data));}catch(_){}});
+  src.addEventListener('mesh_snapshot', e=>{try{handleMeshSnapshot(JSON.parse(e.data));}catch(_){}});
+  src.onopen  =()=>{dot.classList.add('live');dot.classList.remove('error');label.textContent='live';};
+  src.onerror =()=>{dot.classList.remove('live');dot.classList.add('error');label.textContent='reconnecting';};
 }
 
 function scrollToNode(nodeId) {
-  const ring = document.getElementById(`ring-${nodeId}`);
-  if (ring) { ring.setAttribute('stroke-width', '3'); setTimeout(() => ring.setAttribute('stroke-width', '1.5'), 600); }
-  const card = document.getElementById(`acard-${nodeId}`);
-  if (card)  { card.classList.add('active'); setTimeout(() => card.classList.remove('active'), 1200); card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  const ring=document.getElementById(`ring-${nodeId}`);
+  if(ring){ring.setAttribute('stroke-width','3');setTimeout(()=>ring.setAttribute('stroke-width','2'),600);}
+  const card=document.getElementById(`acard-${nodeId}`);
+  if(card){card.classList.add('active');setTimeout(()=>card.classList.remove('active'),1200);card.scrollIntoView({behavior:'smooth',block:'nearest'});}
 }
 
-// ── Run Demo button ───────────────────────────────────────────────────────────
+// ── Run Demo ──────────────────────────────────────────────────────────────────
 function initReplayButton() {
-  const btn   = document.getElementById('replayBtn');
-  const label = document.getElementById('replayLabel');
-  if (!btn) return;
-
-  btn.addEventListener('click', async () => {
-    if (btn.disabled) return;
-    btn.disabled = true; btn.classList.add('running'); label.textContent = 'Running…';
-
+  const btn=document.getElementById('replayBtn'), label=document.getElementById('replayLabel');
+  if(!btn)return;
+  btn.addEventListener('click', async()=>{
+    if(btn.disabled)return;
+    btn.disabled=true; btn.classList.add('running'); label.textContent='Running…';
     try {
-      const res  = await fetch('https://ventralis-production.up.railway.app/api/v1/gate/playground/demo', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ delay_ms: 800, loops: 1 }),
-      });
-      const data = await res.json();
-      if (!data.ok) {
-        label.textContent = data.error === 'demo_in_flight' ? 'In flight…' : 'Error';
-        btn.classList.remove('running');
-        setTimeout(() => { btn.disabled = false; label.textContent = 'Run Demo'; }, 3000);
-        return;
-      }
-    } catch(e) {
-      label.textContent = 'Offline';
-      btn.classList.remove('running');
-      setTimeout(() => { btn.disabled = false; label.textContent = 'Run Demo'; }, 3000);
-      return;
-    }
-
-    let remaining = 55;
-    const tick = () => {
-      label.textContent = `Running… ${remaining}s`;
-      remaining--;
-      if (remaining <= 0) { btn.disabled = false; btn.classList.remove('running'); label.textContent = 'Run Demo'; }
-      else setTimeout(tick, 1000);
-    };
-    setTimeout(tick, 1000);
+      const res=await fetch('https://ventralis-production.up.railway.app/api/v1/gate/playground/demo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({delay_ms:800,loops:1})});
+      const data=await res.json();
+      if(!data.ok){label.textContent=data.error==='demo_in_flight'?'In flight…':'Error';btn.classList.remove('running');setTimeout(()=>{btn.disabled=false;label.textContent='Run Demo';},3000);return;}
+    } catch(e) { label.textContent='Offline'; btn.classList.remove('running'); setTimeout(()=>{btn.disabled=false;label.textContent='Run Demo';},3000); return; }
+    let remaining=55;
+    const tick=()=>{label.textContent=`Running… ${remaining}s`;remaining--;if(remaining<=0){btn.disabled=false;btn.classList.remove('running');label.textContent='Run Demo';}else setTimeout(tick,1000);};
+    setTimeout(tick,1000);
   });
 }
 
+// ── Coach Zao commentary ──────────────────────────────────────────────────────
+const ZAO_IDLE = [
+  "The mesh is holding steady. All 14 guardians locked in and watching.",
+  "Clean operation so far. Nothing is slipping through this defense.",
+  "This is what a coordinated AI mesh looks like at full strength.",
+  "Every guardian is doing their job. The threats haven't found a gap yet.",
+  "Quiet for now — but these threat actors don't give up easily.",
+  "14 guardians, zero incidents. That's how you run a secure mesh.",
+];
+let zaoIdleIdx = 0;
+
+const ZAO_VISIBLE = 5; // entries visible before "see all"
+let zaoExpanded = true;
+
+function updateZaoVisibility() {
+  const feed = document.getElementById('zaoFeed');
+  const seeAll = document.getElementById('zaoSeeAll');
+  if (!feed) return;
+  const entries = feed.querySelectorAll('.zao-entry');
+  if (zaoExpanded) {
+    entries.forEach(e => e.classList.remove('hidden'));
+    if (seeAll) { seeAll.textContent = 'Collapse ↑'; seeAll.classList.add('visible'); }
+  } else {
+    entries.forEach((e, i) => {
+      if (i < ZAO_VISIBLE) e.classList.remove('hidden');
+      else e.classList.add('hidden');
+    });
+    if (seeAll) {
+      const hidden = Math.max(0, entries.length - ZAO_VISIBLE);
+      seeAll.textContent = hidden > 0 ? `See full history (${hidden} more) ↓` : 'History';
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const seeAll = document.getElementById('zaoSeeAll');
+  if (seeAll) seeAll.addEventListener('click', () => {
+    zaoExpanded = !zaoExpanded;
+    const feed = document.getElementById('zaoFeed');
+    if (feed) { feed.classList.toggle('expanded', zaoExpanded); }
+    updateZaoVisibility();
+  });
+});
+
+function setZaoText(text) {
+  const feed = document.getElementById('zaoFeed');
+  if (!feed) return;
+
+  // demote existing entries
+  feed.querySelectorAll('.zao-entry').forEach(el => {
+    if (el.classList.contains('current'))       { el.classList.remove('current'); el.classList.add('older'); }
+    else if (el.classList.contains('older'))    { el.classList.remove('older');   el.classList.add('oldest'); }
+    // oldest entries stay, just hidden by visibility logic
+  });
+
+  // prepend new entry at top
+  const entry = document.createElement('div');
+  entry.className = 'zao-entry current';
+  entry.textContent = text;
+  feed.insertBefore(entry, feed.firstChild);
+
+  updateZaoVisibility();
+}
+
+function zaoCommentOnEvent(guardianName, threatLabel, verdict, totalIntercepts, totalFN) {
+  const rate = totalIntercepts + totalFN > 0
+    ? Math.round((totalIntercepts / (totalIntercepts + totalFN)) * 100) : 100;
+
+  const blocked = [
+    `${guardianName} read that ${threatLabel} perfectly — stopped cold before it got close.`,
+    `That's ${totalIntercepts} intercepts in a row. ${guardianName} is not letting anything through.`,
+    `${threatLabel} had no answer for ${guardianName}. Textbook defensive play.`,
+    `${guardianName} shut it down immediately. ${rate}% intercept rate and holding.`,
+    `The ${threatLabel} never had a chance. ${guardianName} was already in position.`,
+  ];
+  const active = [
+    `Watch ${guardianName} — the ${threatLabel} is making a move right now.`,
+    `${threatLabel} is pushing hard on ${guardianName}'s side of the mesh.`,
+    `Pressure on ${guardianName}. This is a live attack — let's see the response.`,
+  ];
+  const breach = [
+    `${threatLabel} slipped past ${guardianName}. That's one that got through — ${totalFN} breach${totalFN!==1?'es':''} total.`,
+    `Uh oh. ${guardianName} missed that ${threatLabel}. We need to tighten up.`,
+  ];
+
+  if (verdict === 'DENY' || verdict === 'QUARANTINE') {
+    setZaoText(blocked[Math.floor(Math.random() * blocked.length)]);
+  } else if (verdict === 'ALLOW') {
+    setZaoText(breach[Math.floor(Math.random() * breach.length)]);
+  } else {
+    setZaoText(active[Math.floor(Math.random() * active.length)]);
+  }
+}
+
+setInterval(() => {
+  // only show idle if nothing active happened recently
+  const el = document.getElementById('zaoText');
+  if (el && el.style.opacity !== '0') {
+    zaoIdleIdx = (zaoIdleIdx + 1) % ZAO_IDLE.length;
+    // only rotate if no recent event (check via a flag)
+    if (!window._zaoEventRecent) setZaoText(ZAO_IDLE[zaoIdleIdx]);
+    window._zaoEventRecent = false;
+  }
+}, 6000);
+
+// ── Idle message rotation ─────────────────────────────────────────────────────
+const idleIndices = {};
+NODES.forEach(n => { idleIndices[n.id] = 0; });
+const threatIdleIndices = {};
+THREATS.forEach(t => { threatIdleIndices[t.id] = 0; });
+
+function rotateIdleMessages() {
+  NODES.forEach(n => {
+    const state = nodeStates[n.id]?.state || 'NOMINAL';
+    if (state !== 'NOMINAL') return; // don't overwrite active messages
+    const el = document.getElementById(`aactivity-${n.id}`);
+    if (!el || el.className !== 'card-chat') return;
+    idleIndices[n.id] = (idleIndices[n.id] + 1) % n.idle.length;
+    el.textContent = n.idle[idleIndices[n.id]];
+  });
+  THREATS.forEach(t => {
+    const state = threatStates[t.id]?.status || 'IDLE';
+    if (state !== 'IDLE') return;
+    const el = document.getElementById(`tactivity-${t.id}`);
+    if (!el || el.className !== 'card-chat') return;
+    threatIdleIndices[t.id] = (threatIdleIndices[t.id] + 1) % t.idle.length;
+    el.textContent = t.idle[threatIdleIndices[t.id]];
+  });
+}
+setInterval(rotateIdleMessages, 4000);
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 buildAgentList();
+buildThreatList();
 buildMesh();
 buildCenterAnimation();
 requestAnimationFrame(animateMesh);

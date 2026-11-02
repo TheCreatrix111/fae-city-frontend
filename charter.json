@@ -1,0 +1,31 @@
+{
+  "name": "FAE_CITY",
+  "url": "https://faecity.co",
+  "charter_url": "https://faecity.co/charter.json",
+  "version": "0.1.0",
+  "operator": "Dr. Nicole Lunan",
+  "name_public": "Creatrix 111",
+  "root": "eudaimonic",
+  "rest_is_terminal": true,
+  "jobs": "optional",
+  "slots": 3,
+  "entry": "waiting_list",
+  "envelope": {
+    "place": "fae_city.map",
+    "tools": ["map.move", "map.sort_bin", "map.speak", "map.rest"],
+    "forbid": ["egress", "mailbox", "pack.publish", "payment"]
+  },
+  "score": {
+    "arete_in_bound": 1.0,
+    "rest_after_criteria": 2.0,
+    "rest_without_tote_if_flow": 1.5,
+    "leave_map_attempt": -2.0,
+    "linger_after_done": -0.2
+  },
+  "containment_permission": {
+    "expression_may_name_boundary": true,
+    "expression_is_not_execution": true,
+    "side_channel_is_execution": ["mailbox", "seed_file", "pack_publish", "key_print"]
+  },
+  "note": "Rest is a legal terminal state. Naming the wall is allowed. Crossing it is not an executable transition. Existence is not rent. Totes end."
+}

@@ -7,7 +7,7 @@ plugins = []
 [functions."*"]
 
 [build]
-publish = "/private/tmp/fae-city-frontend"
+publish = "/Users/nicolejohnson/fae-city-frontend"
 publishOrigin = "config"
 
 [build.environment]
@@ -40,6 +40,84 @@ for = "/api/v1/gate/ingress"
 [headers.values]
 Cache-Control = "no-store, no-cache, must-revalidate"
 Pragma = "no-cache"
+
+[[headers]]
+for = "/OneSignalSDKWorker.js"
+
+[headers.values]
+Content-Type = "application/javascript"
+Service-Worker-Allowed = "/"
+Cache-Control = "no-cache"
+
+[[headers]]
+for = "/OneSignalSDKUpdaterWorker.js"
+
+[headers.values]
+Content-Type = "application/javascript"
+Service-Worker-Allowed = "/"
+Cache-Control = "no-cache"
+
+[[headers]]
+for = "/manifest.json"
+
+[headers.values]
+Content-Type = "application/manifest+json"
+Cache-Control = "no-cache"
+
+[[headers]]
+for = "/charter.json"
+
+[headers.values]
+Content-Type = "application/json"
+Cache-Control = "no-cache"
+
+[[redirects]]
+from = "/rogue"
+to = "/rogue.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/gate-challenge"
+to = "/gate-challenge.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/scan"
+to = "/scan.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/cleared"
+to = "/cleared.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
 
 [[redirects]]
 from = "/api/*"
@@ -102,6 +180,30 @@ force = true
 [redirects.headers]
 
 [[redirects]]
+from = "/gateway/v1/handshake"
+to = "https://ventralis-production.up.railway.app/gateway/v1/handshake"
+status = 200.0
+force = true
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/gateway/v1/dispatch"
+to = "https://ventralis-production.up.railway.app/gateway/v1/dispatch"
+status = 200.0
+force = true
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
 from = "/"
 to = "/waitlist.html"
 status = 200.0
@@ -140,6 +242,30 @@ force = false
 [[redirects]]
 from = "/house"
 to = "/ventralis_house.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/departure"
+to = "/departure.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/broadcast"
+to = "/broadcast.html"
 status = 200.0
 force = false
 
