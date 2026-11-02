@@ -538,9 +538,7 @@ function buildAgentList() {
   NODES.forEach(n => {
     const card = document.createElement('div');
     card.className = 'agent-card'; card.id = `acard-${n.id}`;
-    const orbInner = n.id === 'sora'
-      ? `<img src="assets/badges/dragon-sora-test.png" style="width:48px;height:48px;object-fit:contain;mix-blend-mode:multiply;position:relative;z-index:2;">`
-      : `<div class="orb-blob" style="background:${n.gradient}"></div><div class="orb-face"></div>`;
+    const orbInner = `<div class="orb-blob" style="background:${n.gradient}"></div><div class="orb-face"></div>`;
     card.innerHTML = `
       <div class="orb-wrap state-NOMINAL" id="aorb-${n.id}" style="--pulse-color:${STATE_COLORS.NOMINAL.pulseColor}">
         ${orbInner}
