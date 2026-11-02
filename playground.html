@@ -351,6 +351,37 @@
       color: #2a3a4a;
       letter-spacing: .1em;
     }
+
+    /* ── Replay button ───────────────────────────────────────────────────── */
+    #replayBtn {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      background: #0c1e30;
+      border: 1px solid #1e4a6a;
+      border-radius: 4px;
+      color: #4a9aba;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background .2s, border-color .2s, color .2s;
+    }
+    #replayBtn:hover { background: #0e2840; border-color: #3a7a9a; color: #7ac8e8; }
+    #replayBtn:disabled { opacity: .4; cursor: default; }
+    #replayBtn .replay-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #2a6a8a;
+      transition: background .3s;
+    }
+    #replayBtn.running .replay-dot { background: #7adc8a; box-shadow: 0 0 5px #7adc8a88; }
   </style>
 </head>
 <body>
@@ -395,6 +426,12 @@
       <!-- Nodes (top) -->
       <g id="nodeGroup"></g>
     </svg>
+
+    <!-- Replay button -->
+    <button id="replayBtn" title="Run wargame demo scenarios">
+      <span class="replay-dot"></span>
+      <span id="replayLabel">Run Demo</span>
+    </button>
 
     <!-- No stream overlay -->
     <div id="noStream">
@@ -933,11 +970,69 @@ function animateMesh() {
   requestAnimationFrame(animateMesh);
 }
 
+// ── Replay button ────────────────────────────────────────────────────────────
+function initReplayButton() {
+  const btn   = document.getElementById('replayBtn');
+  const label = document.getElementById('replayLabel');
+  if (!btn) return;
+
+  // Estimated duration: ~63 steps × 800ms = ~50s per loop
+  const STEP_DELAY_MS = 800;
+  const TOTAL_STEPS   = 63;   // 3 scenarios combined
+  let cooldownTimer   = null;
+
+  btn.addEventListener('click', async () => {
+    if (btn.disabled) return;
+
+    btn.disabled = true;
+    btn.classList.add('running');
+    label.textContent = 'Running…';
+
+    try {
+      const res = await fetch('/api/v1/gate/playground/demo', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ delay_ms: STEP_DELAY_MS, loops: 1 }),
+      });
+      const data = await res.json();
+
+      if (!data.ok) {
+        label.textContent = data.error === 'demo_in_flight' ? 'In flight…' : 'Error';
+        btn.classList.remove('running');
+        setTimeout(() => { btn.disabled = false; label.textContent = 'Run Demo'; }, 3000);
+        return;
+      }
+    } catch (e) {
+      label.textContent = 'Offline';
+      btn.classList.remove('running');
+      setTimeout(() => { btn.disabled = false; label.textContent = 'Run Demo'; }, 3000);
+      return;
+    }
+
+    // Re-enable after estimated run time
+    const estimatedMs = TOTAL_STEPS * STEP_DELAY_MS + 3000;
+    let remaining = Math.ceil(estimatedMs / 1000);
+    const tick = () => {
+      label.textContent = `Running… ${remaining}s`;
+      remaining--;
+      if (remaining <= 0) {
+        btn.disabled = false;
+        btn.classList.remove('running');
+        label.textContent = 'Run Demo';
+      } else {
+        cooldownTimer = setTimeout(tick, 1000);
+      }
+    };
+    cooldownTimer = setTimeout(tick, 1000);
+  });
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 buildMesh();
 buildCenterAnimation();
 requestAnimationFrame(animateMesh);
 connectStream();
+initReplayButton();
 </script>
 </body>
 </html>
