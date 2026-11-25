@@ -2037,7 +2037,9 @@ function renderResidents(residents) {
     dragImg.alt = label;
     dragImg.style.filter = _DRAGON_FILTER;
     dragImg.onload = () => removeWhiteBg(dragImg);
-    dragImg.src = `dragons/${DRAGON_FILES[i % DRAGON_FILES.length]}`;
+    // Use resident's chosen dragon if stored, otherwise cycle through available dragons
+    const dragonFile = resident.dragon ? resident.dragon : DRAGON_FILES[i % DRAGON_FILES.length];
+    dragImg.src = `dragons/${dragonFile}`;
     dragEl.appendChild(dragImg);
     const dragPos = DRAGON_POSITIONS[i % DRAGON_POSITIONS.length];
     dragEl.style.top  = dragPos.top;
