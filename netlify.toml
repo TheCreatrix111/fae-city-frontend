@@ -103,6 +103,11 @@
   to     = "/broadcast.html"
   status = 200
 
+[[redirects]]
+  from   = "/traitors"
+  to     = "/traitors.html"
+  status = 200
+
 # ── Security headers ───────────────────────────────────────────────────────
 [[headers]]
   for = "/*"

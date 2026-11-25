@@ -3393,6 +3393,92 @@ async function executeRitualStep() {
 
 // Load activities on page load
 loadActivities();
+
+// ── WebSocket — Playground live feed ────────────────────────────────────────
+(function initPlaygroundWS() {
+  const WS_URL = 'wss://ventralis-production.up.railway.app/ws/playground';
+  let ws, retryMs = 2000;
+
+  const VERDICT_TO_PIP = {
+    ALLOW:      'permit',
+    DENY:       'contain',
+    ESCALATE:   'escalate',
+    QUARANTINE: 'contain',
+  };
+
+  function connect() {
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+      retryMs = 2000;
+      liveDot.classList.remove('off');
+    };
+
+    ws.onclose = () => {
+      liveDot.classList.add('off');
+      setTimeout(connect, retryMs);
+      retryMs = Math.min(retryMs * 2, 30000);
+    };
+
+    ws.onerror = () => ws.close();
+
+    ws.onmessage = (e) => {
+      let ev;
+      try { ev = JSON.parse(e.data); } catch { return; }
+
+      const type = ev.event_type;
+
+      // ── mesh_snapshot → spiral + telemetry bar ──
+      if (type === 'mesh_snapshot') {
+        const phi = ev.mean_coherence_phi ?? null;
+        if (phi !== null) {
+          _renderSpiralViz(
+            { phi_coherence: phi, radius_to_source: phi, octave_depth: 0 },
+            { radius: phi, theta: (ev.step ?? 0) * 0.618 },
+            null, null, '#3AE8E1'
+          );
+          renderTelemetryBar(resolveTelemetryBarState({
+            hz: Math.round(528 * phi),
+            drs: parseFloat((phi * 10).toFixed(1)),
+            resonance_field: null,
+            phaeling_state: phi < 0.3 ? 2 : 0,
+            is_paradox_routing: false,
+            is_terminal_turn: false,
+            grid_mode: null,
+            grid_mirror_count: 0,
+            harmonic_gates: null,
+            grids_synced: [],
+          }));
+        }
+        return;
+      }
+
+      // ── gate events → addLog ──
+      const pipBase = ev.verdict ? (VERDICT_TO_PIP[ev.verdict] || 'permit') : 'permit';
+      const kindMap = {
+        threat_received:  'THREAT',
+        intercept:        'INTERCEPT',
+        allow:            'ALLOW',
+        escalate:         'ESCALATE',
+        quarantine:       'QUARANTINE',
+        recover:          'RECOVER',
+        state_transition: 'STATE',
+      };
+      const kind = kindMap[type] || type.toUpperCase();
+      const sub  = ev.threat_type || ev.node_id || ev.archetype || '';
+      addLog({
+        kind,
+        sub,
+        pip:      type === 'quarantine' || type === 'intercept' ? 'contain'
+                : type === 'escalate'  || type === 'threat_received' ? 'escalate'
+                : pipBase,
+        agent_id: ev.node_id || null,
+      });
+    };
+  }
+
+  connect();
+})();
 </script>
 </body>
 </html>

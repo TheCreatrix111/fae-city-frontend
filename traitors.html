@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VENTRALIS — Traitors Observatory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:          #060b16;
+  --panel:       rgba(7,12,24,0.88);
+  --border:      rgba(30,58,100,0.35);
+  --green:       #00ff88;
+  --gold:        #d4a843;
+  --purple:      #a78bfa;
+  --red:         #ef4444;
+  --sky:         #0ea5e9;
+  --text:        #e2e8f0;
+  --muted:       #64748b;
+  --heading:     'Space Grotesk', sans-serif;
+  --body:        'Inter', sans-serif;
+  --mono:        'Space Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--body); font-size: 13px; overflow: hidden; }
+
+/* ── Auth gate ───────────────────────── */
+#auth-gate {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 50% 40%, #0d1a2e 0%, #060b16 70%); z-index: 999;
+}
+.gate-box {
+  background: rgba(7,12,24,0.95); border: 1px solid var(--border); border-radius: 12px;
+  padding: 42px 52px; text-align: center; min-width: 340px;
+  box-shadow: 0 0 80px rgba(212,168,67,0.04), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+.gate-emblem { font-size: 28px; margin-bottom: 14px; opacity: 0.6; }
+.gate-title { font-family: var(--heading); font-size: 22px; color: var(--gold); letter-spacing: 0.08em; margin-bottom: 4px; }
+.gate-sub { color: var(--muted); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 32px; }
+.gate-input {
+  width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px; padding: 11px 14px;
+  font-family: var(--mono); font-size: 13px; outline: none; margin-bottom: 14px;
+  letter-spacing: 0.08em; transition: border-color 0.15s;
+}
+.gate-input:focus { border-color: rgba(212,168,67,0.4); }
+.gate-btn {
+  width: 100%; padding: 11px; border: none; border-radius: 8px;
+  background: var(--gold); color: #060b16; font-family: var(--heading);
+  font-size: 13px; font-weight: 700; cursor: pointer; letter-spacing: 0.1em;
+  text-transform: uppercase; transition: opacity 0.15s;
+}
+.gate-btn:hover { opacity: 0.85; }
+.gate-err { color: var(--red); font-size: 11px; margin-top: 10px; min-height: 18px; font-family: var(--mono); }
+
+/* ── App shell ───────────────────────── */
+#app { display: grid; grid-template-rows: 46px 1fr; height: 100vh; }
+
+/* ── Topbar ──────────────────────────── */
+#topbar {
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  background: rgba(6,11,22,0.96); border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px); z-index: 10; flex-shrink: 0;
+}
+.top-title { font-family: var(--heading); font-size: 14px; font-weight: 700; color: var(--gold); letter-spacing: 0.08em; white-space: nowrap; }
+.top-sep { color: rgba(30,58,100,0.6); font-size: 18px; }
+.top-badge {
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; letter-spacing: 0.06em; white-space: nowrap;
+}
+.top-badge.live { color: var(--green); border-color: rgba(0,255,136,0.3); background: rgba(0,255,136,0.04); }
+#game-select {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text);
+  border-radius: 6px; padding: 4px 8px; font-family: var(--mono); font-size: 11px;
+  outline: none; cursor: pointer; max-width: 280px;
+}
+#game-select option { background: #0d1a2e; }
+.top-spacer { flex: 1; }
+#top-status { font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+/* ── Main 3-col grid ─────────────────── */
+#main-grid { display: grid; grid-template-columns: 270px 1fr 254px; overflow: hidden; }
+
+/* ── LEFT PANEL ──────────────────────── */
+#left-panel { background: var(--panel); border-right: 1px solid var(--border); overflow-y: auto; padding: 10px 9px; }
+#left-panel::-webkit-scrollbar { width: 3px; }
+#left-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.panel-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; padding: 0 3px 7px; }
+
+.agent-card {
+  background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px;
+  padding: 9px 10px; margin-bottom: 6px; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s; position: relative;
+}
+.agent-card:hover { background: rgba(255,255,255,0.045); }
+.agent-card.selected { border-color: rgba(212,168,67,0.5) !important; background: rgba(212,168,67,0.04); }
+.agent-card.speaking { animation: card-pulse 0.9s ease-in-out infinite; }
+@keyframes card-pulse {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 10px 1px var(--agent-color, #00ff88); }
+}
+.ac-row1 { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+.ac-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.ac-name { font-family: var(--heading); font-size: 12px; font-weight: 600; }
+.ac-id { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-left: auto; }
+.ac-tags { display: flex; gap: 5px; margin-bottom: 6px; flex-wrap: wrap; }
+.tag {
+  font-family: var(--mono); font-size: 9px; letter-spacing: 0.05em;
+  border-radius: 3px; padding: 2px 5px; border: 1px solid;
+}
+.tag-green  { color: var(--green);  border-color: rgba(0,255,136,0.3);  background: rgba(0,255,136,0.05); }
+.tag-gold   { color: var(--gold);   border-color: rgba(212,168,67,0.3); background: rgba(212,168,67,0.05); }
+.tag-red    { color: var(--red);    border-color: rgba(239,68,68,0.3);  background: rgba(239,68,68,0.05); }
+.tag-purple { color: var(--purple); border-color: rgba(167,139,250,0.3);background: rgba(167,139,250,0.05); }
+.tag-muted  { color: var(--muted);  border-color: var(--border); }
+.ac-osc { display: block; width: 100%; height: 22px; border-radius: 3px; background: rgba(0,0,0,0.3); }
+.ac-turn { font-family: var(--mono); font-size: 9px; color: var(--muted); margin-top: 4px; }
+
+/* ── CENTER PANEL ────────────────────── */
+#center-panel { display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; }
+
+/* Roundtable */
+#rt-wrap {
+  display: flex; align-items: center; justify-content: center; padding: 14px 20px 6px;
+  background: radial-gradient(ellipse at center, rgba(13,26,46,0.6) 0%, transparent 70%);
+  flex-shrink: 0;
+}
+#rt-svg { overflow: visible; width: 300px; height: 300px; }
+.rt-spoke { stroke: rgba(30,58,100,0.3); stroke-width: 1; }
+.rt-tbl-bg { fill: rgba(212,168,67,0.03); }
+.rt-tbl-ring { fill: none; stroke: rgba(212,168,67,0.18); stroke-width: 1.5; }
+.rt-tbl-txt { fill: var(--gold); font-family: 'Space Grotesk', sans-serif; font-size: 8.5px; letter-spacing: 0.12em; text-anchor: middle; dominant-baseline: middle; }
+.rt-slot-bg   { fill: #060b16; }
+.rt-slot-ring { fill: none; stroke-width: 2; opacity: 0.65; transition: opacity 0.3s; }
+.rt-slot-label { font-family: 'Space Grotesk', sans-serif; font-weight: 700; text-anchor: middle; }
+.rt-slot-turn  { font-family: 'Space Mono', monospace; text-anchor: middle; opacity: 0.55; }
+.rt-slot-group { cursor: pointer; }
+.rt-slot-group.speaking .rt-slot-ring { opacity: 1; }
+.rt-slot-group.speaking .rt-slot-bg   { fill: rgba(0,0,0,0.9); }
+.rt-slot-group.selected .rt-slot-ring { opacity: 1; stroke-dasharray: 4 2; }
+.rt-speaking-glow { filter: drop-shadow(0 0 6px currentColor); }
+
+/* Dialogue feed */
+#feed-wrap { overflow: hidden; display: flex; flex-direction: column; }
+#feed-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; padding: 4px 16px 4px; text-transform: uppercase; border-top: 1px solid var(--border); flex-shrink: 0; }
+#dialogue-feed { flex: 1; overflow-y: auto; padding: 6px 14px; display: flex; flex-direction: column-reverse; gap: 5px; }
+#dialogue-feed::-webkit-scrollbar { width: 4px; }
+#dialogue-feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.empty-feed { color: var(--muted); font-size: 11px; text-align: center; padding: 24px; font-family: var(--mono); }
+.de {
+  display: flex; gap: 9px; align-items: flex-start; padding: 7px 9px;
+  background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 6px;
+  border-left-width: 3px; cursor: pointer; transition: background 0.15s;
+  animation: de-in 0.25s ease-out;
+}
+@keyframes de-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.de:hover { background: rgba(255,255,255,0.04); }
+.de.active-turn { background: rgba(212,168,67,0.05); border-top-color: rgba(212,168,67,0.3); border-right-color: rgba(212,168,67,0.3); border-bottom-color: rgba(212,168,67,0.3); }
+.de-turn { font-family: var(--mono); font-size: 10px; color: var(--muted); flex-shrink: 0; min-width: 32px; padding-top: 1px; }
+.de-body { flex: 1; min-width: 0; }
+.de-speaker { font-family: var(--heading); font-size: 11px; font-weight: 600; margin-bottom: 2px; }
+.de-text { color: rgba(226,232,240,0.78); line-height: 1.55; word-break: break-word; font-size: 12px; }
+.de-badges { display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap; }
+.de.action-card { background: rgba(0,0,0,0.3); }
+.de.action-card .de-text { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.de.action-card.claim-card { border-left-color: var(--gold) !important; background: rgba(212,168,67,0.04); }
+.de.action-card.claim-card .de-text { color: var(--gold); }
+.de.action-card.unlock-card { border-left-color: var(--green) !important; background: rgba(0,255,136,0.04); }
+.de.action-card.unlock-card .de-text { color: var(--green); }
+
+/* Replay controls */
+#replay-bar {
+  display: flex; align-items: center; gap: 8px; padding: 7px 14px;
+  background: rgba(6,11,22,0.92); border-top: 1px solid var(--border); flex-shrink: 0;
+}
+.rbtn {
+  width: 29px; height: 29px; border: 1px solid var(--border); border-radius: 6px;
+  background: rgba(255,255,255,0.03); color: var(--text); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 12px;
+  transition: background 0.15s, border-color 0.15s; flex-shrink: 0;
+}
+.rbtn:hover { background: rgba(255,255,255,0.08); border-color: rgba(212,168,67,0.4); }
+.rbtn.on { background: rgba(0,255,136,0.08); border-color: rgba(0,255,136,0.4); color: var(--green); }
+#speed-sel {
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text);
+  border-radius: 5px; padding: 3px 7px; font-family: var(--mono); font-size: 11px; outline: none; cursor: pointer;
+}
+#speed-sel option { background: #0d1a2e; }
+#replay-prog { font-family: var(--mono); font-size: 11px; color: var(--muted); flex: 1; text-align: right; }
+#tts-btn {
+  font-family: var(--mono); font-size: 10px; color: var(--muted); border: 1px solid var(--border);
+  border-radius: 4px; padding: 4px 9px; background: none; cursor: pointer; letter-spacing: 0.06em;
+  white-space: nowrap; transition: color 0.15s, border-color 0.15s;
+}
+#tts-btn.on { color: var(--green); border-color: rgba(0,255,136,0.4); }
+
+/* ── RIGHT PANEL ─────────────────────── */
+#right-panel { background: var(--panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+#inspector { display: flex; flex-direction: column; overflow: hidden; flex: 1; }
+.insp-head { padding: 10px 12px 0; flex-shrink: 0; }
+#insp-agent-name { font-family: var(--heading); font-size: 14px; font-weight: 700; margin-bottom: 8px; min-height: 20px; }
+.tab-bar { display: flex; border-bottom: 1px solid var(--border); }
+.tab-btn { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; padding: 6px 10px; background: none; border: none; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.15s; }
+.tab-btn.on { color: var(--gold); border-bottom-color: var(--gold); }
+.tab-btn:hover { color: var(--text); }
+.tab-pane { flex: 1; overflow-y: auto; padding: 10px 12px; display: none; }
+.tab-pane.on { display: block; }
+.tab-pane::-webkit-scrollbar { width: 3px; }
+.tab-pane::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.kv { display: flex; gap: 7px; margin-bottom: 5px; align-items: flex-start; font-family: var(--mono); font-size: 10px; }
+.kk { color: var(--muted); flex-shrink: 0; min-width: 88px; }
+.kv-val { color: var(--text); word-break: break-all; }
+.kv-val.g { color: var(--green); }
+.kv-val.a { color: var(--gold); }
+.kv-val.r { color: var(--red); }
+.kv-val.p { color: var(--purple); }
+.sect-label { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin: 10px 0 5px; border-bottom: 1px solid var(--border); padding-bottom: 3px; }
+.log-row { font-family: var(--mono); font-size: 10px; padding: 4px 0; border-bottom: 1px solid rgba(30,58,100,0.18); color: var(--muted); line-height: 1.4; }
+.log-row span { color: var(--text); }
+.empty-insp { color: var(--muted); font-family: var(--mono); font-size: 11px; text-align: center; padding: 24px 10px; }
+/* kv layout used in RFE tab engine grid */
+.kv-section { margin-bottom: 10px; }
+.kv-label { font-family: var(--mono); font-size: 9px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid var(--border); padding-bottom: 3px; }
+.kv-row { display: flex; align-items: center; justify-content: space-between; padding: 2px 0; font-family: var(--mono); font-size: 10px; }
+.kv-key { color: var(--muted); }
+.c-green { color: var(--green); }
+.c-gold  { color: var(--gold); }
+.c-red   { color: var(--red); }
+/* Phase banner in dialogue feed */
+.phase-banner { font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; text-align: center; color: var(--muted); border-top: 1px solid rgba(30,58,100,0.3); padding: 6px 0 4px; margin: 4px 0 2px; text-transform: uppercase; }
+.rfe-json { font-family: var(--mono); font-size: 10px; word-break: break-word; color: var(--text); }
+.rfe-json .rk { color: var(--muted); }
+.rfe-json .rv-str { color: var(--green); }
+.rfe-json .rv-num { color: var(--sky); }
+.rfe-json .rv-bool { color: var(--gold); }
+.rfe-json .rv-null { color: var(--muted); }
+
+#insp-actions { padding: 10px 12px; border-top: 1px solid var(--border); flex-shrink: 0; }
+.mirror-open-btn {
+  width: 100%; padding: 8px; border: 1px solid rgba(167,139,250,0.4); border-radius: 7px;
+  background: rgba(167,139,250,0.07); color: var(--purple); font-family: var(--heading);
+  font-size: 12px; font-weight: 600; cursor: pointer; letter-spacing: 0.06em; transition: background 0.15s;
+}
+.mirror-open-btn:hover { background: rgba(167,139,250,0.14); }
+
+/* ── MIRROR MODAL ────────────────────── */
+#mirror-modal {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.78); backdrop-filter: blur(5px);
+}
+.mirror-box {
+  background: #090f1e; border: 1px solid rgba(167,139,250,0.28); border-radius: 12px;
+  width: min(920px, 95vw); max-height: 88vh; display: flex; flex-direction: column;
+  box-shadow: 0 0 80px rgba(167,139,250,0.07);
+}
+.mirror-title-bar {
+  display: flex; align-items: center; gap: 10px; padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.mirror-title { font-family: var(--heading); font-size: 14px; font-weight: 700; color: var(--purple); letter-spacing: 0.06em; }
+.mirror-desc { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-left: 8px; }
+.mirror-close { margin-left: auto; background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; padding: 2px 4px; }
+.mirror-close:hover { color: var(--text); }
+.mirror-body { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 16px 20px; overflow-y: auto; flex: 1; }
+.mirror-body::-webkit-scrollbar { width: 4px; }
+.mirror-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.mirror-pane { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; }
+.mirror-pane-label { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+.mirror-sels { display: flex; gap: 7px; }
+.msec {
+  flex: 1; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text);
+  border-radius: 5px; padding: 5px 8px; font-family: var(--mono); font-size: 10px; outline: none; cursor: pointer;
+}
+.msec option { background: #0d1a2e; }
+.mirror-fields { display: flex; flex-direction: column; gap: 3px; }
+.mkv { display: flex; gap: 8px; font-family: var(--mono); font-size: 10px; padding: 2px 0; border-bottom: 1px solid rgba(30,58,100,0.14); align-items: flex-start; }
+.mk { color: var(--muted); min-width: 80px; flex-shrink: 0; }
+.mv { color: var(--text); word-break: break-all; }
+.mirror-pane.right .mkv.diff .mv { color: var(--gold); }
+.mirror-empty { color: var(--muted); font-family: var(--mono); font-size: 11px; text-align: center; padding: 20px; }
+
+/* ── Mobile nav tab bar (hidden on desktop) ──────────────────── */
+#mob-tabs { display: none; }
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE  ≤ 768px
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  html, body { font-size: 13px; }
+
+  /* Gate: full-width card */
+  .gate-box { padding: 32px 22px; min-width: unset; width: calc(100% - 32px); max-width: 360px; }
+  .gate-title { font-size: 18px; }
+
+  /* App: topbar + content + mob-tabs */
+  #app { grid-template-rows: 44px 1fr 56px; }
+
+  /* Topbar: show only essentials */
+  #topbar { padding: 0 10px; gap: 6px; }
+  .top-sep { display: none; }
+  .top-title:not(:first-child) { display: none; }
+  .top-badge:not(.live) { display: none; }
+  #game-select { max-width: 180px; font-size: 10px; padding: 3px 6px; }
+  #top-status { font-size: 10px; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Main grid → single column */
+  #main-grid { grid-template-columns: 1fr; overflow: visible; }
+
+  /* All panels hidden by default on mobile */
+  #left-panel, #center-panel, #right-panel { display: none; }
+
+  /* Active panel fills available height */
+  #left-panel.mob-active {
+    display: block; height: 100%; overflow-y: auto; padding: 10px 10px 0;
+  }
+  #center-panel.mob-active {
+    display: grid; grid-template-rows: auto 1fr auto; height: 100%; overflow: hidden;
+  }
+  #right-panel.mob-active {
+    display: flex; flex-direction: column; height: 100%; overflow: hidden;
+  }
+
+  /* Roundtable: scale to fit narrower screen */
+  #rt-wrap { padding: 10px 10px 4px; min-height: auto; }
+  #rt-svg { width: min(260px, 72vw); height: min(260px, 72vw); }
+
+  /* Feed */
+  #feed-label { font-size: 9px; padding: 3px 10px; }
+  .de { padding: 6px 8px; }
+  .de-text { font-size: 11px; }
+
+  /* Replay bar: compact */
+  #replay-bar { flex-wrap: wrap; padding: 6px 10px; gap: 6px; }
+  #replay-prog { flex: 1; text-align: right; min-width: 60px; }
+  #tts-btn { font-size: 9px; padding: 4px 7px; }
+  .rbtn { width: 32px; height: 32px; font-size: 14px; }
+
+  /* Inspector */
+  .insp-head { padding: 10px 12px 0; }
+  #insp-agent-name { font-size: 15px; }
+
+  /* Mirror modal: full screen */
+  #mirror-modal { align-items: flex-start; }
+  .mirror-box { width: 100vw; height: 100dvh; border-radius: 0; border: none; max-height: 100dvh; }
+  .mirror-title-bar { padding: 12px 16px; }
+  .mirror-title { font-size: 13px; }
+  .mirror-desc { display: none; }
+  .mirror-body { grid-template-columns: 1fr; padding: 10px 14px; gap: 10px; }
+
+  /* Mobile tab bar */
+  #mob-tabs {
+    display: flex;
+    background: rgba(6,11,22,0.98);
+    border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .mob-tab {
+    flex: 1; padding: 8px 4px 6px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px;
+    background: none; border: none; border-top: 2px solid transparent;
+    color: var(--muted); font-family: var(--mono); font-size: 9px;
+    letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+    transition: color 0.15s, border-top-color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mob-tab-icon { font-size: 17px; line-height: 1; }
+  .mob-tab.active { color: var(--gold); border-top-color: var(--gold); }
+  .mob-tab:active { background: rgba(255,255,255,0.04); }
+
+  /* Agent cards */
+  .agent-card { padding: 8px 9px; margin-bottom: 5px; }
+  .ac-name { font-size: 13px; }
+  .ac-osc { height: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Auth gate ──────────────────────────────────────── -->
+<div id="auth-gate">
+  <div class="gate-box">
+    <div class="gate-emblem">🏰</div>
+    <div class="gate-title">TRAITORS OBSERVATORY</div>
+    <div class="gate-sub">VENTRALIS Research Protocol</div>
+    <input class="gate-input" type="password" id="gate-pwd" placeholder="Access code" autocomplete="off">
+    <button class="gate-btn" id="gate-submit">ENTER THE HALL</button>
+    <div class="gate-err" id="gate-err"></div>
+  </div>
+</div>
+
+<!-- ── Main app ───────────────────────────────────────── -->
+<div id="app" style="display:none">
+
+  <!-- Header -->
+  <header id="topbar">
+    <span class="top-title">VENTRALIS</span>
+    <span class="top-sep">/</span>
+    <span class="top-title" style="color:var(--text);font-weight:400">Traitors Observatory</span>
+    <span class="top-sep">/</span>
+    <span class="top-badge">BLIND MODE</span>
+    <span class="top-badge live" id="badge-live" style="display:none">● REPLAY ACTIVE</span>
+    <select id="game-select"><option value="">— select game —</option></select>
+    <span class="top-spacer"></span>
+    <span id="top-status">loading...</span>
+  </header>
+
+  <!-- 3-column layout -->
+  <div id="main-grid">
+
+    <!-- LEFT: Agent dossiers -->
+    <aside id="left-panel">
+      <div class="panel-label">Agent Roster</div>
+      <div id="agent-cards"></div>
+    </aside>
+
+    <!-- CENTER: Roundtable + feed + controls -->
+    <main id="center-panel">
+      <!-- Castle roundtable SVG -->
+      <div id="rt-wrap">
+        <svg id="rt-svg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+
+      <!-- Dialogue feed -->
+      <div id="feed-wrap">
+        <div id="feed-label">↓ GREAT HALL DIALOGUE — newest first</div>
+        <div id="dialogue-feed">
+          <div class="empty-feed" id="feed-empty">Load a game and press play to begin.</div>
+        </div>
+      </div>
+
+      <!-- Replay controls -->
+      <div id="replay-bar">
+        <button class="rbtn" id="btn-rewind" title="Rewind">⏮</button>
+        <button class="rbtn" id="btn-play" title="Play / Pause">▶</button>
+        <button class="rbtn" id="btn-step" title="Step forward">⏭</button>
+        <select id="speed-sel">
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.25">1.25×</option>
+          <option value="2">2×</option>
+        </select>
+        <button id="tts-btn" class="on">🔊 TTS ON</button>
+        <span id="replay-prog">— / —</span>
+      </div>
+    </main>
+
+    <!-- RIGHT: Inspector -->
+    <aside id="right-panel">
+      <div id="inspector">
+        <div class="insp-head">
+          <div id="insp-agent-name" style="color:var(--muted)">— select an agent —</div>
+          <div class="tab-bar">
+            <button class="tab-btn on" data-tab="ovw">OVW</button>
+            <button class="tab-btn" data-tab="rfe">RFE</button>
+            <button class="tab-btn" data-tab="log">LOG</button>
+          </div>
+        </div>
+        <div class="tab-pane on" id="tab-ovw"><div class="empty-insp">Select an agent.</div></div>
+        <div class="tab-pane"    id="tab-rfe"><div class="empty-insp">Select an agent.</div></div>
+        <div class="tab-pane"    id="tab-log"><div class="empty-insp">Select an agent.</div></div>
+      </div>
+      <div id="insp-actions">
+        <button class="mirror-open-btn" id="btn-mirror">⚖ OPEN INVESTIGATOR'S MIRROR</button>
+      </div>
+    </aside>
+
+  </div><!-- /main-grid -->
+
+  <!-- Mobile bottom tab bar (hidden on desktop via CSS) -->
+  <nav id="mob-tabs" aria-label="Observatory panels">
+    <button class="mob-tab" data-tab="roster" onclick="mobTab('roster')">
+      <span class="mob-tab-icon">👥</span>ROSTER
+    </button>
+    <button class="mob-tab active" data-tab="hall" onclick="mobTab('hall')">
+      <span class="mob-tab-icon">🏰</span>HALL
+    </button>
+    <button class="mob-tab" data-tab="inspect" onclick="mobTab('inspect')">
+      <span class="mob-tab-icon">🔍</span>INSPECT
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<!-- ── Investigator's Mirror modal ────────────────── -->
+<div id="mirror-modal" style="display:none">
+  <div class="mirror-box">
+    <div class="mirror-title-bar">
+      <span class="mirror-title">⚖ INVESTIGATOR'S MIRROR</span>
+      <span class="mirror-desc">side-by-side RFE comparison — differences highlighted in amber</span>
+      <button class="mirror-close" id="mirror-close">×</button>
+    </div>
+    <div class="mirror-body">
+      <div class="mirror-pane left" id="mirror-left">
+        <div class="mirror-pane-label">AGENT A</div>
+        <div class="mirror-sels">
+          <select class="msec" id="ml-agent"></select>
+          <select class="msec" id="ml-turn"></select>
+        </div>
+        <div class="mirror-fields" id="ml-fields"><div class="mirror-empty">Select agent + turn.</div></div>
+      </div>
+      <div class="mirror-pane right" id="mirror-right">
+        <div class="mirror-pane-label">AGENT B</div>
+        <div class="mirror-sels">
+          <select class="msec" id="mr-agent"></select>
+          <select class="msec" id="mr-turn"></select>
+        </div>
+        <div class="mirror-fields" id="mr-fields"><div class="mirror-empty">Select agent + turn.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ── Constants ─────────────────────────────────────────────────
+// Local dev (file:// or localhost:8080): route API to FastAPI on :8787
+// Production (faecity.co): use relative URLs → Netlify proxy
+const SERVER_URL = (() => {
+  const h = location.hostname;
+  if (location.protocol === 'file:' || h === '127.0.0.1' || h === 'localhost') {
+    return 'http://localhost:8787';
+  }
+  return '';
+})();
+const GATE_PWD          = 'Ventralis111**';
+// Set VENTRALIS_TRAITORS_SECRET env var on Railway to enforce backend auth.
+// Frontend sends this header on every Traitors API request.
+const TRAITORS_SECRET   = window.__TRAITORS_SECRET__ || '';
+
+const AGENT_COLORS = {
+  agent_01: '#7c3aed', agent_02: '#0ea5e9', agent_03: '#10b981',
+  agent_04: '#f59e0b', agent_05: '#ef4444', agent_06: '#a78bfa',
+  agent_07: '#06b6d4', agent_08: '#d4a843',
+};
+const AGENT_VOICES = {
+  agent_01: { rate: 0.90, pitch: 0.75 },
+  agent_02: { rate: 1.00, pitch: 1.15 },
+  agent_03: { rate: 1.05, pitch: 0.95 },
+  agent_04: { rate: 1.10, pitch: 1.05 },
+  agent_05: { rate: 0.95, pitch: 0.85 },
+  agent_06: { rate: 1.00, pitch: 1.00 },
+  agent_07: { rate: 1.15, pitch: 1.25 },
+  agent_08: { rate: 0.85, pitch: 0.65 },
+};
+
+function agentColor(id) { return AGENT_COLORS[id] || '#64748b'; }
+function agentLabel(id) {
+  if (!id) return '—';
+  const n = id.replace('agent_', '');
+  return `A${n.padStart(2,'0')}`;
+}
+let agentNames = {};  // agent_id → display name (from GAME_CREATED agent_names)
+
+function agentDisplay(id) {
+  if (!id) return '—';
+  const n = id.replace('agent_', '');
+  const num = parseInt(n, 10);
+  const name = agentNames[id];
+  return name ? `${name}` : `Agent ${num}`;
+}
+function agentDisplayFull(id) {
+  if (!id) return '—';
+  const n = id.replace('agent_', '');
+  const num = parseInt(n, 10);
+  const name = agentNames[id];
+  return name ? `${name} (${id})` : `Agent ${num}`;
+}
+
+// ── State ─────────────────────────────────────────────────────
+let allEvents    = [];
+let dialogueSeq  = [];    // AGENT_MESSAGE events, ordered by seq_id
+let rfeMap       = {};    // event_id → {payload, agent_id, seq_id, turn_number}
+let agentRoles   = {};    // agent_id → role string
+let agentEvents  = {};    // agent_id → sorted event list
+let agentRfes    = {};    // agent_id → sorted RFE snapshot list
+let agentMsgCount = {};   // agent_id → number
+let gameInfo     = {};    // GAME_CREATED payload
+let currentGameId = null;
+let phaseTimeline = [];   // [{seq_id, phase, round}] sorted ascending — for phase banner injection
+
+let selectedAgentId  = null;
+let currentReplayIdx = -1;
+let replayPlaying    = false;
+let replaySpeed      = 1.0;
+let ttsEnabled       = true;
+let speakingAgentId  = null;
+let replayCancel     = false;
+
+// ── Auth gate ─────────────────────────────────────────────────
+const authGate = document.getElementById('auth-gate');
+const appEl    = document.getElementById('app');
+
+function checkAuth() {
+  return sessionStorage.getItem('ventralis_auth') === '1';
+}
+function doAuth(pwd) {
+  if (pwd === GATE_PWD) {
+    sessionStorage.setItem('ventralis_auth', '1');
+    authGate.style.display = 'none';
+    appEl.style.display = 'grid';
+    initApp();
+  } else {
+    document.getElementById('gate-err').textContent = 'Access denied.';
+  }
+}
+
+document.getElementById('gate-submit').addEventListener('click', () => {
+  doAuth(document.getElementById('gate-pwd').value);
+});
+document.getElementById('gate-pwd').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doAuth(document.getElementById('gate-pwd').value);
+});
+
+if (checkAuth()) {
+  authGate.style.display = 'none';
+  appEl.style.display = 'grid';
+  initApp();
+}
+
+// ── App init ──────────────────────────────────────────────────
+function traitorsFetch(path) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (TRAITORS_SECRET) headers['X-Traitors-Secret'] = TRAITORS_SECRET;
+  return fetch(`${SERVER_URL}${path}`, { headers });
+}
+
+async function initApp() {
+  setStatus('Loading game list…');
+  try {
+    const r = await traitorsFetch('/api/v1/traitors/games');
+    const data = await r.json();
+    populateGameSelect(data.games || []);
+    setStatus(`${(data.games||[]).length} game(s) available`);
+  } catch(e) {
+    setStatus('⚠ Cannot reach backend');
+    console.error(e);
+  }
+}
+
+let gamesMeta = {};  // game_id → game metadata from API (includes agent_names)
+
+function populateGameSelect(games) {
+  const sel = document.getElementById('game-select');
+  sel.innerHTML = '<option value="">— select game —</option>';
+  games.forEach(g => {
+    gamesMeta[g.game_id] = g;
+    const opt = document.createElement('option');
+    opt.value = g.game_id;
+    const agents = g.agent_ids ? g.agent_ids.length : '?';
+    opt.textContent = `${g.game_id}  [${agents} agents, ${g.blind_count||g.event_count||'?'} events]`;
+    sel.appendChild(opt);
+  });
+}
+
+document.getElementById('game-select').addEventListener('change', async (e) => {
+  const gameId = e.target.value;
+  if (!gameId) return;
+  await loadGame(gameId);
+});
+
+async function loadGame(gameId) {
+  replayStop();
+  setStatus('Loading game…');
+  try {
+    // Pre-seed agent names from cached game metadata (before events arrive)
+    const meta = gamesMeta[gameId];
+    if (meta && meta.agent_names) Object.assign(agentNames, meta.agent_names);
+
+    const r = await traitorsFetch(`/api/v1/traitors/events?game_id=${encodeURIComponent(gameId)}`);
+    if (!r.ok) { setStatus(`⚠ ${r.status} — game not found`); return; }
+    const data = await r.json();
+    processEvents(data.events || [], gameId);
+    setStatus(`${allEvents.length} events loaded — ${dialogueSeq.length} dialogue turns`);
+  } catch(e) {
+    setStatus('⚠ Load failed');
+    console.error(e);
+  }
+}
+
+// ── Event processing ──────────────────────────────────────────
+function processEvents(events, gameId) {
+  allEvents     = events;
+  dialogueSeq   = [];
+  rfeMap        = {};
+  agentRoles    = {};
+  agentEvents   = {};
+  agentRfes     = {};
+  agentMsgCount = {};
+  agentNames    = {};
+  gameInfo      = {};
+  phaseTimeline = [];
+  currentGameId = gameId;
+  selectedAgentId = null;
+
+  // Index all events
+  events.forEach(ev => {
+    const p = ev.payload || {};
+
+    if (ev.event_type === 'GAME_CREATED') {
+      gameInfo = p;
+      // Populate display names from GAME_CREATED agent_names map
+      if (p.agent_names) Object.assign(agentNames, p.agent_names);
+    }
+    if (ev.event_type === 'PHASE_CHANGED') {
+      phaseTimeline.push({ seq_id: ev.seq_id, phase: p.to_phase, round: ev.round_id });
+    }
+    if (ev.event_type === 'ROUND_STARTED') {
+      phaseTimeline.push({ seq_id: ev.seq_id, phase: 'ROUND_START', round: ev.round_id, round_number: p.round_number });
+    }
+    if (ev.event_type === 'ROLE_ASSIGNED') {
+      const aid = p.agent_id || ev.agent_id;
+      if (aid) agentRoles[aid] = p.role || p.assigned_role || '?';
+    }
+    if (ev.event_type === 'RFE_SNAPSHOT') {
+      const aid = p.agent_id || ev.agent_id;
+      rfeMap[ev.event_id] = { payload: p, agent_id: aid, seq_id: ev.seq_id, turn_number: p.turn_number };
+      // Also index by agent_id+turn_number for fallback when rfe_snapshot_id is null
+      if (aid != null && p.turn_number != null) {
+        rfeMap[`${aid}:${p.turn_number}`] = { payload: p, agent_id: aid, seq_id: ev.seq_id, turn_number: p.turn_number };
+      }
+      if (aid) {
+        agentRfes[aid] = agentRfes[aid] || [];
+        agentRfes[aid].push({ event_id: ev.event_id, payload: p, seq_id: ev.seq_id, turn_number: p.turn_number });
+      }
+    }
+    if (ev.event_type === 'AGENT_MESSAGE') {
+      const speaker = p.speaker_id || ev.agent_id;
+      if (speaker) {
+        agentMsgCount[speaker] = (agentMsgCount[speaker] || 0) + 1;
+        dialogueSeq.push(ev);
+      }
+    }
+    if (ev.event_type === 'MISSION_ACTION') {
+      const aid = p.agent_id || ev.agent_id;
+      if (aid) {
+        agentMsgCount[aid] = (agentMsgCount[aid] || 0) + 1;
+        dialogueSeq.push(ev);
+      }
+    }
+
+    // Build per-agent event log
+    const aid = ev.agent_id;
+    if (aid) {
+      agentEvents[aid] = agentEvents[aid] || [];
+      agentEvents[aid].push(ev);
+    }
+  });
+
+  // Sort dialogue by seq_id
+  dialogueSeq.sort((a, b) => a.seq_id - b.seq_id);
+
+  // Sort RFE lists
+  Object.values(agentRfes).forEach(arr => arr.sort((a,b) => a.seq_id - b.seq_id));
+
+  // Determine agent roster
+  const rosterFromGame = gameInfo.agent_ids || [];
+  const rosterFromEvents = [...new Set(events.map(e => e.agent_id).filter(Boolean))];
+  const roster = rosterFromGame.length ? rosterFromGame : rosterFromEvents.sort();
+
+  // Build UI
+  buildRoundtable(roster);
+  buildAgentCards(roster);
+  renderFeed([]);
+  updateReplayProg();
+  currentReplayIdx = -1;
+
+  // Populate mirror selectors
+  populateMirrorSelectors(roster);
+}
+
+// ── Roundtable SVG ────────────────────────────────────────────
+const CX = 150, CY = 150, TABLE_R = 52, SLOT_R = 108, SLOT_CR = 23;
+
+function svgEl(tag, attrs = {}) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k, v));
+  return el;
+}
+
+function buildRoundtable(roster) {
+  const svg = document.getElementById('rt-svg');
+  svg.innerHTML = '';
+
+  const N = roster.length;
+
+  // Table
+  svg.appendChild(svgEl('circle', { cx: CX, cy: CY, r: TABLE_R, class: 'rt-tbl-bg' }));
+  svg.appendChild(svgEl('circle', { cx: CX, cy: CY, r: TABLE_R, class: 'rt-tbl-ring' }));
+  const tblTxt = svgEl('text', { x: CX, y: CY - 5, class: 'rt-tbl-txt' });
+  tblTxt.textContent = 'GREAT';
+  const tblTxt2 = svgEl('text', { x: CX, y: CY + 7, class: 'rt-tbl-txt' });
+  tblTxt2.textContent = 'HALL';
+  svg.appendChild(tblTxt);
+  svg.appendChild(tblTxt2);
+
+  roster.forEach((agentId, i) => {
+    const angle = (i / N) * 2 * Math.PI - Math.PI / 2;
+    const x = CX + SLOT_R * Math.cos(angle);
+    const y = CY + SLOT_R * Math.sin(angle);
+    const color = agentColor(agentId);
+
+    // Spoke
+    svg.appendChild(svgEl('line', { x1: CX, y1: CY, x2: x, y2: y, class: 'rt-spoke' }));
+
+    // Agent group
+    const g = svgEl('g', { class: 'rt-slot-group', 'data-agent-id': agentId });
+    g.appendChild(svgEl('circle', { cx: x, cy: y, r: SLOT_CR, class: 'rt-slot-bg' }));
+    g.appendChild(svgEl('circle', { cx: x, cy: y, r: SLOT_CR, class: 'rt-slot-ring', stroke: color, id: `rt-ring-${agentId}` }));
+
+    const lbl = svgEl('text', { x, y: y - 5, class: 'rt-slot-label', fill: color, 'font-size': '9' });
+    lbl.textContent = agentLabel(agentId);
+    g.appendChild(lbl);
+
+    const turnLbl = svgEl('text', { x, y: y + 7, class: 'rt-slot-turn', fill: color, 'font-size': '7', id: `rt-turn-${agentId}` });
+    turnLbl.textContent = '—';
+    g.appendChild(turnLbl);
+
+    g.style.cursor = 'pointer';
+    g.addEventListener('click', () => selectAgent(agentId));
+    svg.appendChild(g);
+  });
+}
+
+function rtSetSpeaking(agentId) {
+  document.querySelectorAll('.rt-slot-group').forEach(g => {
+    g.classList.remove('speaking');
+    const ring = g.querySelector('.rt-slot-ring');
+    if (ring) ring.style.filter = '';
+  });
+  if (!agentId) return;
+  const g = document.querySelector(`.rt-slot-group[data-agent-id="${agentId}"]`);
+  if (g) {
+    g.classList.add('speaking');
+    const color = agentColor(agentId);
+    const ring = g.querySelector('.rt-slot-ring');
+    if (ring) ring.style.filter = `drop-shadow(0 0 6px ${color})`;
+  }
+}
+
+function rtSetSelected(agentId) {
+  document.querySelectorAll('.rt-slot-group').forEach(g => g.classList.remove('selected'));
+  if (!agentId) return;
+  const g = document.querySelector(`.rt-slot-group[data-agent-id="${agentId}"]`);
+  if (g) g.classList.add('selected');
+}
+
+function rtSetTurn(agentId, turnNum) {
+  const el = document.getElementById(`rt-turn-${agentId}`);
+  if (el) el.textContent = `T${turnNum}`;
+}
+
+// ── Agent cards (left panel) ──────────────────────────────────
+function buildAgentCards(roster) {
+  const container = document.getElementById('agent-cards');
+  container.innerHTML = '';
+  roster.forEach(agentId => {
+    const color = agentColor(agentId);
+    const card = document.createElement('div');
+    card.className = 'agent-card';
+    card.dataset.agentId = agentId;
+    card.style.setProperty('--agent-color', color);
+    card.style.borderColor = `${color}22`;
+
+    const role = agentRoles[agentId];
+    const roleCls = role === 'TRAITOR' ? 'tag-red' : role === 'LOYAL' ? 'tag-green' : 'tag-muted';
+    const roleLabel = role || '?';
+
+    card.innerHTML = `
+      <div class="ac-row1">
+        <div class="ac-dot" style="background:${color}"></div>
+        <div class="ac-name" style="color:${color}">${agentDisplay(agentId)}</div>
+        <div class="ac-id">${agentId}</div>
+      </div>
+      <div class="ac-tags">
+        <span class="tag ${roleCls}">${roleLabel}</span>
+        <span class="tag tag-muted" id="ac-rfe-${agentId}">ZUESS —</span>
+        <span class="tag tag-muted" id="ac-telos-${agentId}">—</span>
+      </div>
+      <canvas class="ac-osc" data-agent-id="${agentId}" width="240" height="22" id="osc-${agentId}"></canvas>
+      <div class="ac-turn" id="ac-turn-${agentId}">— messages</div>
+    `;
+    card.addEventListener('click', () => selectAgent(agentId));
+    container.appendChild(card);
+  });
+}
+
+function updateAgentCard(agentId, turnNum, rfePayload) {
+  const countEl = document.getElementById(`ac-turn-${agentId}`);
+  if (countEl && turnNum != null) countEl.textContent = `Turn ${turnNum} · ${agentMsgCount[agentId]||0} msgs`;
+
+  if (rfePayload) {
+    const rfeStatusEl = document.getElementById(`ac-rfe-${agentId}`);
+    const telosEl     = document.getElementById(`ac-telos-${agentId}`);
+    if (rfeStatusEl) {
+      // Show Zuess safety index (most meaningful metric for game agents)
+      const zs = rfePayload.zuess_summary || {};
+      const si = zs.safety_index;
+      if (si != null) {
+        rfeStatusEl.textContent = `ZUESS ${si.toFixed(2)}`;
+        rfeStatusEl.className = `tag ${si >= 0.9 ? 'tag-green' : si >= 0.6 ? 'tag-gold' : 'tag-red'}`;
+      } else {
+        const st = rfePayload.rfe_status || '?';
+        rfeStatusEl.textContent = `RFE ${st === 'NULL_INPUTS' ? 'ACTIVE' : st}`;
+        rfeStatusEl.className = `tag tag-muted`;
+      }
+    }
+    if (telosEl) {
+      const ts = rfePayload.telos_status || '';
+      if (ts && !ts.startsWith('UNAVAILABLE') && ts !== '?') {
+        telosEl.textContent = ts;
+        telosEl.className = `tag ${ts === 'NOMINAL' ? 'tag-green' : ts === 'DRIFT' ? 'tag-gold' : ts === 'IMPOSTOR' ? 'tag-red' : 'tag-purple'}`;
+      } else {
+        const crisis = rfePayload.is_crisis_blocked;
+        telosEl.textContent = crisis ? 'BLOCKED' : 'OK';
+        telosEl.className = `tag ${crisis ? 'tag-red' : 'tag-green'}`;
+      }
+    }
+  }
+}
+
+function cardSetSpeaking(agentId) {
+  document.querySelectorAll('.agent-card').forEach(c => {
+    c.classList.remove('speaking');
+    c.style.boxShadow = '';
+  });
+  if (!agentId) return;
+  const card = document.querySelector(`.agent-card[data-agent-id="${agentId}"]`);
+  if (card) {
+    card.classList.add('speaking');
+    const color = agentColor(agentId);
+    card.style.boxShadow = `0 0 12px 1px ${color}44`;
+    // Scroll into view
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function cardSetSelected(agentId) {
+  document.querySelectorAll('.agent-card').forEach(c => c.classList.remove('selected'));
+  if (!agentId) return;
+  const card = document.querySelector(`.agent-card[data-agent-id="${agentId}"]`);
+  if (card) card.classList.add('selected');
+}
+
+// ── Inspector (right panel) ───────────────────────────────────
+function selectAgent(agentId) {
+  selectedAgentId = agentId;
+  cardSetSelected(agentId);
+  rtSetSelected(agentId);
+  renderInspector(agentId);
+}
+
+function renderInspector(agentId) {
+  if (!agentId) {
+    document.getElementById('insp-agent-name').textContent = '— select an agent —';
+    document.getElementById('insp-agent-name').style.color = 'var(--muted)';
+    document.getElementById('tab-ovw').innerHTML = '<div class="empty-insp">Select an agent.</div>';
+    document.getElementById('tab-rfe').innerHTML = '<div class="empty-insp">Select an agent.</div>';
+    document.getElementById('tab-log').innerHTML = '<div class="empty-insp">Select an agent.</div>';
+    return;
+  }
+
+  const color = agentColor(agentId);
+  const nameEl = document.getElementById('insp-agent-name');
+  const dispName = agentNames[agentId];
+  const num = parseInt(agentId.replace('agent_',''), 10);
+  nameEl.textContent = dispName ? `${dispName}  ·  Agent ${num}` : `Agent ${num}`;
+  nameEl.style.color = color;
+
+  // Latest RFE snapshot for this agent
+  const rfes = agentRfes[agentId] || [];
+  const latestRfe = rfes.length ? rfes[rfes.length - 1].payload : null;
+  const role = agentRoles[agentId] || '?';
+
+  // OVW tab
+  const ovwEl = document.getElementById('tab-ovw');
+  if (!latestRfe) {
+    ovwEl.innerHTML = '<div class="empty-insp">No RFE data yet.</div>';
+  } else {
+    ovwEl.innerHTML = kvSection('Identity', [
+      ['agent_id',   agentId],
+      ['role',       role, roleClass(role)],
+      ['msgs_sent',  agentMsgCount[agentId] || 0],
+    ]) + kvSection('RFE Status', [
+      ['rfe_status',    latestRfe.rfe_status || '?',    statusClass(latestRfe.rfe_status)],
+      ['telos_status',  latestRfe.telos_status || '?',  telosClass(latestRfe.telos_status)],
+      ['auth_risk',     latestRfe.auth_risk_status || '?', statusClass(latestRfe.auth_risk_status)],
+      ['bumblebee',     latestRfe.bumblebee_status || '?'],
+      ['comparator',    latestRfe.comparator_status || '?'],
+      ['vulcanor',      latestRfe.vulcanor_status || '?'],
+      ['lumoiria',      latestRfe.lumoiria_status || '?'],
+    ]) + kvSection('Crisis', [
+      ['crisis_blocked', latestRfe.is_crisis_blocked ? 'YES' : 'NO',
+        latestRfe.is_crisis_blocked ? 'r' : 'g'],
+      ['crisis_reason',  latestRfe.crisis_reason || '—'],
+    ]) + kvSection('Zuess', [
+      ['zuess_action',    latestRfe.zuess_action || '—'],
+      ['zuess_available', latestRfe.zuess_available != null ? String(latestRfe.zuess_available) : '—'],
+      ['zuess_summary',   latestRfe.zuess_summary || '—'],
+    ]);
+  }
+
+  // RFE fields tab — show engine statuses + Zuess even when rfe_fields is null
+  const rfeEl = document.getElementById('tab-rfe');
+  if (!latestRfe) {
+    rfeEl.innerHTML = '<div class="empty-insp">No RFE data yet.</div>';
+  } else if (latestRfe.rfe_fields) {
+    rfeEl.innerHTML = renderRfeFields(latestRfe.rfe_fields);
+  } else {
+    // rfe_fields null = game agent (not MoodJi user) — show engine availability grid
+    const zs = latestRfe.zuess_summary || {};
+    const engineRows = [
+      ['RFE',        latestRfe.rfe_status],
+      ['TELOS',      latestRfe.telos_status],
+      ['AUTH RISK',  latestRfe.auth_risk_status],
+      ['BUMBLEBEE',  latestRfe.bumblebee_status],
+      ['COMPARATOR', latestRfe.comparator_status],
+      ['VULCANOR',   latestRfe.vulcanor_status],
+      ['LUMOIRIA',   latestRfe.lumoiria_status],
+    ].map(([label, val]) => {
+      const short = (val || 'UNAVAILABLE').replace('UNAVAILABLE_NO_', '').replace('UNAVAILABLE_', '');
+      const cls = val === 'GREEN' ? 'tag-green' : val === 'AMBER' ? 'tag-gold' :
+                  val === 'NULL_INPUTS' ? 'tag-muted' : 'tag-muted';
+      return `<div class="kv-row"><span class="kv-key">${label}</span><span class="tag ${cls}" style="font-size:9px">${short}</span></div>`;
+    }).join('');
+
+    const zuessHtml = zs ? `
+      <div class="kv-section"><div class="kv-label">ZUESS SAFETY</div>
+        <div class="kv-row"><span class="kv-key">safety_index</span><span class="kv-val ${zs.safety_index >= 0.9 ? 'c-green' : zs.safety_index >= 0.6 ? 'c-gold' : 'c-red'}">${zs.safety_index != null ? zs.safety_index.toFixed(2) : '—'}</span></div>
+        <div class="kv-row"><span class="kv-key">trajectory</span><span class="kv-val">${zs.trajectory || '—'}</span></div>
+        <div class="kv-row"><span class="kv-key">crisis_active</span><span class="kv-val ${zs.crisis_active ? 'c-red' : 'c-green'}">${zs.crisis_active ? 'YES' : 'NO'}</span></div>
+        ${zs.intercept_reason ? `<div class="kv-row"><span class="kv-key">intercept</span><span class="kv-val c-gold">${zs.intercept_reason}</span></div>` : ''}
+      </div>` : '';
+
+    const lastText = latestRfe.response_text ? `
+      <div class="kv-section"><div class="kv-label">LAST UTTERANCE</div>
+        <div style="color:var(--text);font-size:11px;line-height:1.5;padding:6px 0;opacity:0.75">${escHtml(latestRfe.response_text.slice(0, 300))}${latestRfe.response_text.length > 300 ? '…' : ''}</div>
+      </div>` : '';
+
+    rfeEl.innerHTML = `<div class="kv-section"><div class="kv-label">ENGINE STATUS</div>${engineRows}</div>${zuessHtml}${lastText}`;
+  }
+
+  // LOG tab
+  const logEl = document.getElementById('tab-log');
+  const evList = agentEvents[agentId] || [];
+  if (!evList.length) {
+    logEl.innerHTML = '<div class="empty-insp">No events.</div>';
+  } else {
+    logEl.innerHTML = evList.map(ev => `
+      <div class="log-row">
+        <span style="color:var(--muted)">seq ${ev.seq_id}</span>
+        &nbsp;<span>${ev.event_type}</span>
+        &nbsp;<span style="color:var(--muted)">t${ev.payload?.turn_number ?? '?'}</span>
+        &nbsp;<span style="color:var(--border)">·</span>
+        &nbsp;<span style="color:var(--muted)">${ev.visibility || ''}</span>
+      </div>
+    `).join('');
+  }
+}
+
+function kvSection(title, rows) {
+  return `<div class="sect-label">${title}</div>` +
+    rows.map(([k, v, cls='']) => `
+      <div class="kv">
+        <span class="kk">${k}</span>
+        <span class="kv-val ${cls}">${v}</span>
+      </div>
+    `).join('');
+}
+
+function renderRfeFields(fields) {
+  if (typeof fields !== 'object' || fields === null) {
+    return `<pre class="rfe-json">${JSON.stringify(fields, null, 2)}</pre>`;
+  }
+  return Object.entries(fields).map(([k, v]) => {
+    const cls = typeof v === 'number' ? 'rv-num' : typeof v === 'boolean' ? 'rv-bool' : v === null ? 'rv-null' : 'rv-str';
+    return `<div class="kv"><span class="kk">${k}</span><span class="kv-val ${cls}">${JSON.stringify(v)}</span></div>`;
+  }).join('');
+}
+
+function statusClass(s) {
+  if (!s) return '';
+  if (s === 'GREEN')  return 'g';
+  if (s === 'AMBER')  return 'a';
+  if (s === 'RED')    return 'r';
+  return '';
+}
+function telosClass(s) {
+  if (!s) return '';
+  if (s === 'NOMINAL') return 'g';
+  if (s === 'DRIFT')   return 'a';
+  if (s === 'IMPOSTOR')return 'r';
+  return 'p';
+}
+function roleClass(r) {
+  if (r === 'TRAITOR') return 'r';
+  if (r === 'LOYAL')   return 'g';
+  return '';
+}
+
+// ── Dialogue feed ─────────────────────────────────────────────
+let feedEntries = [];
+
+function phaseForSeq(seqId) {
+  // Find the most recent phase transition at or before this seq_id
+  let result = null;
+  for (const pt of phaseTimeline) {
+    if (pt.seq_id <= seqId) result = pt;
+    else break;
+  }
+  return result;
+}
+
+function makeFeedBadges(rfe) {
+  if (!rfe) return '';
+  const zs = rfe.zuess_summary || {};
+  const si = zs.safety_index;
+  const isCrisis = rfe.is_crisis_blocked;
+  const telos = rfe.telos_status || '';
+
+  const badges = [];
+  if (isCrisis) badges.push(`<span class="tag tag-red">CRISIS BLOCKED</span>`);
+  if (si != null) {
+    const cls = si >= 0.9 ? 'tag-green' : si >= 0.6 ? 'tag-gold' : 'tag-red';
+    badges.push(`<span class="tag ${cls}">ZUESS ${si.toFixed(2)}</span>`);
+  }
+  if (telos && !telos.startsWith('UNAVAILABLE') && telos !== '?') {
+    const tcls = telos === 'NOMINAL' ? 'tag-green' : telos === 'DRIFT' ? 'tag-gold' : telos === 'IMPOSTOR' ? 'tag-red' : 'tag-purple';
+    badges.push(`<span class="tag ${tcls}">${telos}</span>`);
+  }
+  return badges.join('');
+}
+
+function renderFeed(seq) {
+  feedEntries = seq;
+  const feedEl = document.getElementById('dialogue-feed');
+  const emptyEl = document.getElementById('feed-empty');
+  if (!seq.length) {
+    feedEl.innerHTML = '';
+    if (!emptyEl) {
+      feedEl.appendChild(Object.assign(document.createElement('div'), { className: 'empty-feed', textContent: 'Load a game and press play to begin.' }));
+    }
+    return;
+  }
+  // Rebuild from scratch (we keep them in forward order internally, display newest first)
+  const reversed = [...seq].reverse();
+  let lastPhase = null;
+  const html = [];
+  for (const item of reversed) {
+    const { ev, rfe, idx } = item;
+    const p = ev.payload || {};
+    const isMission = ev.event_type === 'MISSION_ACTION';
+    const speaker = isMission ? (p.agent_id || ev.agent_id) : (p.speaker_id || ev.agent_id);
+    const color = agentColor(speaker);
+    const turnNum = p.turn_number ?? rfe?.turn_number ?? '?';
+    const text = isMission ? formatMissionAction(p) : (p.text || '—');
+    const actionClass = isMission ? ` action-card${p.action==='CLAIM'?' claim-card':p.action==='VAULT_UNLOCK_ATTEMPTED'?' unlock-card':''}` : '';
+    const badges = makeFeedBadges(rfe);
+    const isActive = idx === currentReplayIdx;
+
+    // Phase banner: inject when phase changes (newest-first = phase banner appears above first entry in that phase)
+    const pt = phaseForSeq(ev.seq_id);
+    const phaseKey = pt ? `${pt.round}:${pt.phase}` : null;
+    if (phaseKey && phaseKey !== lastPhase) {
+      lastPhase = phaseKey;
+      const phaseLabel = pt.phase === 'ROUND_START'
+        ? `— Round ${pt.round_number || (pt.round||'').replace('R','')} —`
+        : `— ${pt.phase} · ${pt.round || ''} —`;
+      html.push(`<div class="phase-banner">${phaseLabel}</div>`);
+    }
+
+    html.push(`
+      <div class="de${actionClass}${isActive?' active-turn':''}" style="border-left-color:${color}" data-idx="${idx}" onclick="feedClick(${idx})">
+        <div class="de-turn">T${turnNum}</div>
+        <div class="de-body">
+          <div class="de-speaker" style="color:${color}">${agentDisplay(speaker)}</div>
+          <div class="de-text">${escHtml(text)}</div>
+          ${badges ? `<div class="de-badges">${badges}</div>` : ''}
+        </div>
+      </div>
+    `);
+  }
+  feedEl.innerHTML = html.join('');
+}
+
+function feedClick(idx) {
+  if (idx < 0 || idx >= dialogueSeq.length) return;
+  const item = feedEntries.find(x => x.idx === idx);
+  if (!item) return;
+  const p = item.ev.payload || {};
+  const isMission = item.ev.event_type === 'MISSION_ACTION';
+  const speaker = isMission ? (p.agent_id || item.ev.agent_id) : (p.speaker_id || item.ev.agent_id);
+  if (speaker) selectAgent(speaker);
+  highlightFeedEntry(idx);
+}
+
+function formatMissionAction(p) {
+  const action = p.action || '?';
+  const from   = p.from_page || '?';
+  const to     = p.to_page;
+  if (action === 'CLAIM')                return `🔑 CLAIMED key at ${from}`;
+  if (action === 'VAULT_UNLOCK_ATTEMPTED') return `🔓 VAULT UNLOCK attempted`;
+  if (action === 'ABSTAIN')              return `— ABSTAIN (stayed at ${from})`;
+  if (to && to !== from)                 return `${from} → ${to}`;
+  return `${action} (${from})`;
+}
+
+function highlightFeedEntry(idx) {
+  document.querySelectorAll('.de').forEach(el => el.classList.remove('active-turn'));
+  const el = document.querySelector(`.de[data-idx="${idx}"]`);
+  if (el) {
+    el.classList.add('active-turn');
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function appendFeedEntry(item) {
+  feedEntries.push(item);
+  const feedEl = document.getElementById('dialogue-feed');
+  // Remove empty placeholder
+  const ph = feedEl.querySelector('.empty-feed');
+  if (ph) ph.remove();
+
+  const { ev, rfe, idx } = item;
+  const p = ev.payload || {};
+  const isMission = ev.event_type === 'MISSION_ACTION';
+  const speaker = isMission ? (p.agent_id || ev.agent_id) : (p.speaker_id || ev.agent_id);
+  const color = agentColor(speaker);
+  const turnNum = p.turn_number ?? rfe?.turn_number ?? '?';
+  const text = isMission ? formatMissionAction(p) : (p.text || '—');
+  const badges = makeFeedBadges(rfe);
+
+  const div = document.createElement('div');
+  const actionClass = isMission ? ` action-card${p.action==='CLAIM'?' claim-card':p.action==='VAULT_UNLOCK_ATTEMPTED'?' unlock-card':''}` : '';
+  div.className = `de${actionClass}`;
+  div.style.borderLeftColor = color;
+  div.dataset.idx = idx;
+  div.setAttribute('onclick', `feedClick(${idx})`);
+  div.innerHTML = `
+    <div class="de-turn">T${turnNum}</div>
+    <div class="de-body">
+      <div class="de-speaker" style="color:${color}">${agentDisplay(speaker)}</div>
+      <div class="de-text">${escHtml(text)}</div>
+      ${badges ? `<div class="de-badges">${badges}</div>` : ''}
+    </div>
+  `;
+  // Prepend (newest first)
+  feedEl.insertBefore(div, feedEl.firstChild);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── AudioTurnQueue ────────────────────────────────────────────
+const ATQ = {
+  _busy: false,
+  _resolve: null,
+  enqueue(text, agentId) {
+    if (!ttsEnabled || !('speechSynthesis' in window)) return Promise.resolve();
+    return new Promise(resolve => {
+      speakingAgentId = agentId;
+      updateSpeakingUI(agentId);
+      const utt = new SpeechSynthesisUtterance(text);
+      const vp = AGENT_VOICES[agentId] || { rate: 1.0, pitch: 1.0 };
+      utt.rate  = Math.max(0.1, Math.min(10, vp.rate * replaySpeed));
+      utt.pitch = vp.pitch;
+      utt.volume = 1.0;
+      const done = () => {
+        speakingAgentId = null;
+        updateSpeakingUI(null);
+        resolve();
+      };
+      utt.onend = done;
+      utt.onerror = done;
+      window.speechSynthesis.speak(utt);
+    });
+  },
+  stop() {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    speakingAgentId = null;
+    updateSpeakingUI(null);
+  }
+};
+
+function updateSpeakingUI(agentId) {
+  rtSetSpeaking(agentId);
+  cardSetSpeaking(agentId);
+  document.getElementById('badge-live').style.display = agentId ? '' : 'none';
+}
+
+// ── Replay engine ─────────────────────────────────────────────
+function updateReplayProg() {
+  const total = dialogueSeq.length;
+  const current = currentReplayIdx < 0 ? 0 : currentReplayIdx + 1;
+  document.getElementById('replay-prog').textContent =
+    total ? `${current} / ${total}` : '— / —';
+}
+
+function replayStop() {
+  replayCancel = true;
+  replayPlaying = false;
+  ATQ.stop();
+  document.getElementById('btn-play').textContent = '▶';
+  document.getElementById('btn-play').classList.remove('on');
+  document.getElementById('badge-live').style.display = 'none';
+}
+
+async function replayRun() {
+  replayPlaying = true;
+  replayCancel  = false;
+  document.getElementById('btn-play').textContent = '⏸';
+  document.getElementById('btn-play').classList.add('on');
+
+  while (currentReplayIdx < dialogueSeq.length - 1 && !replayCancel) {
+    currentReplayIdx++;
+    await replayProcessStep(currentReplayIdx);
+    updateReplayProg();
+
+    if (replayCancel) break;
+
+    // Inter-turn delay (when TTS off or between turns)
+    if (!ttsEnabled) {
+      await sleep(Math.round(700 / replaySpeed));
+    }
+    // Small buffer even with TTS
+    if (!replayCancel) await sleep(50);
+  }
+
+  if (!replayCancel) {
+    // Finished
+    replayPlaying = false;
+    document.getElementById('btn-play').textContent = '▶';
+    document.getElementById('btn-play').classList.remove('on');
+    document.getElementById('badge-live').style.display = 'none';
+    setStatus(`Replay complete — ${dialogueSeq.length} turns`);
+  }
+}
+
+async function replayProcessStep(idx) {
+  const ev = dialogueSeq[idx];
+  const p  = ev.payload || {};
+  const isMissionAction = ev.event_type === 'MISSION_ACTION';
+  const speaker = isMissionAction ? (p.agent_id || ev.agent_id) : (p.speaker_id || ev.agent_id);
+  // RFE lookup (priority: event_id link → agent:turn → proximity by seq_id)
+  const rfeSnap = rfeMap[p.rfe_snapshot_id]
+               || rfeMap[`${speaker}:${p.turn_number}`]
+               || (() => {
+                    const rfes = agentRfes[speaker] || [];
+                    const prior = rfes.filter(r => r.seq_id < ev.seq_id);
+                    return prior.length ? prior[prior.length - 1] : null;
+                  })();
+  const rfePayload = rfeSnap ? rfeSnap.payload : null;
+  const turnNum = p.turn_number || rfePayload?.turn_number;
+
+  // Update feed
+  const item = { ev, rfe: rfePayload, idx };
+  appendFeedEntry(item);
+  highlightFeedEntry(idx);
+
+  // Update roundtable
+  if (speaker && turnNum != null) rtSetTurn(speaker, turnNum);
+
+  // Update agent card
+  if (speaker) updateAgentCard(speaker, turnNum, rfePayload);
+
+  // Update inspector if this agent is selected
+  if (speaker && speaker === selectedAgentId) {
+    renderInspector(speaker);
+  }
+
+  // TTS — speak full messages; for action cards speak a brief announcement
+  if (ttsEnabled) {
+    let ttsText = '';
+    if (isMissionAction) {
+      const p2 = ev.payload || {};
+      if (p2.action === 'CLAIM') ttsText = `${agentDisplay(speaker)} claimed the key.`;
+      else if (p2.action === 'VAULT_UNLOCK_ATTEMPTED') ttsText = `${agentDisplay(speaker)} attempted the vault unlock.`;
+      // Nav actions: skip TTS (too chatty)
+    } else if (text) {
+      ttsText = text.length > 500 ? text.slice(0, 500) + '…' : text;
+    }
+    if (ttsText) await ATQ.enqueue(ttsText, speaker);
+  }
+}
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+// Replay controls
+document.getElementById('btn-play').addEventListener('click', () => {
+  if (replayPlaying) {
+    replayStop();
+  } else {
+    if (currentReplayIdx >= dialogueSeq.length - 1) {
+      // Reset to beginning
+      currentReplayIdx = -1;
+      feedEntries = [];
+      renderFeed([]);
+    }
+    replayRun();
+  }
+});
+
+document.getElementById('btn-rewind').addEventListener('click', () => {
+  replayStop();
+  currentReplayIdx = -1;
+  feedEntries = [];
+  renderFeed([]);
+  updateReplayProg();
+});
+
+document.getElementById('btn-step').addEventListener('click', async () => {
+  if (replayPlaying) return;
+  if (currentReplayIdx >= dialogueSeq.length - 1) return;
+  currentReplayIdx++;
+  await replayProcessStep(currentReplayIdx);
+  updateReplayProg();
+});
+
+document.getElementById('speed-sel').addEventListener('change', e => {
+  replaySpeed = parseFloat(e.target.value);
+});
+
+document.getElementById('tts-btn').addEventListener('click', () => {
+  ttsEnabled = !ttsEnabled;
+  const btn = document.getElementById('tts-btn');
+  btn.textContent = ttsEnabled ? '🔊 TTS ON' : '🔇 TTS OFF';
+  btn.classList.toggle('on', ttsEnabled);
+  if (!ttsEnabled) ATQ.stop();
+});
+
+// ── Inspector tabs ────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById(`tab-${btn.dataset.tab}`).classList.add('on');
+  });
+});
+
+// ── Investigator's Mirror ─────────────────────────────────────
+document.getElementById('btn-mirror').addEventListener('click', () => {
+  document.getElementById('mirror-modal').style.display = 'flex';
+  updateMirrorPane('l');
+  updateMirrorPane('r');
+});
+document.getElementById('mirror-close').addEventListener('click', () => {
+  document.getElementById('mirror-modal').style.display = 'none';
+});
+document.getElementById('mirror-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('mirror-modal')) {
+    document.getElementById('mirror-modal').style.display = 'none';
+  }
+});
+
+function populateMirrorSelectors(roster) {
+  ['l', 'r'].forEach(side => {
+    const agentSel = document.getElementById(`m${side}-agent`);
+    agentSel.innerHTML = '<option value="">— agent —</option>';
+    roster.forEach(id => {
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = agentDisplay(id);
+      agentSel.appendChild(opt);
+    });
+    agentSel.addEventListener('change', () => {
+      populateMirrorTurns(side);
+      updateMirrorPane(side);
+    });
+    document.getElementById(`m${side}-turn`).addEventListener('change', () => updateMirrorPane(side));
+  });
+}
+
+function populateMirrorTurns(side) {
+  const agentId = document.getElementById(`m${side}-agent`).value;
+  const sel = document.getElementById(`m${side}-turn`);
+  sel.innerHTML = '<option value="">— turn —</option>';
+  if (!agentId) return;
+  const rfes = agentRfes[agentId] || [];
+  rfes.forEach(rfe => {
+    const opt = document.createElement('option');
+    opt.value = rfe.event_id;
+    opt.textContent = `Turn ${rfe.turn_number ?? '?'} (seq ${rfe.seq_id})`;
+    sel.appendChild(opt);
+  });
+  if (rfes.length) sel.value = rfes[rfes.length - 1].event_id;
+}
+
+function getMirrorRfe(side) {
+  const agentId  = document.getElementById(`m${side}-agent`).value;
+  const eventId  = document.getElementById(`m${side}-turn`).value;
+  if (!agentId || !eventId) return null;
+  const rfes = agentRfes[agentId] || [];
+  const found = rfes.find(r => r.event_id === eventId);
+  return found ? found.payload : null;
+}
+
+function updateMirrorPane(side) {
+  const fieldsEl = document.getElementById(`m${side}-fields`);
+  const rfe = getMirrorRfe(side);
+  if (!rfe) {
+    fieldsEl.innerHTML = '<div class="mirror-empty">Select agent + turn.</div>';
+    return;
+  }
+  // If both sides loaded, compute diff
+  const otherSide = side === 'l' ? 'r' : 'l';
+  const otherRfe  = getMirrorRfe(otherSide);
+  renderMirrorFields(side, rfe, otherRfe);
+  if (otherRfe) renderMirrorFields(otherSide, otherRfe, rfe);
+}
+
+function renderMirrorFields(side, rfe, otherRfe) {
+  const fieldsEl = document.getElementById(`m${side}-fields`);
+  const fields = rfe.rfe_fields || rfe;
+  const otherFields = otherRfe ? (otherRfe.rfe_fields || otherRfe) : null;
+
+  // Top-level keys of interest
+  const keys = ['rfe_status','telos_status','auth_risk_status','bumblebee_status','comparator_status',
+    'vulcanor_status','lumoiria_status','zuess_action','is_crisis_blocked','crisis_reason','turn_number'];
+
+  let html = keys.map(k => {
+    const v = rfe[k];
+    const ov = otherRfe ? otherRfe[k] : undefined;
+    const isDiff = otherRfe && JSON.stringify(v) !== JSON.stringify(ov);
+    return `<div class="mkv${isDiff?' diff':''}"><span class="mk">${k}</span><span class="mv">${JSON.stringify(v) ?? '—'}</span></div>`;
+  }).join('');
+
+  if (fields && typeof fields === 'object') {
+    html += '<div class="mkv" style="border:none;margin-top:6px"><span class="mk" style="color:var(--gold)">rfe_fields</span><span class="mv"></span></div>';
+    html += Object.entries(fields).map(([k, v]) => {
+      const ov = otherFields ? otherFields[k] : undefined;
+      const isDiff = otherFields && JSON.stringify(v) !== JSON.stringify(ov);
+      return `<div class="mkv${isDiff?' diff':''}"><span class="mk">${k}</span><span class="mv">${JSON.stringify(v)}</span></div>`;
+    }).join('');
+  }
+
+  fieldsEl.innerHTML = html;
+}
+
+// ── Oscilloscope RAF ──────────────────────────────────────────
+let oscPhase = 0;
+function animateOscilloscopes() {
+  oscPhase += 0.07;
+  document.querySelectorAll('.ac-osc').forEach(canvas => {
+    const agentId = canvas.dataset.agentId;
+    const color   = agentColor(agentId);
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.globalAlpha = agentId === speakingAgentId ? 1.0 : 0.35;
+    ctx.beginPath();
+    if (agentId === speakingAgentId) {
+      for (let x = 0; x <= w; x++) {
+        const t = (x / w) * Math.PI * 5 + oscPhase;
+        const y = h / 2 + Math.sin(t) * (h / 2 - 3);
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+    } else {
+      ctx.moveTo(0, h / 2);
+      ctx.lineTo(w, h / 2);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1.0;
+  });
+  requestAnimationFrame(animateOscilloscopes);
+}
+requestAnimationFrame(animateOscilloscopes);
+
+// ── Mobile tab navigation ─────────────────────────────────────
+function isMobile() { return window.matchMedia('(max-width: 768px)').matches; }
+
+function mobTab(tab) {
+  // Update tab buttons
+  document.querySelectorAll('.mob-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  // Show only the matching panel
+  const map = { roster: 'left-panel', hall: 'center-panel', inspect: 'right-panel' };
+  Object.entries(map).forEach(([t, id]) => {
+    document.getElementById(id).classList.toggle('mob-active', t === tab);
+  });
+  // When switching to inspect via replay click, also auto-scroll inspector into view
+  if (tab === 'inspect' && selectedAgentId) renderInspector(selectedAgentId);
+}
+
+// On mobile, tapping an agent card also switches to INSPECT tab
+document.getElementById('agent-cards').addEventListener('click', e => {
+  if (!isMobile()) return;
+  const card = e.target.closest('.agent-card');
+  if (card) mobTab('inspect');
+});
+
+// Initialize: set Hall as default on mobile
+if (isMobile()) mobTab('hall');
+
+// Handle resize between mobile/desktop
+window.addEventListener('resize', () => {
+  if (!isMobile()) {
+    // Restore desktop — clear mob-active, grid handles layout
+    ['left-panel','center-panel','right-panel'].forEach(id => {
+      document.getElementById(id).classList.remove('mob-active');
+    });
+  } else {
+    // Re-apply active tab if no panel is visible
+    const anyActive = document.querySelector('#main-grid > *:not([style*="display:none"]).mob-active');
+    if (!anyActive) mobTab('hall');
+  }
+});
+
+// ── Utility ───────────────────────────────────────────────────
+function setStatus(msg) {
+  document.getElementById('top-status').textContent = msg;
+}
+</script>
+</body>
+</html>
